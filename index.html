@@ -182,7 +182,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 .warm .wh{align-items:center}
 .warm li.complete .wh b{color:var(--ok)}
 .ex.complete{border-color:var(--ok);box-shadow:inset 5px 0 0 var(--ok)}
-.ex.current{border-color:#F59E0B;border-width:2px;box-shadow:inset 6px 0 0 #F59E0B,0 0 0 3px rgba(245,158,11,.25)}
+.ex.current{scroll-margin-top:12px;border-color:#F59E0B;border-width:2px;box-shadow:inset 6px 0 0 #F59E0B,0 0 0 3px rgba(245,158,11,.25)}
 .ex.current:not(.started) h3::before{content:"UP NEXT ";font-size:.6em;letter-spacing:.06em;color:#B45309;background:#FEF3C7;border-radius:6px;padding:2px 6px;margin-right:6px;vertical-align:middle}
 .ex.complete h3{color:var(--ok)}
 .ex.complete h3::after{content:" \2713"}
@@ -209,7 +209,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 12:39 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 12:42 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -1204,6 +1204,9 @@ function route(){
   else{U.tab='workout';U.wk=(h[0]==='week'&&okWk(h[1]))||iso(mondayOf(new Date()))}
   if(S.start&&U.wk<S.start) U.wk=S.start;
   ensureWeek(U.wk); render(); window.scrollTo(0,0);
+  if(U.tab==='day'){ // returning to a workout in progress: jump to the orange exercise
+    const c=document.querySelector('article.ex.current'), any=document.querySelector('article.ex.complete, article.ex.started, li[data-warm].complete');
+    if(c&&any) setTimeout(()=>c.scrollIntoView({block:'start'}),60) }
 }
 window.addEventListener('hashchange',route);
 
