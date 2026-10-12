@@ -114,6 +114,9 @@ th{color:var(--muted);font-weight:600}
 .back{font-weight:600;color:var(--link);text-decoration:none;padding:8px 0;display:inline-block}
 .cards{display:grid;gap:12px;margin:14px 0}
 .daycard{display:flex;flex-direction:column;gap:6px;background:var(--surface);border:1.5px solid var(--line);border-left:8px solid var(--lane);border-radius:12px;padding:14px 16px;text-decoration:none;color:inherit}
+.daycard.fin{background:rgba(47,107,190,.10);border-color:#2F6BBE;border-left-color:#2F6BBE}
+.badge.dn{background:#2F6BBE;color:#fff}
+.daycard.prog{background:rgba(31,138,91,.14);border-color:var(--ok);border-left-color:var(--ok)}
 .daycard:hover{border-color:var(--lane);border-left-color:var(--buoy)}
 .dc-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 .daycard .dow{font-family:var(--head);font-size:28px;font-weight:700;line-height:1}
@@ -204,7 +207,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 1:30 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 2:30 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -919,10 +922,11 @@ function renderHome(){
   const canPrev=!S.start||U.wk>S.start;
   const bal=weekBalance(U.wk); const todayIso=iso(new Date());
   const cards=wkObj.workouts.map((x,i)=>{
-    const d=dayDate(U.wk,i); const done=S.sessions[x.id]&&S.sessions[x.id].done; const f=FOCUS[x.focus];
-    return `<a class="daycard" href="#/day/${U.wk}/${i}">
+    const d=dayDate(U.wk,i); const ss=S.sessions[x.id]; const done=ss&&ss.done; const f=FOCUS[x.focus];
+    const started=!done&&ss&&(Object.keys(ss.warm||{}).length>0||Object.values(ss.sets||{}).some(a=>a.some(r=>r&&((r.r!==''&&r.r!=null)||(r.lr!==''&&r.lr!=null)))));
+    return `<a class="daycard ${started?'prog':''} ${done?'fin':''}" href="#/day/${U.wk}/${i}">
       <span class="dc-top"><span class="dow">${DOWL[d.getDay()]}</span><span class="dt">${fmtShort(d)}</span>
-        ${done?'<span class="badge ok">Done '+fmtShort(parse(S.sessions[x.id].date||done))+'</span>':iso(d)===todayIso?'<span class="badge hot">Today</span>':''}</span>
+        ${done?'<span class="badge dn">&#10003; Done '+fmtShort(parse(S.sessions[x.id].date||done))+'</span>':started?'<span class="badge ok">In progress</span>':iso(d)===todayIso?'<span class="badge hot">Today</span>':''}</span>
       <span class="dc-foc">${f.n}</span><span class="dc-d">${esc(f.d)}</span>
       <span class="dc-meta"><span class="chip">About ${x.min} min</span><span class="chip">${x.main.length} strength moves</span><span class="chip">${FMTN[x.format]}</span><span class="chip">Abs included</span></span></a>`}).join('');
   return `
@@ -1088,6 +1092,10 @@ function renderSettings(){
   return `<h2>Gear & settings</h2>
   <div class="card" style="margin-top:12px"><h3>Workout days</h3>
     <div class="row">${[0,1,2,3].map(n=>`<select data-day="${n}" aria-label="Day ${n+1}">${dayOpts(n)}</select>`).join('')}</div>
+    <div class="row"><label for="sound">Timer sounds</label>
+      <select id="sound"><option value="mix" ${(S.sound||'mix')==='mix'?'selected':''}>Mix with my audio (won't pause an audiobook)</option>
+      <option value="loud" ${S.sound==='loud'?'selected':''}>Loud: play over everything (may pause audio)</option>
+      <option value="off" ${S.sound==='off'?'selected':''}>Off: haptics and visuals only</option></select></div>
     <label class="chk" style="margin:4px 0"><input type="checkbox" id="haptics" ${S.haptics!==false?'checked':''}>Haptic taps (when your phone allows it)</label>
     <label class="chk" style="margin:4px 0"><input type="checkbox" id="autorest" ${S.autoRest!==false?'checked':''}>Start a rest timer when I tap a set's ✓</label>
     <div class="row"><label for="tgt">Target length (minutes)</label><input id="tgt" type="number" min="25" max="90" step="5" value="${S.target}" style="width:90px"></div>
@@ -1275,6 +1283,15 @@ document.addEventListener('click',ev=>{
   else if(a==='reset'){if(confirm('Erase all workouts and logs on this device? Export a backup first if you want to keep them.')){S=DEFAULTS();save();location.hash='#/';route()}}
 });
 let audioCtx=null;
+function unlockAudio(){
+  try{ if(navigator.audioSession){ const t=S.sound==='loud'?'playback':'ambient'; if(navigator.audioSession.type!==t) navigator.audioSession.type=t } }catch(e){} // ambient mixes with an audiobook; playback plays over everything
+  try{
+    const C=window.AudioContext||window.webkitAudioContext; if(!C) return;
+    audioCtx=audioCtx||new C(); if(audioCtx.state==='suspended') audioCtx.resume();
+    const b=audioCtx.createBuffer(1,1,22050), src=audioCtx.createBufferSource(); src.buffer=b; src.connect(audioCtx.destination); src.start(0);
+  }catch(e){}
+}
+['pointerdown','touchstart','click','keydown'].forEach(ev=>document.addEventListener(ev,unlockAudio,{passive:true}));
 let hapEl=null, hapLast=0;
 function haptic(kind){
   if(S.haptics===false) return;
@@ -1291,7 +1308,12 @@ function haptic(kind){
   }catch(e){}
 }
 function ding(f,ms,vol){
-  try{ if(audioCtx){const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='sine';o.connect(g);g.connect(audioCtx.destination);o.frequency.value=f;g.gain.setValueAtTime(vol||0.3,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+ms/1000);o.start();setTimeout(()=>{try{o.stop()}catch(e){}},ms+30)} }catch(e){}
+  if(S.sound==='off') return;
+  try{ if(audioCtx){
+    const gain=Math.min(1,(vol||0.3)*(S.sound==='loud'?3:2.4));
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='triangle';o.connect(g);g.connect(audioCtx.destination);o.frequency.value=f;
+    g.gain.setValueAtTime(gain,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+ms/1000);
+    o.start();setTimeout(()=>{try{o.stop()}catch(e){}},ms+30)} }catch(e){}
 }
 function beep(){
   ding(880,350);setTimeout(()=>ding(880,350),450);setTimeout(()=>ding(1175,700),900);
@@ -1378,6 +1400,7 @@ document.addEventListener('change',ev=>{
   if(t.id==='exsel'){U.sel=t.value;render(true)}
   else if(t.dataset.gear){S.gear[t.dataset.gear]=t.checked;save()}
   else if(t.id==='knee'){S.knee=+t.value;save()}
+  else if(t.id==='sound'){S.sound=t.value;save();unlockAudio();ding(1175,500,0.4);setTimeout(()=>ding(1320,500,0.4),350)}
   else if(t.id==='haptics'){S.haptics=t.checked;save(); if(t.checked) haptic('done')}
   else if(t.id==='autorest'){S.autoRest=t.checked;save(); if(!t.checked) stopRest()}
   else if(t.id==='wdate'){
