@@ -204,7 +204,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 12:55 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 1:10 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -1212,6 +1212,7 @@ document.addEventListener('click',ev=>{
     if(on) ri.value=''; else if(!ri.value) ri.value=ri.dataset.target;
     const wi=document.querySelector(`input[data-set="${b.dataset.set.replace(/r$/,'w')}"]`); if(wi) wi.classList.remove('pre');
     storeSet(ri); b.classList.toggle('on',!on); b.setAttribute('aria-pressed',String(!on)); save(); updateDone();
+    clearTimeout(b._rt); delete b.dataset.pend;
     if(!on) afterSet(b);
   }
   else if(a==='adjust'){
@@ -1342,7 +1343,15 @@ document.addEventListener('input',ev=>{
     t.classList.remove('pre'); storeSet(t);
     if(/\|l?r$/.test(t.dataset.set)){
       const ck=document.querySelector(`[data-act="setdone"][data-set="${t.dataset.set}"]`);
-      if(ck){const on=t.value!==''; ck.classList.toggle('on',on); ck.setAttribute('aria-pressed',String(on))}
+      if(ck){
+        const wasOn=ck.classList.contains('on'); const on=t.value!==''; ck.classList.toggle('on',on); ck.setAttribute('aria-pressed',String(on));
+        // finished typing reps for a new set: start rest and move on after a short pause
+        if(!on){ clearTimeout(ck._rt); delete ck.dataset.pend }
+        else if(!wasOn||ck.dataset.pend){
+          ck.dataset.pend='1'; clearTimeout(ck._rt);
+          ck._rt=setTimeout(()=>{ delete ck.dataset.pend; if(t.value!==''&&ck.classList.contains('on')){ try{t.blur()}catch(e){} afterSet(ck) } },1400);
+        }
+      }
     }
     updateDone();
     clearTimeout(window.__sv); window.__sv=setTimeout(save,250);
