@@ -158,6 +158,21 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 .cd.today{box-shadow:0 0 0 2px var(--buoy)}
 .btn:disabled{opacity:.4;cursor:default}
 .btn.favon{border-color:var(--buoy);color:var(--buoy);font-weight:600}
+#tmr{position:fixed;inset:0;z-index:50;background:rgba(6,20,30,.86);display:flex;align-items:center;justify-content:center;padding:16px}
+#tmr .tbox{background:var(--surface);color:var(--ink);border-radius:22px;padding:22px 20px 20px;width:100%;max-width:360px;text-align:center}
+#tmr .tname{font-family:var(--head);font-weight:700;font-size:26px;line-height:1.1;margin:0 0 8px}
+#tmr .tring{position:relative;width:min(72vw,280px);aspect-ratio:1;margin:0 auto}
+#tmr svg{width:100%;height:100%}
+#tmr circle{fill:none;stroke-width:14}
+#tmr .tbg{stroke:var(--line)}
+#tmr .tfg{stroke:var(--lane);stroke-linecap:round;transition:stroke-dashoffset .25s linear,stroke .3s}
+#tmr.low .tfg{stroke:var(--buoy)}
+#tmr.fin .tfg{stroke:var(--ok)}
+#tmr .tnum{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--head);font-weight:700;font-size:min(30vw,112px);line-height:1;font-variant-numeric:tabular-nums}
+#tmr.low .tnum{color:var(--buoy)}
+#tmr.fin .tnum{font-size:min(16vw,60px);color:var(--ok)}
+#tmr .tsub{color:var(--muted);margin:6px 0 14px}
+#tmr .trow{display:flex;gap:10px;justify-content:center}
 </style>
 </head>
 <body>
@@ -169,7 +184,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 11:05 AM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 11:25 AM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -1186,21 +1201,51 @@ document.addEventListener('click',ev=>{
   else if(a==='reset'){if(confirm('Erase all workouts and logs on this device? Export a backup first if you want to keep them.')){S=DEFAULTS();save();location.hash='#/';route()}}
 });
 let audioCtx=null;
+function ding(f,ms,vol){
+  try{ if(audioCtx){const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='sine';o.connect(g);g.connect(audioCtx.destination);o.frequency.value=f;g.gain.setValueAtTime(vol||0.3,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+ms/1000);o.start();setTimeout(()=>{try{o.stop()}catch(e){}},ms+30)} }catch(e){}
+}
 function beep(){
-  try{ if(audioCtx){const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g);g.connect(audioCtx.destination);o.frequency.value=880;g.gain.value=0.25;o.start();setTimeout(()=>o.stop(),400)} }catch(e){}
-  try{ if(navigator.vibrate) navigator.vibrate([200,100,200]) }catch(e){}
+  ding(880,350);setTimeout(()=>ding(880,350),450);setTimeout(()=>ding(1175,700),900);
+  try{ if(navigator.vibrate) navigator.vibrate([200,100,200,100,300]) }catch(e){}
+}
+let TM=null;
+function closeTimer(){
+  if(!TM) return; clearInterval(TM.t); try{TM.wl&&TM.wl.release()}catch(e){}
+  const el=document.getElementById('tmr'); if(el) el.remove(); TM=null;
 }
 function runTimer(btn){
-  if(btn._t){clearInterval(btn._t);btn._t=null;btn.textContent=btn.dataset.label;return}
+  closeTimer();
   try{ const C=window.AudioContext||window.webkitAudioContext; if(C){audioCtx=audioCtx||new C(); if(audioCtx.state==='suspended') audioCtx.resume()} }catch(e){}
-  btn.dataset.label=btn.dataset.label||btn.textContent;
-  const end=Date.now()+(+btn.dataset.secs)*1000;
-  const tick=()=>{
-    const left=Math.ceil((end-Date.now())/1000);
-    if(left<=0){clearInterval(btn._t);btn._t=null;btn.textContent='Time! Tap to restart';beep();toast('Time!');return}
-    btn.textContent='Stop timer: '+left+' sec';
+  const total=+btn.dataset.secs||30;
+  const host=btn.closest('article.ex,li'); const nm=host&&host.querySelector('h3,.wh b'); const name=nm?nm.textContent:'Timer';
+  const R=88, C2=2*Math.PI*R;
+  const el=document.createElement('div'); el.id='tmr'; el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true'); el.setAttribute('aria-label','Timer');
+  el.innerHTML=`<div class="tbox"><p class="tname">${esc(name)}</p>
+    <div class="tring"><svg viewBox="0 0 200 200" aria-hidden="true"><circle class="tbg" cx="100" cy="100" r="${R}"/><circle class="tfg" cx="100" cy="100" r="${R}" stroke-dasharray="${C2}" stroke-dashoffset="0" transform="rotate(-90 100 100)"/></svg>
+    <div class="tnum" aria-live="off">${total}</div></div>
+    <p class="tsub">seconds left</p>
+    <div class="trow"><button class="btn teal" id="tpause">Pause</button><button class="btn" id="tclose">Close</button></div></div>`;
+  document.body.appendChild(el);
+  TM={end:Date.now()+total*1000,left:total,paused:false,dinged:false,done:false,t:null,wl:null};
+  try{ if(navigator.wakeLock) navigator.wakeLock.request('screen').then(w=>{TM?TM.wl=w:w.release()}).catch(()=>{}) }catch(e){}
+  const num=el.querySelector('.tnum'), fg=el.querySelector('.tfg'), sub=el.querySelector('.tsub'), pb=el.querySelector('#tpause');
+  const paint=left=>{
+    num.textContent=left; fg.style.strokeDashoffset=String(C2*(1-left/total));
+    el.classList.toggle('low',left<=10&&left>0);
   };
-  tick(); btn._t=setInterval(tick,250);
+  const tick=()=>{
+    if(!TM||TM.paused||TM.done) return;
+    const ms=TM.end-Date.now(); const left=Math.max(0,Math.ceil(ms/1000)); TM.left=left; paint(left);
+    if(left<=10&&left>0&&!TM.dinged&&total>10){TM.dinged=true;ding(1175,500,0.35)}
+    if(left<=0){TM.done=true;clearInterval(TM.t);num.textContent='Done';fg.style.strokeDashoffset=String(C2);el.classList.remove('low');el.classList.add('fin');sub.textContent='Nice work';pb.textContent='Again';beep()}
+  };
+  pb.onclick=()=>{
+    if(TM.done){closeTimer();runTimer(btn);return}
+    if(TM.paused){TM.paused=false;TM.end=Date.now()+TM.left*1000;pb.textContent='Pause';sub.textContent='seconds left'}
+    else{TM.paused=true;pb.textContent='Resume';sub.textContent='paused'}
+  };
+  el.querySelector('#tclose').onclick=closeTimer;
+  tick(); TM.t=setInterval(tick,200);
 }
 document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&U.swap){U.swap=null;render(true)}});
 function storeSet(t){
