@@ -207,7 +207,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 2:50 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 12:20 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -1216,7 +1216,7 @@ document.addEventListener('click',ev=>{
     if(!o.same.length&&!o.related.length) return toast('No other option fits your gear');
     U.swap={b:b.dataset.b,i:+b.dataset.i}; render(true);
   }
-  else if(a==='testsound'){unlockAudio();ding(880,250,0.4);setTimeout(()=>ding(1175,500,0.4),300);setTimeout(()=>ding(1320,700,0.4),700);toast('Test sound played')}
+  else if(a==='testsound'){haptic('success');unlockAudio();ding(880,250,0.4);setTimeout(()=>ding(1175,500,0.4),300);setTimeout(()=>ding(1320,700,0.4),700);toast('Test sound played')}
   else if(a==='warmdone'){const nowOn=!b.classList.contains('on'); haptic(nowOn?'done':'tick'); setWarm(b.dataset.id,nowOn)}
   else if(a==='calnav'){U.cal=Math.min(0,U.cal+(+b.dataset.d));render(true)}
   else if(a==='closesheet'){U.swap=null;render(true)}
@@ -1316,6 +1316,21 @@ function unlockAudio(){
   }catch(e){}
 }
 ['touchend','click','keydown'].forEach(ev=>document.addEventListener(ev,unlockAudio,{passive:true}));
+let hapEl=null, hapLast=0;
+function haptic(kind){
+  if(S.haptics===false) return;
+  const now=Date.now(); if(kind==='tick'&&now-hapLast<60) return; hapLast=now;
+  try{ if(navigator.vibrate){ navigator.vibrate(kind==='success'?[30,50,30,50,60]:kind==='done'?[25,45,25]:kind==='go'?[60,60,60]:12); return } }catch(e){}
+  try{ // iPhone Safari has no vibrate; a hidden switch control gives a tap when toggled
+    if(!hapEl){ hapEl=document.createElement('label'); hapEl.setAttribute('aria-hidden','true'); hapEl.style.cssText='position:fixed;left:-200px;top:0;opacity:0;pointer-events:none';
+      const i=document.createElement('input'); i.type='checkbox'; i.setAttribute('switch',''); i.tabIndex=-1; hapEl.appendChild(i); document.body.appendChild(hapEl) }
+    const pulse=()=>hapEl.click();
+    pulse();
+    if(kind==='done'){ setTimeout(pulse,80) }
+    else if(kind==='success'){ setTimeout(pulse,80); setTimeout(pulse,170); setTimeout(pulse,280) }
+    else if(kind==='go'){ setTimeout(pulse,90); setTimeout(pulse,180) }
+  }catch(e){}
+}
 function ding(f,ms,vol){
   if(S.sound==='off') return;
   if(S.engine==='player'){ try{ const a=playerEl(f,ms); a.currentTime=0; const p=a.play(); if(p&&p.catch) p.catch(()=>{}) }catch(e){} return }
