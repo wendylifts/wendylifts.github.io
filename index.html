@@ -203,7 +203,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 12:15 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 12:40 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -820,8 +820,8 @@ function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');cl
 
 function renderNav(){
   const items=[['workout','Workout','#/'],['progress','Progress','#/progress'],['settings','Gear & settings','#/settings']];
-  const nav=$('#nav'); nav.style.display=U.tab==='day'?'none':'';
-  nav.innerHTML=items.map(([k,l,h])=>`<a href="${h}" ${U.tab===k?'aria-current="page"':''}>${l}</a>`).join('');
+  const nav=$('#nav'); nav.style.display='';
+  nav.innerHTML=items.map(([k,l,h])=>`<a href="${h}" ${(U.tab===k||(U.tab==='day'&&k==='workout'))?'aria-current="page"':''}>${l}</a>`).join('');
 }
 function repText(e){return e.secs?e.secs+' sec':(e.lo===e.hi?e.lo:e.lo+'–'+e.hi)+' reps'}
 function presc(e){return `${e.sets} × ${repText(e)}`}
@@ -854,7 +854,7 @@ function exCard(w,e,i,block){
   const prev=lastBefore(e.id,wid,timed); const sg=suggest(ex,e,prev);
   const tgt=targetReps(e,sg);
   const s=S.sessions[wid]; const saved=(s&&s.sets[e.id])||[];
-  const showW=ex.l||ex.b;
+  const showW=!!ex.l;
   const unit=timed?'seconds':'reps';
   let rows='';
   for(let n=0;n<e.sets;n++){
