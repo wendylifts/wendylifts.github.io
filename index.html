@@ -209,7 +209,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 12:42 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 12:49 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -1166,7 +1166,7 @@ function afterSet(btn){
   if(!target){ const arts=[...document.querySelectorAll('article.ex')]; const nx=arts[arts.indexOf(art)+1];
     if(nx) target=nx.querySelector('button.ck:not(.on)')||nx; else atEnd=true }
   const w=getWorkout(U.wk,U.day); const list=block==='abs'?w.abs:w.main; const e=list[+i]; const ex=e&&exById(e.id);
-  if(S.autoRest!==false&&ex&&!e.grp&&(!ex.u||k==='lr')&&!atEnd&&!e.secs) startRest(e.rest||60);
+  if(S.autoRest!==false&&ex&&!e.grp&&(!ex.u||k==='lr')&&!atEnd) startRest(e.rest||60);
   if(atEnd){ const f=document.querySelector('[data-act="finish"]'); if(f) f.scrollIntoView({behavior:'smooth',block:'center'}); return }
   if(target) setTimeout(()=>target.scrollIntoView({behavior:'smooth',block:'center'}),80);
 }
@@ -1405,7 +1405,10 @@ function runTimer(btn){
     paint(left,total);
     if(left<=10&&left>0&&!TM.dinged&&total>10){TM.dinged=true;ding(1175,500,0.35)}
     if(left<=0){TM.done=true;clearInterval(TM.t);num.textContent='Done';fg.style.strokeDashoffset=String(C2);el.classList.remove('low');el.classList.add('fin');sub.textContent='Nice work';pb.textContent='Again';beep();
-      if(btn.dataset.warm) setWarm(btn.dataset.warm,true)}
+      if(btn.dataset.warm) setWarm(btn.dataset.warm,true);
+      else { const tm=TM; setTimeout(()=>{ // timed exercise finished: log the next open set (this also starts the rest)
+        if(!tm||TM!==tm||!tm.done) { if(TM&&TM!==tm) return }
+        const art=btn.closest('article.ex'); const ck=art&&[...art.querySelectorAll('button.ck')].find(x=>!x.classList.contains('on')); if(ck) ck.click() },2200) } }
   };
   pb.onclick=()=>{
     if(TM.done){closeTimer();runTimer(btn);return}
