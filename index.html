@@ -173,6 +173,25 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 #tmr.fin .tnum{font-size:min(16vw,60px);color:var(--ok)}
 #tmr .tsub{color:var(--muted);margin:6px 0 14px}
 #tmr .trow{display:flex;gap:10px;justify-content:center}
+.wck{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--line);background:var(--bg);color:var(--muted);font-weight:700;padding:0;flex:none;align-self:center}
+.wck.on{background:var(--ok);border-color:var(--ok);color:#fff}
+.warm .wh{align-items:center}
+.warm li.complete .wh b{color:var(--ok)}
+.ex.complete{border-color:var(--ok);box-shadow:inset 5px 0 0 var(--ok)}
+.ex.complete h3{color:var(--ok)}
+.ex.complete h3::after{content:" \2713"}
+.dprog{font-weight:600;color:var(--link);margin:2px 0 8px}
+#tmr.ready .tfg{stroke:#E8A317}
+#tmr.ready .tnum{color:#C98A00}
+#rest{position:fixed;left:12px;right:12px;bottom:14px;z-index:40;max-width:420px;margin:0 auto;background:var(--deep);color:#fff;border-radius:16px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 6px 20px rgba(0,0,0,.3)}
+#rest .rinfo{display:flex;align-items:baseline;gap:8px}
+#rest .rl{font-weight:600;opacity:.85}
+#rest .rn{font-family:var(--head);font-size:38px;line-height:1;font-variant-numeric:tabular-nums}
+#rest .rs{opacity:.8}
+#rest .rbtns{display:flex;gap:8px}
+#rest.low .rn{color:#FF9A7E}
+#rest.fin{background:var(--ok)}
+#rest .btn:not(.teal){background:rgba(255,255,255,.15);border-color:transparent;color:#fff}
 </style>
 </head>
 <body>
@@ -184,7 +203,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 11:25 AM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 12:15 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -861,7 +880,7 @@ function exCard(w,e,i,block){
   const yt='https://www.youtube.com/results?search_query='+encodeURIComponent(ex.n+' exercise form');
   const musc=muscOf(ex);
   const aim=timed?`Aim for ${e.secs} seconds${ex.u?' each side':''} per set.`:`Aim for ${tgt} reps per set${ex.u?' on each side':''}. Your range is ${e.lo}–${e.hi}.`;
-  return `<article class="ex">
+  return `<article class="ex" data-card="${block}|${i}" data-needw="${ex.l?1:0}">
     <div class="ex-head"><div class="nm">${grp}<h3>${esc(ex.n)}</h3></div>
       <div class="presc">${presc(e)}<small>rest ${e.grp&&w.format==='circuit'?'after the round':e.rest+' sec'}</small></div></div>
     <div class="tags">${musc?`<span>Works: ${esc(musc)}</span>`:''}${tags.map(t=>`<span>${esc(t)}</span>`).join('')}${ex.k>0?'<span>Stop at pain-free depth</span>':''}</div>
@@ -945,9 +964,10 @@ function renderDay(){
   const warm=w.warm.map(x=>{const ex=exById(x.id);
     const steps=HOWTO[x.id]||['Move slowly and smoothly.','Stop if anything pinches.'];
     const yt='https://www.youtube.com/results?search_query='+encodeURIComponent(ex.n+' exercise form');
-    return `<li><div class="wh"><b>${esc(ex.n)}</b><span>${x.secs} sec</span></div><p class="note">${esc(ex.cue)}</p>
+    const wd=!!((S.sessions[w.id]||{}).warm||{})[x.id];
+    return `<li class="${wd?'complete':''}" data-warm="${x.id}"><div class="wh"><button class="wck ${wd?'on':''}" data-act="warmdone" data-id="${x.id}" aria-pressed="${wd}" aria-label="Mark ${esc(ex.n)} done">✓</button><b>${esc(ex.n)}</b><span>${x.secs} sec</span></div><p class="note">${esc(ex.cue)}</p>
       <details class="how"><summary>How to</summary><ol>${steps.map(t=>`<li>${esc(t)}</li>`).join('')}</ol><a href="${yt}" target="_blank" rel="noopener">Find a demo video</a></details>
-      <div class="ex-actions"><button class="btn small teal" data-act="timer" data-secs="${x.secs}">Start ${x.secs} sec timer</button></div></li>`}).join('');
+      <div class="ex-actions"><button class="btn small teal" data-act="timer" data-secs="${x.secs}" data-warm="${x.id}">Start ${x.secs} sec timer</button></div></li>`}).join('');
   const finIdx=w.main.findIndex(e=>e.fin);
   let mainHtml='';
   w.main.forEach((e,i)=>{
@@ -964,6 +984,7 @@ function renderDay(){
   <div class="hero"><h2>${f.n}</h2><span class="note">${DOWL[d.getDay()]}, ${fmtShort(d)}</span></div>
   <div class="meta"><span class="chip">About ${w.min} min</span><span class="chip">${FMTN[w.format]}</span><span class="chip">Abs included</span><span class="chip">No jumping</span><label class="datef">Date done <input type="date" id="wdate" value="${dateVal}"></label></div>
   <p class="note">${esc(f.d)} ${esc(fmtNote)}</p>
+  <p class="dprog" id="dprog" aria-live="polite"></p>
   <div class="sec"><h3>Warm-up</h3><span class="t">about 5 min</span></div>
   <div class="warm"><ul>${warm}</ul></div>
   <div class="sec"><h3>Strength</h3><span class="t">${w.main.length} moves</span></div>
@@ -1066,6 +1087,7 @@ function renderSettings(){
   return `<h2>Gear & settings</h2>
   <div class="card" style="margin-top:12px"><h3>Workout days</h3>
     <div class="row">${[0,1,2,3].map(n=>`<select data-day="${n}" aria-label="Day ${n+1}">${dayOpts(n)}</select>`).join('')}</div>
+    <label class="chk" style="margin:4px 0"><input type="checkbox" id="autorest" ${S.autoRest!==false?'checked':''}>Start a rest timer when I tap a set's ✓</label>
     <div class="row"><label for="tgt">Target length (minutes)</label><input id="tgt" type="number" min="25" max="90" step="5" value="${S.target}" style="width:90px"></div>
     <div class="row"><label for="knee">Knee comfort</label>
       <select id="knee"><option value="0" ${S.knee===0?'selected':''}>Strict: hip-dominant and cable moves only</option>
@@ -1095,10 +1117,57 @@ function renderSettings(){
       <button class="btn ghost" data-act="reset">Erase everything</button></div></div>`;
 }
 
+let RT=null;
+function stopRest(){ if(RT){clearInterval(RT.t); RT=null} const r=document.getElementById('rest'); if(r) r.remove() }
+function startRest(secs,label){
+  stopRest(); closeTimer();
+  try{ const C=window.AudioContext||window.webkitAudioContext; if(C){audioCtx=audioCtx||new C(); if(audioCtx.state==='suspended') audioCtx.resume()} }catch(e){}
+  const el=document.createElement('div'); el.id='rest'; el.setAttribute('role','status');
+  el.innerHTML=`<div class="rinfo"><span class="rl">Rest</span><b class="rn">${secs}</b><span class="rs">sec</span></div><div class="rbtns"><button class="btn small" id="rplus">+15</button><button class="btn small teal" id="rskip">Skip</button></div>`;
+  document.body.appendChild(el);
+  RT={end:Date.now()+secs*1000,t:null,dinged:false,done:false};
+  const n=el.querySelector('.rn'), l=el.querySelector('.rl');
+  const tick=()=>{ if(!RT) return;
+    const left=Math.max(0,Math.ceil((RT.end-Date.now())/1000)); n.textContent=left;
+    el.classList.toggle('low',left<=10&&left>0);
+    if(left<=10&&left>0&&!RT.dinged&&secs>15){RT.dinged=true;ding(1175,400,0.3)}
+    if(left<=0&&!RT.done){RT.done=true;clearInterval(RT.t);l.textContent='Go!';n.textContent='';el.classList.add('fin');ding(880,250,0.35);setTimeout(()=>ding(1320,500,0.4),300);try{navigator.vibrate&&navigator.vibrate([150,80,150])}catch(e){} setTimeout(()=>{if(RT&&RT.done)stopRest()},4000)}
+  };
+  el.querySelector('#rskip').onclick=stopRest;
+  el.querySelector('#rplus').onclick=()=>{ if(!RT) return; if(RT.done){RT.done=false;RT.dinged=true;l.textContent='Rest';el.classList.remove('fin');RT.end=Date.now()+15000;RT.t=setInterval(tick,250)} else RT.end+=15000; tick() };
+  tick(); RT.t=setInterval(tick,250);
+}
+function afterSet(btn){
+  const [block,i,n,k]=btn.dataset.set.split('|'); const art=btn.closest('article.ex'); if(!art) return;
+  let target=[...art.querySelectorAll('button.ck')].find(x=>!x.classList.contains('on'));
+  let atEnd=false;
+  if(!target){ const arts=[...document.querySelectorAll('article.ex')]; const nx=arts[arts.indexOf(art)+1];
+    if(nx) target=nx.querySelector('button.ck:not(.on)')||nx; else atEnd=true }
+  const w=getWorkout(U.wk,U.day); const list=block==='abs'?w.abs:w.main; const e=list[+i]; const ex=e&&exById(e.id);
+  if(S.autoRest!==false&&ex&&!e.grp&&(!ex.u||k==='lr')&&!atEnd&&!e.secs) startRest(e.rest||60);
+  if(atEnd){ const f=document.querySelector('[data-act="finish"]'); if(f) f.scrollIntoView({behavior:'smooth',block:'center'}); return }
+  if(target) setTimeout(()=>target.scrollIntoView({behavior:'smooth',block:'center'}),80);
+}
+function setWarm(id,on){
+  const w=getWorkout(U.wk,U.day); if(!w) return; const se=sess(w.id); se.warm=se.warm||{};
+  if(on) se.warm[id]=1; else delete se.warm[id]; save();
+  const li=document.querySelector(`li[data-warm="${id}"]`);
+  if(li){li.classList.toggle('complete',!!on); const b=li.querySelector('.wck'); if(b){b.classList.toggle('on',!!on); b.setAttribute('aria-pressed',String(!!on))}}
+  updateDone();
+}
+function updateDone(){
+  const cards=[...document.querySelectorAll('article.ex[data-card]')]; if(!cards.length&&!document.querySelector('li[data-warm]')) return;
+  let done=0;
+  cards.forEach(c=>{const needw=c.dataset.needw==='1'; const ins=[...c.querySelectorAll('input[data-set]')].filter(x=>needw||/\|l?r$/.test(x.dataset.set)); const ok=ins.length>0&&ins.every(x=>x.value.trim()!==''); c.classList.toggle('complete',ok); if(ok) done++});
+  const wl=[...document.querySelectorAll('li[data-warm]')]; wl.forEach(l=>{if(l.classList.contains('complete')) done++});
+  const total=cards.length+wl.length; const p=document.getElementById('dprog');
+  if(p) p.textContent=total?(done===total?'All '+total+' done. Tap Finish workout below.':done+' of '+total+' done'):'';
+}
 function render(keep){
   const y=window.scrollY;
   renderNav();
   $('#app').innerHTML=U.tab==='day'?renderDay():U.tab==='progress'?renderProgress():U.tab==='settings'?renderSettings():renderHome();
+  updateDone();
   if(keep) window.scrollTo(0,y);
 }
 
@@ -1133,6 +1202,7 @@ document.addEventListener('click',ev=>{
     if(!o.same.length&&!o.related.length) return toast('No other option fits your gear');
     U.swap={b:b.dataset.b,i:+b.dataset.i}; render(true);
   }
+  else if(a==='warmdone'){setWarm(b.dataset.id,!b.classList.contains('on'))}
   else if(a==='calnav'){U.cal=Math.min(0,U.cal+(+b.dataset.d));render(true)}
   else if(a==='closesheet'){U.swap=null;render(true)}
   else if(a==='setdone'){
@@ -1140,7 +1210,8 @@ document.addEventListener('click',ev=>{
     const on=b.classList.contains('on');
     if(on) ri.value=''; else if(!ri.value) ri.value=ri.dataset.target;
     const wi=document.querySelector(`input[data-set="${b.dataset.set.replace(/r$/,'w')}"]`); if(wi) wi.classList.remove('pre');
-    storeSet(ri); b.classList.toggle('on',!on); b.setAttribute('aria-pressed',String(!on)); save();
+    storeSet(ri); b.classList.toggle('on',!on); b.setAttribute('aria-pressed',String(!on)); save(); updateDone();
+    if(!on) afterSet(b);
   }
   else if(a==='adjust'){
     const w=getWorkout(U.wk,U.day); const list=b.dataset.b==='abs'?w.abs:w.main; const e=list[+b.dataset.i];
@@ -1214,34 +1285,40 @@ function closeTimer(){
   const el=document.getElementById('tmr'); if(el) el.remove(); TM=null;
 }
 function runTimer(btn){
-  closeTimer();
+  closeTimer(); stopRest();
   try{ const C=window.AudioContext||window.webkitAudioContext; if(C){audioCtx=audioCtx||new C(); if(audioCtx.state==='suspended') audioCtx.resume()} }catch(e){}
-  const total=+btn.dataset.secs||30;
+  const total=+btn.dataset.secs||30, READY=5;
   const host=btn.closest('article.ex,li'); const nm=host&&host.querySelector('h3,.wh b'); const name=nm?nm.textContent:'Timer';
   const R=88, C2=2*Math.PI*R;
-  const el=document.createElement('div'); el.id='tmr'; el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true'); el.setAttribute('aria-label','Timer');
+  const el=document.createElement('div'); el.id='tmr'; el.className='ready'; el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true'); el.setAttribute('aria-label','Timer');
   el.innerHTML=`<div class="tbox"><p class="tname">${esc(name)}</p>
     <div class="tring"><svg viewBox="0 0 200 200" aria-hidden="true"><circle class="tbg" cx="100" cy="100" r="${R}"/><circle class="tfg" cx="100" cy="100" r="${R}" stroke-dasharray="${C2}" stroke-dashoffset="0" transform="rotate(-90 100 100)"/></svg>
-    <div class="tnum" aria-live="off">${total}</div></div>
-    <p class="tsub">seconds left</p>
+    <div class="tnum" aria-live="off">${READY}</div></div>
+    <p class="tsub">Get ready</p>
     <div class="trow"><button class="btn teal" id="tpause">Pause</button><button class="btn" id="tclose">Close</button></div></div>`;
   document.body.appendChild(el);
-  TM={end:Date.now()+total*1000,left:total,paused:false,dinged:false,done:false,t:null,wl:null};
+  TM={phase:'ready',end:Date.now()+READY*1000,left:READY,last:READY+1,paused:false,dinged:false,done:false,t:null,wl:null};
   try{ if(navigator.wakeLock) navigator.wakeLock.request('screen').then(w=>{TM?TM.wl=w:w.release()}).catch(()=>{}) }catch(e){}
   const num=el.querySelector('.tnum'), fg=el.querySelector('.tfg'), sub=el.querySelector('.tsub'), pb=el.querySelector('#tpause');
-  const paint=left=>{
-    num.textContent=left; fg.style.strokeDashoffset=String(C2*(1-left/total));
-    el.classList.toggle('low',left<=10&&left>0);
-  };
+  const paint=(left,max)=>{ num.textContent=left; fg.style.strokeDashoffset=String(C2*(1-left/max)); el.classList.toggle('low',TM.phase==='run'&&left<=10&&left>0) };
   const tick=()=>{
     if(!TM||TM.paused||TM.done) return;
-    const ms=TM.end-Date.now(); const left=Math.max(0,Math.ceil(ms/1000)); TM.left=left; paint(left);
+    const left=Math.max(0,Math.ceil((TM.end-Date.now())/1000)); TM.left=left;
+    if(TM.phase==='ready'){
+      if(left>0){ if(left!==TM.last){TM.last=left;ding(660,160,0.3)} paint(left,READY); return }
+      TM.phase='run'; TM.end=Date.now()+total*1000; TM.left=total; TM.dinged=false;
+      el.classList.remove('ready'); sub.textContent='seconds left'; paint(total,total); ding(1320,700,0.4);
+      try{ if(navigator.vibrate) navigator.vibrate(150) }catch(e){}
+      return;
+    }
+    paint(left,total);
     if(left<=10&&left>0&&!TM.dinged&&total>10){TM.dinged=true;ding(1175,500,0.35)}
-    if(left<=0){TM.done=true;clearInterval(TM.t);num.textContent='Done';fg.style.strokeDashoffset=String(C2);el.classList.remove('low');el.classList.add('fin');sub.textContent='Nice work';pb.textContent='Again';beep()}
+    if(left<=0){TM.done=true;clearInterval(TM.t);num.textContent='Done';fg.style.strokeDashoffset=String(C2);el.classList.remove('low');el.classList.add('fin');sub.textContent='Nice work';pb.textContent='Again';beep();
+      if(btn.dataset.warm) setWarm(btn.dataset.warm,true)}
   };
   pb.onclick=()=>{
     if(TM.done){closeTimer();runTimer(btn);return}
-    if(TM.paused){TM.paused=false;TM.end=Date.now()+TM.left*1000;pb.textContent='Pause';sub.textContent='seconds left'}
+    if(TM.paused){TM.paused=false;TM.end=Date.now()+TM.left*1000;pb.textContent='Pause';sub.textContent=TM.phase==='ready'?'Get ready':'seconds left'}
     else{TM.paused=true;pb.textContent='Resume';sub.textContent='paused'}
   };
   el.querySelector('#tclose').onclick=closeTimer;
@@ -1266,6 +1343,7 @@ document.addEventListener('input',ev=>{
       const ck=document.querySelector(`[data-act="setdone"][data-set="${t.dataset.set}"]`);
       if(ck){const on=t.value!==''; ck.classList.toggle('on',on); ck.setAttribute('aria-pressed',String(on))}
     }
+    updateDone();
     clearTimeout(window.__sv); window.__sv=setTimeout(save,250);
   }
 });
@@ -1274,6 +1352,7 @@ document.addEventListener('change',ev=>{
   if(t.id==='exsel'){U.sel=t.value;render(true)}
   else if(t.dataset.gear){S.gear[t.dataset.gear]=t.checked;save()}
   else if(t.id==='knee'){S.knee=+t.value;save()}
+  else if(t.id==='autorest'){S.autoRest=t.checked;save(); if(!t.checked) stopRest()}
   else if(t.id==='wdate'){
     if(!t.value) return;
     const w=getWorkout(U.wk,U.day); const se=sess(w.id); se.date=t.value; if(se.done) se.done=t.value;
