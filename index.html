@@ -184,6 +184,11 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 .ex.complete{border-color:var(--ok);box-shadow:inset 5px 0 0 var(--ok)}
 .ex.current{scroll-margin-top:12px;border-color:#F59E0B;border-width:2px;box-shadow:inset 6px 0 0 #F59E0B,0 0 0 3px rgba(245,158,11,.25)}
 .ex.current:not(.started) h3::before{content:"UP NEXT ";font-size:.6em;letter-spacing:.06em;color:#B45309;background:#FEF3C7;border-radius:6px;padding:2px 6px;margin-right:6px;vertical-align:middle}
+.xnote{background:#FEF3C7;color:#5B3A06;border-left:4px solid #F59E0B;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:15px}
+.xnote b{display:block;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#92400E}
+.xnote small{color:#92400E}
+.nbox textarea{width:100%;box-sizing:border-box;font:inherit;border:1.5px solid var(--line);border-radius:10px;padding:8px;background:var(--surface);color:var(--ink);margin:4px 0 8px;resize:vertical}
+@media (prefers-color-scheme:dark){.xnote{background:#3A2C0B;color:#FDE9B0;border-left-color:#F59E0B}.xnote b,.xnote small{color:#FBBF24}}
 .fin-badge{background:var(--ok);border-color:var(--ok);color:#fff;cursor:default}
 .ex.skipped{opacity:.6;border-style:dashed}
 .ex.skipped h3::after{content:" (skipped)";font-size:.6em;color:var(--mut,#5b7083)}
@@ -212,7 +217,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 1:14 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 3:11 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -885,6 +890,11 @@ function coachNote(ex){
   if(ex.pat.includes('shoulder')) return 'Coach: go by the clock here. Light weight, slow and controlled, and keep your shoulder blades steady.';
   return 'Coach: go by the clock here. Steady, controlled work for the full time.';
 }
+function noteHtml(id){
+  const n=(S.notes||{})[id]; const has=n&&n.t&&n.t.trim();
+  return `<div class="xnote" data-nshow="${id}" ${has?'':'hidden'}><b>Your note</b><span data-ntxt>${has?esc(n.t):''}</span><small>${has&&n.d?' ('+esc(n.d)+')':''}</small></div>
+    <div class="nbox" data-nbox="${id}" hidden><textarea data-note="${id}" rows="3" maxlength="500" placeholder="Jot a note, like which band or seat setting. It will show up next time this exercise comes up.">${has?esc(n.t):''}</textarea></div>`;
+}
 function exCard(w,e,i,block){
   const ex=exById(e.id); if(!ex) return '';
   const wid=w.id; const timed=!!e.secs;
@@ -929,6 +939,7 @@ function exCard(w,e,i,block){
     ${timed?`<p class="coach">${esc(coachNote(ex))}</p>`:''}
     ${adjustPanel(w,e,ex,block,i)}
     <p class="last">${prev?`Last time: <b>${fmtRows(prev.rows)}</b>. ${esc(sg.text)}`:(showW?'No history yet. Pick a weight that leaves 2 reps in the tank.':'No history yet. Stop each set with about 2 reps left in the tank.')}</p>
+    ${noteHtml(e.id)}
     ${isCable(ex)&&showW?'<p class="note">Log the number of plates on the stack. One plate is about 7 lb.</p>':''}
     <div class="sets ${showW?'':'nw'}">${showW?'<span></span><span class="hd">Weight ('+wu(ex)+')</span>':'<span></span>'}<span class="hd">${timed?'Seconds':'Reps'}</span><span></span>${rows}</div>
     <div class="ex-actions">
@@ -936,6 +947,7 @@ function exCard(w,e,i,block){
       <button class="btn small" data-act="adjust" data-b="${block}" data-i="${i}">Adjust sets or reps</button>
       <button class="btn small" data-act="swap" data-b="${block}" data-i="${i}">Swap for another</button>
       <button class="btn small ${(S.fav||[]).includes(e.id)?'favon':''}" data-act="fav" data-id="${e.id}" aria-pressed="${(S.fav||[]).includes(e.id)}">${(S.fav||[]).includes(e.id)?'♥ Favorite':'♡ Favorite'}</button>
+      <button class="btn small" data-act="note" data-id="${e.id}">${(S.notes&&S.notes[e.id]&&S.notes[e.id].t)?'Edit note':'Add note'}</button>
       <button class="btn small ${skipped?'teal':''}" data-act="skip" data-id="${e.id}">${skipped?'Undo skip':'Skip this one today'}</button>
       <button class="btn small ghost" data-act="hide" data-b="${block}" data-i="${i}">Never show this</button>
     </div></article>`;
@@ -1273,6 +1285,7 @@ document.addEventListener('click',ev=>{
     location.hash=(n===0)?'#/':'#/week/'+(S.start&&wk<S.start?S.start:wk);
     if(n===0&&location.hash==='#/') route();
   }
+  else if(a==='note'){const id=b.dataset.id; const art=b.closest('article.ex'); const box=art&&art.querySelector(`[data-nbox="${id}"]`); if(box){box.hidden=!box.hidden; if(!box.hidden){const ta=box.querySelector('textarea'); ta.focus(); try{ta.setSelectionRange(ta.value.length,ta.value.length)}catch(e){}}}}
   else if(a==='skip'){const w=getWorkout(U.wk,U.day);const se=sess(w.id);se.skip=se.skip||{};const id=b.dataset.id; if(se.skip[id]) delete se.skip[id]; else se.skip[id]=1; save(); render(true); toast(se.skip[id]?'Skipped. It won\'t count against this workout.':'Skip undone')}
   else if(a==='editwo'){const w=getWorkout(U.wk,U.day);const se=sess(w.id);delete se.done;save();render(true);toast('Workout reopened. Tap Finish workout when you are done.')}
   else if(a==='cooldone'){const nowOn=!b.classList.contains('on'); haptic(nowOn?'done':'tick'); setCool(b.dataset.id,nowOn)}
@@ -1488,6 +1501,13 @@ function storeSet(t){
 }
 document.addEventListener('input',ev=>{
   const t=ev.target;
+  if(t.dataset&&t.dataset.note){
+    const id=t.dataset.note; S.notes=S.notes||{}; const txt=t.value;
+    if(txt.trim()) S.notes[id]={t:txt,d:fmtShort(new Date())}; else delete S.notes[id];
+    document.querySelectorAll(`[data-nshow="${id}"]`).forEach(el=>{ const has=!!txt.trim(); el.hidden=!has; const sp=el.querySelector('[data-ntxt]'); if(sp) sp.textContent=txt; const sm=el.querySelector('small'); if(sm) sm.textContent=has?' ('+S.notes[id].d+')':'' });
+    document.querySelectorAll(`[data-act="note"][data-id="${id}"]`).forEach(bt=>bt.textContent=txt.trim()?'Edit note':'Add note');
+    clearTimeout(window.__sv); window.__sv=setTimeout(save,250); return;
+  }
   if(t.dataset&&t.dataset.set){
     t.classList.remove('pre'); storeSet(t);
     if(/\|l?r$/.test(t.dataset.set)){
