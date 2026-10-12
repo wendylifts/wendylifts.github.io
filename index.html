@@ -204,7 +204,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 1:10 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 1:30 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -1088,6 +1088,7 @@ function renderSettings(){
   return `<h2>Gear & settings</h2>
   <div class="card" style="margin-top:12px"><h3>Workout days</h3>
     <div class="row">${[0,1,2,3].map(n=>`<select data-day="${n}" aria-label="Day ${n+1}">${dayOpts(n)}</select>`).join('')}</div>
+    <label class="chk" style="margin:4px 0"><input type="checkbox" id="haptics" ${S.haptics!==false?'checked':''}>Haptic taps (when your phone allows it)</label>
     <label class="chk" style="margin:4px 0"><input type="checkbox" id="autorest" ${S.autoRest!==false?'checked':''}>Start a rest timer when I tap a set's ✓</label>
     <div class="row"><label for="tgt">Target length (minutes)</label><input id="tgt" type="number" min="25" max="90" step="5" value="${S.target}" style="width:90px"></div>
     <div class="row"><label for="knee">Knee comfort</label>
@@ -1132,7 +1133,7 @@ function startRest(secs,label){
     const left=Math.max(0,Math.ceil((RT.end-Date.now())/1000)); n.textContent=left;
     el.classList.toggle('low',left<=10&&left>0);
     if(left<=10&&left>0&&!RT.dinged&&secs>15){RT.dinged=true;ding(1175,400,0.3)}
-    if(left<=0&&!RT.done){RT.done=true;clearInterval(RT.t);l.textContent='Go!';n.textContent='';el.classList.add('fin');ding(880,250,0.35);setTimeout(()=>ding(1320,500,0.4),300);try{navigator.vibrate&&navigator.vibrate([150,80,150])}catch(e){} setTimeout(()=>{if(RT&&RT.done)stopRest()},4000)}
+    if(left<=0&&!RT.done){RT.done=true;clearInterval(RT.t);l.textContent='Go!';n.textContent='';el.classList.add('fin');ding(880,250,0.35);setTimeout(()=>ding(1320,500,0.4),300);haptic('go'); setTimeout(()=>{if(RT&&RT.done)stopRest()},4000)}
   };
   el.querySelector('#rskip').onclick=stopRest;
   el.querySelector('#rplus').onclick=()=>{ if(!RT) return; if(RT.done){RT.done=false;RT.dinged=true;l.textContent='Rest';el.classList.remove('fin');RT.end=Date.now()+15000;RT.t=setInterval(tick,250)} else RT.end+=15000; tick() };
@@ -1156,10 +1157,10 @@ function setWarm(id,on){
   if(li){li.classList.toggle('complete',!!on); const b=li.querySelector('.wck'); if(b){b.classList.toggle('on',!!on); b.setAttribute('aria-pressed',String(!!on))}}
   updateDone();
 }
-function updateDone(){
+function updateDone(user){
   const cards=[...document.querySelectorAll('article.ex[data-card]')]; if(!cards.length&&!document.querySelector('li[data-warm]')) return;
   let done=0;
-  cards.forEach(c=>{const needw=c.dataset.needw==='1'; const ins=[...c.querySelectorAll('input[data-set]')].filter(x=>needw||/\|l?r$/.test(x.dataset.set)); const ok=ins.length>0&&ins.every(x=>x.value.trim()!==''); c.classList.toggle('complete',ok); if(ok) done++});
+  cards.forEach(c=>{const was=c.classList.contains('complete'); const needw=c.dataset.needw==='1'; const ins=[...c.querySelectorAll('input[data-set]')].filter(x=>needw||/\|l?r$/.test(x.dataset.set)); const ok=ins.length>0&&ins.every(x=>x.value.trim()!==''); c.classList.toggle('complete',ok); if(ok) done++; if(user&&ok&&!was) haptic('success')});
   const wl=[...document.querySelectorAll('li[data-warm]')]; wl.forEach(l=>{if(l.classList.contains('complete')) done++});
   const total=cards.length+wl.length; const p=document.getElementById('dprog');
   if(p) p.textContent=total?(done===total?'All '+total+' done. Tap Finish workout below.':done+' of '+total+' done'):'';
@@ -1203,7 +1204,7 @@ document.addEventListener('click',ev=>{
     if(!o.same.length&&!o.related.length) return toast('No other option fits your gear');
     U.swap={b:b.dataset.b,i:+b.dataset.i}; render(true);
   }
-  else if(a==='warmdone'){setWarm(b.dataset.id,!b.classList.contains('on'))}
+  else if(a==='warmdone'){const nowOn=!b.classList.contains('on'); haptic(nowOn?'done':'tick'); setWarm(b.dataset.id,nowOn)}
   else if(a==='calnav'){U.cal=Math.min(0,U.cal+(+b.dataset.d));render(true)}
   else if(a==='closesheet'){U.swap=null;render(true)}
   else if(a==='setdone'){
@@ -1211,7 +1212,7 @@ document.addEventListener('click',ev=>{
     const on=b.classList.contains('on');
     if(on) ri.value=''; else if(!ri.value) ri.value=ri.dataset.target;
     const wi=document.querySelector(`input[data-set="${b.dataset.set.replace(/r$/,'w')}"]`); if(wi) wi.classList.remove('pre');
-    storeSet(ri); b.classList.toggle('on',!on); b.setAttribute('aria-pressed',String(!on)); save(); updateDone();
+    storeSet(ri); b.classList.toggle('on',!on); b.setAttribute('aria-pressed',String(!on)); save(); haptic(on?'tick':'done'); updateDone(true);
     clearTimeout(b._rt); delete b.dataset.pend;
     if(!on) afterSet(b);
   }
@@ -1274,12 +1275,27 @@ document.addEventListener('click',ev=>{
   else if(a==='reset'){if(confirm('Erase all workouts and logs on this device? Export a backup first if you want to keep them.')){S=DEFAULTS();save();location.hash='#/';route()}}
 });
 let audioCtx=null;
+let hapEl=null, hapLast=0;
+function haptic(kind){
+  if(S.haptics===false) return;
+  const now=Date.now(); if(kind==='tick'&&now-hapLast<60) return; hapLast=now;
+  try{ if(navigator.vibrate){ navigator.vibrate(kind==='success'?[30,50,30,50,60]:kind==='done'?[25,45,25]:kind==='go'?[60,60,60]:12); return } }catch(e){}
+  try{ // iPhone Safari has no vibrate; a hidden switch control gives a tap when toggled
+    if(!hapEl){ hapEl=document.createElement('label'); hapEl.setAttribute('aria-hidden','true'); hapEl.style.cssText='position:fixed;left:-200px;top:0;opacity:0;pointer-events:none';
+      const i=document.createElement('input'); i.type='checkbox'; i.setAttribute('switch',''); i.tabIndex=-1; hapEl.appendChild(i); document.body.appendChild(hapEl) }
+    const pulse=()=>hapEl.click();
+    pulse();
+    if(kind==='done'){ setTimeout(pulse,80) }
+    else if(kind==='success'){ setTimeout(pulse,80); setTimeout(pulse,170); setTimeout(pulse,280) }
+    else if(kind==='go'){ setTimeout(pulse,90); setTimeout(pulse,180) }
+  }catch(e){}
+}
 function ding(f,ms,vol){
   try{ if(audioCtx){const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type='sine';o.connect(g);g.connect(audioCtx.destination);o.frequency.value=f;g.gain.setValueAtTime(vol||0.3,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+ms/1000);o.start();setTimeout(()=>{try{o.stop()}catch(e){}},ms+30)} }catch(e){}
 }
 function beep(){
   ding(880,350);setTimeout(()=>ding(880,350),450);setTimeout(()=>ding(1175,700),900);
-  try{ if(navigator.vibrate) navigator.vibrate([200,100,200,100,300]) }catch(e){}
+  haptic('success');
 }
 let TM=null;
 function closeTimer(){
@@ -1310,7 +1326,7 @@ function runTimer(btn){
       if(left>0){ if(left!==TM.last){TM.last=left;ding(660,160,0.3)} paint(left,READY); return }
       TM.phase='run'; TM.end=Date.now()+total*1000; TM.left=total; TM.dinged=false;
       el.classList.remove('ready'); sub.textContent='seconds left'; paint(total,total); ding(1320,700,0.4);
-      try{ if(navigator.vibrate) navigator.vibrate(150) }catch(e){}
+      haptic('go');
       return;
     }
     paint(left,total);
@@ -1340,11 +1356,11 @@ function storeSet(t){
 document.addEventListener('input',ev=>{
   const t=ev.target;
   if(t.dataset&&t.dataset.set){
-    t.classList.remove('pre'); storeSet(t);
+    t.classList.remove('pre'); storeSet(t); haptic('tick');
     if(/\|l?r$/.test(t.dataset.set)){
       const ck=document.querySelector(`[data-act="setdone"][data-set="${t.dataset.set}"]`);
       if(ck){
-        const wasOn=ck.classList.contains('on'); const on=t.value!==''; ck.classList.toggle('on',on); ck.setAttribute('aria-pressed',String(on));
+        const wasOn=ck.classList.contains('on'); const on=t.value!==''; ck.classList.toggle('on',on); ck.setAttribute('aria-pressed',String(on)); if(on&&!wasOn) haptic('done');
         // finished typing reps for a new set: start rest and move on after a short pause
         if(!on){ clearTimeout(ck._rt); delete ck.dataset.pend }
         else if(!wasOn||ck.dataset.pend){
@@ -1353,7 +1369,7 @@ document.addEventListener('input',ev=>{
         }
       }
     }
-    updateDone();
+    updateDone(true);
     clearTimeout(window.__sv); window.__sv=setTimeout(save,250);
   }
 });
@@ -1362,6 +1378,7 @@ document.addEventListener('change',ev=>{
   if(t.id==='exsel'){U.sel=t.value;render(true)}
   else if(t.dataset.gear){S.gear[t.dataset.gear]=t.checked;save()}
   else if(t.id==='knee'){S.knee=+t.value;save()}
+  else if(t.id==='haptics'){S.haptics=t.checked;save(); if(t.checked) haptic('done')}
   else if(t.id==='autorest'){S.autoRest=t.checked;save(); if(!t.checked) stopRest()}
   else if(t.id==='wdate'){
     if(!t.value) return;
