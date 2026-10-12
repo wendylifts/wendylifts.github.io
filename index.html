@@ -154,6 +154,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 .cd.part{border:2px solid var(--lane)}
 .cd.today{box-shadow:0 0 0 2px var(--buoy)}
 .btn:disabled{opacity:.4;cursor:default}
+.btn.favon{border-color:var(--buoy);color:var(--buoy);font-weight:600}
 </style>
 </head>
 <body>
@@ -165,7 +166,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 10:25 AM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 10:50 AM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -443,7 +444,7 @@ const BASE = RAW.trim().split('\n').map(parseLine);
 const KEY='swimlift.v1';
 let memStore=null;
 const DEFAULTS = () => ({v:1,start:null,gear:Object.fromEntries(GEAR.map(g=>[g[0],true])),knee:1,target:45,
-  days:[1,2,4,6],planV:3,avoid:[],custom:[],weeks:{},regen:{},sessions:{}});
+  days:[1,2,4,6],planV:3,avoid:[],fav:[],custom:[],weeks:{},regen:{},sessions:{}});
 function loadState(){
   let s=null;
   try{const t=localStorage.getItem(KEY); if(t) s=JSON.parse(t)}catch(e){}
@@ -551,7 +552,7 @@ function build(rng,focus,phi,hist,seedTag){
   const prevSame=[...hist].reverse().find(w=>w.focus===focus);
   const prevIds=new Set(prevSame?[...prevSame.main,...prevSame.abs].map(e=>e.id):[]);
   const used=new Set();
-  const wf=x=>(1/(1+(recent[x.id]||0)*0.8))*(prevIds.has(x.id)?0.3:1);
+  const wf=x=>(1/(1+(recent[x.id]||0)*0.8))*(prevIds.has(x.id)?0.3:1)*(S.fav&&S.fav.includes(x.id)?2.5:1);
   const pick=(pats,f)=>{
     const c=all.filter(x=>!used.has(x.id)&&x.pat.some(p=>pats.includes(p))&&(!f||x.f.includes(f)));
     const x=weightedPick(c,wf,rng); if(x) used.add(x.id); return x;
@@ -717,6 +718,7 @@ function altOptions(w,block,i){
     const rel=new Set(); pats.forEach(p=>(RELATED[p]||[]).forEach(r=>rel.add(r)));
     related=lib().filter(x=>ok(x)&&!same.includes(x)&&x.pat.some(p=>rel.has(p))&&!x.pat.includes('comp')&&!x.pat.includes('warm'));
   }
+  const fv=x=>(S.fav||[]).includes(x.id)?0:1; same.sort((a,b)=>fv(a)-fv(b)); related.sort((a,b)=>fv(a)-fv(b));
   return {same,related};
 }
 function swapEntry(w,idx,blockName,exId){
@@ -858,6 +860,7 @@ function exCard(w,e,i,block){
       ${timed?`<button class="btn small teal" data-act="timer" data-secs="${e.secs}">Start ${e.secs} sec timer</button>`:''}
       <button class="btn small" data-act="adjust" data-b="${block}" data-i="${i}">Adjust sets or reps</button>
       <button class="btn small" data-act="swap" data-b="${block}" data-i="${i}">Swap for another</button>
+      <button class="btn small ${(S.fav||[]).includes(e.id)?'favon':''}" data-act="fav" data-id="${e.id}" aria-pressed="${(S.fav||[]).includes(e.id)}">${(S.fav||[]).includes(e.id)?'♥ Favorite':'♡ Favorite'}</button>
       <button class="btn small ghost" data-act="hide" data-b="${block}" data-i="${i}">Never show this</button>
     </div></article>`;
 }
@@ -905,7 +908,7 @@ function sheetHtml(w){
   const cur=exById(e.id); const {same,related}=altOptions(w,b,i);
   const opt=x=>{
     const tags=x.eq.filter(q=>q!=='none').map(q=>GEAR_NAME[q.split('/')[0]]+(q.includes('/')?' or '+GEAR_NAME[q.split('/')[1]]:''));
-    return `<button class="opt" data-act="pick" data-id="${x.id}"><b>${esc(x.n)}</b><span>Works: ${esc(muscOf(x))}${tags.length?'. Needs: '+esc(tags.join(', ')):''}</span></button>`;
+    return `<button class="opt" data-act="pick" data-id="${x.id}"><b>${(S.fav||[]).includes(x.id)?'♥ ':''}${esc(x.n)}</b><span>Works: ${esc(muscOf(x))}${tags.length?'. Needs: '+esc(tags.join(', ')):''}</span></button>`;
   };
   return `<div class="sheet-bg" data-act="closesheet"></div>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-t">
@@ -1036,6 +1039,7 @@ function renderProgress(){
 function renderSettings(){
   const dayOpts=n=>DOWL.map((d,i)=>`<option value="${i}" ${sortedDays()[n]===i?'selected':''}>${d}</option>`).join('');
   const avoid=S.avoid.map(id=>exById(id)).filter(Boolean);
+  const fav=(S.fav||[]).map(id=>exById(id)).filter(Boolean);
   return `<h2>Gear & settings</h2>
   <div class="card" style="margin-top:12px"><h3>Workout days</h3>
     <div class="row">${[0,1,2,3].map(n=>`<select data-day="${n}" aria-label="Day ${n+1}">${dayOpts(n)}</select>`).join('')}</div>
@@ -1047,6 +1051,8 @@ function renderSettings(){
     <p class="note">Changes apply to workouts you build from now on. Use "Rebuild whole week" on the Workout tab to refresh the current week.</p></div>
   <div class="card"><h3>Your equipment</h3><div class="grid2">
     ${GEAR.map(g=>`<label class="chk"><input type="checkbox" data-gear="${g[0]}" ${S.gear[g[0]]?'checked':''}>${esc(g[1])}</label>`).join('')}</div></div>
+  <div class="card"><h3>Favorite exercises</h3>
+    ${fav.length?fav.map(x=>`<div class="row"><span>♥ ${esc(x.n)}</span><button class="btn small" data-act="fav" data-id="${x.id}">Remove</button></div>`).join(''):'<p class="note">None yet. Tap ♡ Favorite on any exercise and it will show up a bit more often in new workouts.</p>'}</div>
   <div class="card"><h3>Hidden exercises</h3>
     ${avoid.length?avoid.map(x=>`<div class="row"><span>${esc(x.n)}</span><button class="btn small" data-act="unhide" data-id="${x.id}">Bring back</button></div>`).join(''):'<p class="note">Nothing hidden. Use "Never show this" on any exercise you don\'t want.</p>'}</div>
   <div class="card"><h3>Add your own exercise</h3>
@@ -1143,9 +1149,14 @@ document.addEventListener('click',ev=>{
   }
   else if(a==='hide'){
     const w=getWorkout(U.wk,U.day);const list=b.dataset.b==='abs'?w.abs:w.main;const id=list[+b.dataset.i].id;
-    if(!S.avoid.includes(id)) S.avoid.push(id); save();
+    if(!S.avoid.includes(id)) S.avoid.push(id); S.fav=(S.fav||[]).filter(x=>x!==id); save();
     if(!swapEntry(w,+b.dataset.i,b.dataset.b)) toast('Hidden, but nothing else fits this slot');
     render(true);
+  }
+  else if(a==='fav'){
+    S.fav=S.fav||[]; const id=b.dataset.id;
+    S.fav=S.fav.includes(id)?S.fav.filter(x=>x!==id):[...S.fav,id]; save();
+    toast(S.fav.includes(id)?'Added to favorites. It will show up more in new workouts.':'Removed from favorites'); render(true);
   }
   else if(a==='unhide'){S.avoid=S.avoid.filter(x=>x!==b.dataset.id);save();render(true)}
   else if(a==='metric'){U.metric=b.dataset.k;render(true)}
