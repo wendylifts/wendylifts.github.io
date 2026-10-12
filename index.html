@@ -209,7 +209,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 12:49 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 12:57 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -331,7 +331,7 @@ hang_knee|Hanging knee raise|cfl|pullup|2|8-12|45|0|-|Curl your pelvis up. Don't
 rev_crunch|Reverse crunch|cfl|mat|2|12-15|30|0|-|Lift your hips off the floor, control the lowering.
 bench_leg|Bench leg raise|cfl|bench|2|10-15|30|0|-|Hold the bench behind your head and lower your legs slowly.
 wood|Cable woodchop|cro|cable|2|10-12|30|0|l u|Rotate from the trunk and pivot your back foot.
-russian|Russian twist|cro|mat|2|16-20|30|0|l|Hold a dumbbell. Rotate your ribcage, not just your arms.
+russian|Russian twist|cro|mat|2|16-20|30|0|l|Count every touch to a side: 18 reps = 9 each side. Turn your ribcage, not just your arms.
 bicycle|Bicycle crunch|cro|mat|2|t40|30|0|-|Slow and controlled, elbow to the opposite knee.
 side_plank|Side plank|cla|mat|2|t30|30|0|-u|Stack your feet and lift your hips high.
 suitcase|Suitcase carry|cla|db|2|t40|30|0|l|Walk tall holding one dumbbell. Don't lean.
@@ -448,7 +448,7 @@ hang_knee|Hang from the pull-up bar, using the assist band or step if needed.;Cu
 rev_crunch|Lie on your back with your knees bent over your hips.;Curl your hips up off the floor toward your ribs.;Lower slowly.
 bench_leg|Lie on the bench and hold the top edge behind your head.;Raise your legs together until they're over your hips.;Lower slowly without arching your back.
 wood|Set a pulley high and stand sideways, holding the handle with both hands.;Pull diagonally down across your body, rotating from your trunk.;Return slowly. Finish all reps, then switch sides.
-russian|Sit on the mat with your knees bent and lean back slightly, holding a dumbbell at your chest.;Rotate your ribcage from side to side.;Keep your chest tall and move slowly.
+russian|Sit on the mat with your knees bent and lean back slightly, holding a dumbbell at your chest.;Rotate your ribcage from side to side. Each touch to a side counts as 1 rep, so 18 reps is 9 to each side.;Keep your chest tall and move slowly.
 bicycle|Lie on your back with your hands behind your head.;Bring one knee in as you rotate the opposite elbow toward it.;Switch sides in a slow, steady rhythm.
 side_plank|Lie on your side with your elbow under your shoulder.;Lift your hips so your body is in one line.;Hold, then switch sides.
 suitcase|Hold a heavy dumbbell in one hand at your side.;Walk with tall posture and don't lean.;Finish the time, then switch hands.
@@ -1146,14 +1146,15 @@ function startRest(secs,label){
   el.innerHTML=`<div class="rinfo"><span class="rl">Rest</span><b class="rn">${secs}</b><span class="rs">sec</span></div><div class="rbtns"><button class="btn small" id="rplus">+15</button><button class="btn small teal" id="rskip">Skip</button></div>`;
   document.body.appendChild(el);
   RT={end:Date.now()+secs*1000,t:null,dinged:false,done:false,nodes:[],pre:false};
-  const plan=()=>{ cancelSched(); const left=Math.max(0,(RT.end-Date.now())/1000); const ns=[]; if(left>10&&secs>15) ns.push(schedDing(1175,400,0.3,left-10)); ns.push(schedDing(880,250,0.35,left),schedDing(1320,500,0.4,left+0.3)); RT.nodes=ns.filter(Boolean); RT.pre=RT.nodes.length>=2; RT.preWarn=ns.length===3&&!!ns[0]; };
+  const plan=()=>{ cancelSched(); const left=Math.max(0,(RT.end-Date.now())/1000); const ns=[]; if(left>10&&secs>15) ns.push(schedDing(1175,400,0.3,left-10)); ns.push(schedDing(880,250,0.35,left),schedDing(1320,500,0.4,left+0.3)); RT.nodes=ns.filter(Boolean); RT.pre=RT.nodes.length>=2; RT.preWarn=ns.length===3&&!!ns[0]; RT.tgt=audioCtx?audioCtx.currentTime+left:0; RT.tgtW=audioCtx?audioCtx.currentTime+left-10:0; };
+  const played=t=>!!(audioCtx&&audioCtx.state==='running'&&audioCtx.currentTime>=t-0.3); // did the pre-scheduled sound really get its turn?
   plan();
   const n=el.querySelector('.rn'), l=el.querySelector('.rl');
   const tick=()=>{ if(!RT) return;
     const left=Math.max(0,Math.ceil((RT.end-Date.now())/1000)); n.textContent=left;
     el.classList.toggle('low',left<=10&&left>0);
-    if(left<=10&&left>0&&!RT.dinged&&secs>15){RT.dinged=true;if(!RT.preWarn)ding(1175,400,0.3)}
-    if(left<=0&&!RT.done){RT.done=true;clearInterval(RT.t);l.textContent='Go!';n.textContent='';el.classList.add('fin');if(!RT.pre){ding(880,250,0.35);setTimeout(()=>ding(1320,500,0.4),300)}haptic('go'); setTimeout(()=>{if(RT&&RT.done)stopRest()},4000)}
+    if(left<=10&&left>0&&!RT.dinged&&secs>15){RT.dinged=true;if(!(RT.preWarn&&played(RT.tgtW)))ding(1175,400,0.3)}
+    if(left<=0&&!RT.done){RT.done=true;clearInterval(RT.t);l.textContent='Go!';n.textContent='';el.classList.add('fin');if(!(RT.pre&&played(RT.tgt))){cancelSched();ding(880,250,0.35);setTimeout(()=>ding(1320,500,0.4),300)}haptic('go'); setTimeout(()=>{if(RT&&RT.done)stopRest()},4000)}
   };
   el.querySelector('#rskip').onclick=stopRest;
   el.querySelector('#rplus').onclick=()=>{ if(!RT) return; if(RT.done){RT.done=false;RT.dinged=true;l.textContent='Rest';el.classList.remove('fin');RT.end=Date.now()+15000;RT.t=setInterval(tick,250)} else RT.end+=15000; plan(); tick() };
