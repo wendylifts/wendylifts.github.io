@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SwimLift</title>
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<meta name="theme-color" content="#0B3C5D">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="SwimLift">
 <meta name="description" content="Home strength workouts for swimmers: a new workout every session, abs every time, with weight and rep tracking.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -150,7 +155,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 11, 2026, 10:30 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 8:55 AM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -737,18 +742,20 @@ function suggest(ex,e,prev){
   if(!prev) return null;
   const fr=flat(prev.rows); const ws=fr.map(r=>+r.w||0), rs=fr.map(r=>+r.r||0);
   const top=Math.max(...ws);
-  const inc=ex.pat.some(p=>['squat','hinge','glute','comp','single'].includes(p))?5:2.5;
+  const inc=isCable(ex)?1:ex.pat.some(p=>['squat','hinge','glute','comp','single'].includes(p))?5:2.5;
   if(e.secs){const t=Math.max(...rs);return {text:'Beat '+t+' sec: aim for '+(t+5)+' sec.',w:top||'',r:t+5}}
   const hitTop=rs.length>=Math.min(e.sets,prev.rows.length)&&rs.every(r=>r>=e.hi);
   if(top>0){
-    if(hitTop) return {text:'You hit the top of the range. Try '+(top+inc)+' lb.',w:top+inc,r:e.lo};
-    return {text:'Stay at '+top+' lb and add a rep or two.',w:top,r:Math.min(e.hi,Math.max(...rs)+1)};
+    if(hitTop) return {text:'You hit the top of the range. Try '+(top+inc)+' '+wu(ex)+'.',w:top+inc,r:e.lo};
+    return {text:'Stay at '+top+' '+wu(ex)+' and add a rep or two.',w:top,r:Math.min(e.hi,Math.max(...rs)+1)};
   }
   const best=Math.max(...rs); return {text:'Beat '+best+' reps.',w:'',r:best+1};
 }
 const hasL=r=>r&&r.lr!==undefined&&r.lr!==''&&r.lr!==null;
 const flat=rows=>rows.flatMap(r=>hasL(r)?[r,{w:r.lw,r:r.lr,t:r.t}]:[r]);
 const one=(w,r)=>((w!==''&&w!=null)?w+'×':'')+(r||'?');
+const isCable=ex=>!!ex&&ex.eq.includes('cable');
+const wu=ex=>isCable(ex)?'plates':'lb';
 const fmtRows=rows=>rows.map(r=>hasL(r)?one(r.w,r.r)+' R, '+one(r.lw,r.lr)+' L':one(r.w,r.r)).join(', ');
 
 /* ---------- UI state ---------- */
@@ -811,7 +818,7 @@ function exCard(w,e,i,block){
       }
       const on=r[kr]!==undefined&&r[kr]!==''&&r[kr]!==null;
       return `<span class="sl">${lab}</span>`+
-        (showW?`<input inputmode="decimal" aria-label="Set ${n+1}${al} weight in pounds" data-set="${block}|${i}|${n}|${kw}" class="${pre?'pre':''}" value="${wv??''}" placeholder="lb">`:`<span></span>`)+
+        (showW?`<input inputmode="decimal" aria-label="Set ${n+1}${al} weight in ${isCable(ex)?'plates':'pounds'}" data-set="${block}|${i}|${n}|${kw}" class="${pre?'pre':''}" value="${wv??''}" placeholder="${isCable(ex)?'plates':'lb'}">`:`<span></span>`)+
         `<input inputmode="numeric" aria-label="Set ${n+1}${al} ${unit}" data-set="${block}|${i}|${n}|${kr}" data-target="${tgt}" value="${r[kr]??''}" placeholder="${tgt}">`+
         `<button class="ck ${on?'on':''}" data-act="setdone" data-set="${block}|${i}|${n}|${kr}" aria-pressed="${on}" aria-label="Log set ${n+1}${al} as shown">✓</button>`;
     };
@@ -834,7 +841,8 @@ function exCard(w,e,i,block){
     ${timed?`<p class="coach">${esc(coachNote(ex))}</p>`:''}
     ${adjustPanel(w,e,ex,block,i)}
     <p class="last">${prev?`Last time: <b>${fmtRows(prev.rows)}</b>. ${esc(sg.text)}`:'No history yet. Pick a weight that leaves 2 reps in the tank.'}</p>
-    <div class="sets">${showW?'<span></span><span class="hd">Weight (lb)</span>':'<span></span><span></span>'}<span class="hd">${timed?'Seconds':'Reps'}</span><span></span>${rows}</div>
+    ${isCable(ex)&&showW?'<p class="note">Log the number of plates on the stack. One plate is about 7 lb.</p>':''}
+    <div class="sets">${showW?'<span></span><span class="hd">Weight ('+wu(ex)+')</span>':'<span></span><span></span>'}<span class="hd">${timed?'Seconds':'Reps'}</span><span></span>${rows}</div>
     <div class="ex-actions">
       ${timed?`<button class="btn small teal" data-act="timer" data-secs="${e.secs}">Start ${e.secs} sec timer</button>`:''}
       <button class="btn small" data-act="adjust" data-b="${block}" data-i="${i}">Adjust sets or reps</button>
@@ -972,7 +980,7 @@ function renderProgress(){
       const v=U.metric==='top'?Math.max(...ws):U.metric==='vol'?fr.reduce((a,r)=>a+(+r.w||0)*(+r.r||0),0):Math.max(...rs);
       return {d:s.date,v};
     });
-    const unitLbl=U.metric==='top'?'lb':U.metric==='vol'?'lb total (weight × reps)':(ex.secs?'sec':'reps');
+    const unitLbl=U.metric==='top'?wu(ex):U.metric==='vol'?wu(ex)+' total (weight × reps)':(ex.secs?'sec':'reps');
     body=`<div class="row"><select id="exsel" aria-label="Exercise">${exIds.map(id=>`<option value="${id}" ${id===U.sel?'selected':''}>${esc(exById(id).n)}</option>`).join('')}</select>
       <div class="seg" role="group" aria-label="Metric">
         <button data-act="metric" data-k="top" aria-pressed="${U.metric==='top'}">Top weight</button>
