@@ -209,7 +209,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 12:29 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 12:36 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -1328,7 +1328,7 @@ function haptic(kind){
   const now=Date.now(); if(kind==='tick'&&now-hapLast<60) return; hapLast=now;
   try{ if(navigator.vibrate){ navigator.vibrate(kind==='success'?[30,50,30,50,60]:kind==='done'?[25,45,25]:kind==='go'?[60,60,60]:12); return } }catch(e){}
   try{ // iPhone Safari has no vibrate; a hidden switch control gives a tap when toggled
-    if(!hapEl){ hapEl=document.createElement('label'); hapEl.setAttribute('aria-hidden','true'); hapEl.style.cssText='position:fixed;left:-200px;top:0;opacity:0;pointer-events:none';
+    if(!hapEl){ hapEl=document.createElement('label'); hapEl.setAttribute('aria-hidden','true'); hapEl.style.cssText='position:fixed;left:0;bottom:0;width:44px;height:30px;opacity:.02;pointer-events:none;z-index:-1';
       const i=document.createElement('input'); i.type='checkbox'; i.setAttribute('switch',''); i.tabIndex=-1; hapEl.appendChild(i); document.body.appendChild(hapEl) }
     const keep=document.activeElement;
     const pulse=()=>{ hapEl.click(); if(keep&&keep!==document.activeElement&&/^(INPUT|TEXTAREA)$/.test(keep.tagName)&&keep.type!=='checkbox'){ try{keep.focus({preventScroll:true})}catch(e){} } };
