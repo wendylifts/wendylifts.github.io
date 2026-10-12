@@ -150,7 +150,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 11, 2026, 10:05 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 11, 2026, 10:30 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -735,7 +735,7 @@ function lastBefore(exId,wid,timed){
 }
 function suggest(ex,e,prev){
   if(!prev) return null;
-  const ws=prev.rows.map(r=>+r.w||0), rs=prev.rows.map(r=>+r.r||0);
+  const fr=flat(prev.rows); const ws=fr.map(r=>+r.w||0), rs=fr.map(r=>+r.r||0);
   const top=Math.max(...ws);
   const inc=ex.pat.some(p=>['squat','hinge','glute','comp','single'].includes(p))?5:2.5;
   if(e.secs){const t=Math.max(...rs);return {text:'Beat '+t+' sec: aim for '+(t+5)+' sec.',w:top||'',r:t+5}}
@@ -746,7 +746,10 @@ function suggest(ex,e,prev){
   }
   const best=Math.max(...rs); return {text:'Beat '+best+' reps.',w:'',r:best+1};
 }
-const fmtRows=rows=>rows.map(r=>((r.w!==''&&r.w!=null)?r.w+'×':'')+(r.r||'?')).join(', ');
+const hasL=r=>r&&r.lr!==undefined&&r.lr!==''&&r.lr!==null;
+const flat=rows=>rows.flatMap(r=>hasL(r)?[r,{w:r.lw,r:r.lr,t:r.t}]:[r]);
+const one=(w,r)=>((w!==''&&w!=null)?w+'×':'')+(r||'?');
+const fmtRows=rows=>rows.map(r=>hasL(r)?one(r.w,r.r)+' R, '+one(r.lw,r.lr)+' L':one(r.w,r.r)).join(', ');
 
 /* ---------- UI state ---------- */
 const U={tab:'workout',wk:iso(mondayOf(new Date())),day:0,sel:null,metric:'top',swap:null,edit:null};
@@ -799,16 +802,20 @@ function exCard(w,e,i,block){
   let rows='';
   for(let n=0;n<e.sets;n++){
     const r=saved[n]||{};
-    let wv=r.w, pre=false;
-    if(showW&&(wv===undefined||wv===''||wv===null)){
-      wv='';
-      if(prev&&prev.rows.length){const pr=prev.rows[n]||prev.rows[prev.rows.length-1]; if(pr.w!==''&&pr.w!=null){wv=pr.w;pre=true}}
-    }
-    const on=r.r!==undefined&&r.r!==''&&r.r!==null;
-    rows+=`<span class="sl">Set ${n+1}</span>`+
-      (showW?`<input inputmode="decimal" aria-label="Set ${n+1} weight in pounds" data-set="${block}|${i}|${n}|w" class="${pre?'pre':''}" value="${wv??''}" placeholder="lb">`:`<span></span>`)+
-      `<input inputmode="numeric" aria-label="Set ${n+1} ${unit}" data-set="${block}|${i}|${n}|r" data-target="${tgt}" value="${r.r??''}" placeholder="${tgt}">`+
-      `<button class="ck ${on?'on':''}" data-act="setdone" data-set="${block}|${i}|${n}" aria-pressed="${on}" aria-label="Log set ${n+1} as shown">✓</button>`;
+    const side=(sd)=>{
+      const kw=sd==='L'?'lw':'w', kr=sd==='L'?'lr':'r', lab=sd?`Set ${n+1} ${sd}`:`Set ${n+1}`, al=sd?` ${sd==='L'?'left':'right'} side`:'';
+      let wv=r[kw], pre=false;
+      if(showW&&(wv===undefined||wv===''||wv===null)){
+        wv='';
+        if(prev&&prev.rows.length){const pr=prev.rows[n]||prev.rows[prev.rows.length-1]; const pv=sd==='L'?(hasL(pr)?pr.lw:pr.w):pr.w; if(pv!==''&&pv!=null){wv=pv;pre=true}}
+      }
+      const on=r[kr]!==undefined&&r[kr]!==''&&r[kr]!==null;
+      return `<span class="sl">${lab}</span>`+
+        (showW?`<input inputmode="decimal" aria-label="Set ${n+1}${al} weight in pounds" data-set="${block}|${i}|${n}|${kw}" class="${pre?'pre':''}" value="${wv??''}" placeholder="lb">`:`<span></span>`)+
+        `<input inputmode="numeric" aria-label="Set ${n+1}${al} ${unit}" data-set="${block}|${i}|${n}|${kr}" data-target="${tgt}" value="${r[kr]??''}" placeholder="${tgt}">`+
+        `<button class="ck ${on?'on':''}" data-act="setdone" data-set="${block}|${i}|${n}|${kr}" aria-pressed="${on}" aria-label="Log set ${n+1}${al} as shown">✓</button>`;
+    };
+    rows+=ex.u?side('R')+side('L'):side('');
   }
   const tags=ex.eq.filter(x=>x!=='none').map(x=>GEAR_NAME[x.split('/')[0]]+(x.includes('/')?' or '+GEAR_NAME[x.split('/')[1]]:'')).concat(ex.u?['One side at a time']:[]);
   const grp=e.lab?`<span class="grp">${e.lab}</span>`:'';
@@ -961,8 +968,8 @@ function renderProgress(){
   else{
     const ex=exById(U.sel); const ss=exSessions(U.sel);
     const pts=ss.map(s=>{
-      const ws=s.rows.map(r=>+r.w||0), rs=s.rows.map(r=>+r.r||0);
-      const v=U.metric==='top'?Math.max(...ws):U.metric==='vol'?s.rows.reduce((a,r)=>a+(+r.w||0)*(+r.r||0),0):Math.max(...rs);
+      const fr=flat(s.rows); const ws=fr.map(r=>+r.w||0), rs=fr.map(r=>+r.r||0);
+      const v=U.metric==='top'?Math.max(...ws):U.metric==='vol'?fr.reduce((a,r)=>a+(+r.w||0)*(+r.r||0),0):Math.max(...rs);
       return {d:s.date,v};
     });
     const unitLbl=U.metric==='top'?'lb':U.metric==='vol'?'lb total (weight × reps)':(ex.secs?'sec':'reps');
@@ -1054,11 +1061,10 @@ document.addEventListener('click',ev=>{
   }
   else if(a==='closesheet'){U.swap=null;render(true)}
   else if(a==='setdone'){
-    const [block,i,n]=b.dataset.set.split('|');
-    const ri=document.querySelector(`[data-set="${block}|${i}|${n}|r"]`);
+    const ri=document.querySelector(`input[data-set="${b.dataset.set}"]`);
     const on=b.classList.contains('on');
     if(on) ri.value=''; else if(!ri.value) ri.value=ri.dataset.target;
-    const wi=document.querySelector(`[data-set="${block}|${i}|${n}|w"]`); if(wi) wi.classList.remove('pre');
+    const wi=document.querySelector(`input[data-set="${b.dataset.set.replace(/r$/,'w')}"]`); if(wi) wi.classList.remove('pre');
     storeSet(ri); b.classList.toggle('on',!on); b.setAttribute('aria-pressed',String(!on)); save();
   }
   else if(a==='adjust'){
@@ -1132,8 +1138,8 @@ function storeSet(t){
   const e=(block==='abs'?w.abs:w.main)[+i]; const s=sess(w.id);
   const arr=s.sets[e.id]||(s.sets[e.id]=[]); const row=arr[+n]||(arr[+n]={w:'',r:''});
   row[k]=t.value.replace(',','.'); row.t=e.secs?1:0;
-  if(k==='r'){ // typing reps also records the weight shown in that row, even if it was prefilled
-    const wi=document.querySelector(`[data-set="${block}|${i}|${n}|w"]`); if(wi) row.w=wi.value.replace(',','.');
+  if(k==='r'||k==='lr'){ // typing reps also records the weight shown in that row, even if it was prefilled
+    const wk=k==='r'?'w':'lw'; const wi=document.querySelector(`input[data-set="${block}|${i}|${n}|${wk}"]`); if(wi) row[wk]=wi.value.replace(',','.');
   }
   for(let j=0;j<arr.length;j++) if(!arr[j]) arr[j]={w:'',r:''};
 }
@@ -1141,8 +1147,8 @@ document.addEventListener('input',ev=>{
   const t=ev.target;
   if(t.dataset&&t.dataset.set){
     t.classList.remove('pre'); storeSet(t);
-    if(t.dataset.set.endsWith('|r')){
-      const key=t.dataset.set.slice(0,-2); const ck=document.querySelector(`[data-act="setdone"][data-set="${key}"]`);
+    if(/\|l?r$/.test(t.dataset.set)){
+      const ck=document.querySelector(`[data-act="setdone"][data-set="${t.dataset.set}"]`);
       if(ck){const on=t.value!==''; ck.classList.toggle('on',on); ck.setAttribute('aria-pressed',String(on))}
     }
     clearTimeout(window.__sv); window.__sv=setTimeout(save,250);
