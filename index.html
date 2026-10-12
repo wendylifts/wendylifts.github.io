@@ -209,7 +209,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 12:27 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 12:29 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -1330,7 +1330,8 @@ function haptic(kind){
   try{ // iPhone Safari has no vibrate; a hidden switch control gives a tap when toggled
     if(!hapEl){ hapEl=document.createElement('label'); hapEl.setAttribute('aria-hidden','true'); hapEl.style.cssText='position:fixed;left:-200px;top:0;opacity:0;pointer-events:none';
       const i=document.createElement('input'); i.type='checkbox'; i.setAttribute('switch',''); i.tabIndex=-1; hapEl.appendChild(i); document.body.appendChild(hapEl) }
-    const pulse=()=>hapEl.click();
+    const keep=document.activeElement;
+    const pulse=()=>{ hapEl.click(); if(keep&&keep!==document.activeElement&&/^(INPUT|TEXTAREA)$/.test(keep.tagName)&&keep.type!=='checkbox'){ try{keep.focus({preventScroll:true})}catch(e){} } };
     pulse();
     if(kind==='done'){ setTimeout(pulse,80) }
     else if(kind==='success'){ setTimeout(pulse,80); setTimeout(pulse,170); setTimeout(pulse,280) }
@@ -1421,11 +1422,11 @@ function storeSet(t){
 document.addEventListener('input',ev=>{
   const t=ev.target;
   if(t.dataset&&t.dataset.set){
-    t.classList.remove('pre'); storeSet(t); haptic('tick');
+    t.classList.remove('pre'); storeSet(t);
     if(/\|l?r$/.test(t.dataset.set)){
       const ck=document.querySelector(`[data-act="setdone"][data-set="${t.dataset.set}"]`);
       if(ck){
-        const wasOn=ck.classList.contains('on'); const on=t.value!==''; ck.classList.toggle('on',on); ck.setAttribute('aria-pressed',String(on)); if(on&&!wasOn) haptic('done');
+        const wasOn=ck.classList.contains('on'); const on=t.value!==''; ck.classList.toggle('on',on); ck.setAttribute('aria-pressed',String(on)); 
         // finished typing reps for a new set: start rest and move on after a short pause
         if(!on){ clearTimeout(ck._rt); delete ck.dataset.pend }
         else if(!wasOn||ck.dataset.pend){
