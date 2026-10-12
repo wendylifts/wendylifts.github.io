@@ -182,6 +182,8 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 .warm .wh{align-items:center}
 .warm li.complete .wh b{color:var(--ok)}
 .ex.complete{border-color:var(--ok);box-shadow:inset 5px 0 0 var(--ok)}
+.ex.current{border-color:#F59E0B;border-width:2px;box-shadow:inset 6px 0 0 #F59E0B,0 0 0 3px rgba(245,158,11,.25)}
+.ex.current:not(.started) h3::before{content:"UP NEXT ";font-size:.6em;letter-spacing:.06em;color:#B45309;background:#FEF3C7;border-radius:6px;padding:2px 6px;margin-right:6px;vertical-align:middle}
 .ex.complete h3{color:var(--ok)}
 .ex.complete h3::after{content:" \2713"}
 .dprog{font-weight:600;color:var(--link);margin:2px 0 8px}
@@ -207,7 +209,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 12:20 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 12:27 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -1132,23 +1134,25 @@ function renderSettings(){
 }
 
 let RT=null;
-function stopRest(){ if(RT){clearInterval(RT.t); RT=null} const r=document.getElementById('rest'); if(r) r.remove() }
+function stopRest(){ if(RT){cancelSched(); clearInterval(RT.t); RT=null} const r=document.getElementById('rest'); if(r) r.remove() }
 function startRest(secs,label){
   stopRest(); closeTimer();
   unlockAudio();
   const el=document.createElement('div'); el.id='rest'; el.setAttribute('role','status');
   el.innerHTML=`<div class="rinfo"><span class="rl">Rest</span><b class="rn">${secs}</b><span class="rs">sec</span></div><div class="rbtns"><button class="btn small" id="rplus">+15</button><button class="btn small teal" id="rskip">Skip</button></div>`;
   document.body.appendChild(el);
-  RT={end:Date.now()+secs*1000,t:null,dinged:false,done:false};
+  RT={end:Date.now()+secs*1000,t:null,dinged:false,done:false,nodes:[],pre:false};
+  const plan=()=>{ cancelSched(); const left=Math.max(0,(RT.end-Date.now())/1000); const ns=[]; if(left>10&&secs>15) ns.push(schedDing(1175,400,0.3,left-10)); ns.push(schedDing(880,250,0.35,left),schedDing(1320,500,0.4,left+0.3)); RT.nodes=ns.filter(Boolean); RT.pre=RT.nodes.length>=2; RT.preWarn=ns.length===3&&!!ns[0]; };
+  plan();
   const n=el.querySelector('.rn'), l=el.querySelector('.rl');
   const tick=()=>{ if(!RT) return;
     const left=Math.max(0,Math.ceil((RT.end-Date.now())/1000)); n.textContent=left;
     el.classList.toggle('low',left<=10&&left>0);
-    if(left<=10&&left>0&&!RT.dinged&&secs>15){RT.dinged=true;ding(1175,400,0.3)}
-    if(left<=0&&!RT.done){RT.done=true;clearInterval(RT.t);l.textContent='Go!';n.textContent='';el.classList.add('fin');ding(880,250,0.35);setTimeout(()=>ding(1320,500,0.4),300);haptic('go'); setTimeout(()=>{if(RT&&RT.done)stopRest()},4000)}
+    if(left<=10&&left>0&&!RT.dinged&&secs>15){RT.dinged=true;if(!RT.preWarn)ding(1175,400,0.3)}
+    if(left<=0&&!RT.done){RT.done=true;clearInterval(RT.t);l.textContent='Go!';n.textContent='';el.classList.add('fin');if(!RT.pre){ding(880,250,0.35);setTimeout(()=>ding(1320,500,0.4),300)}haptic('go'); setTimeout(()=>{if(RT&&RT.done)stopRest()},4000)}
   };
   el.querySelector('#rskip').onclick=stopRest;
-  el.querySelector('#rplus').onclick=()=>{ if(!RT) return; if(RT.done){RT.done=false;RT.dinged=true;l.textContent='Rest';el.classList.remove('fin');RT.end=Date.now()+15000;RT.t=setInterval(tick,250)} else RT.end+=15000; tick() };
+  el.querySelector('#rplus').onclick=()=>{ if(!RT) return; if(RT.done){RT.done=false;RT.dinged=true;l.textContent='Rest';el.classList.remove('fin');RT.end=Date.now()+15000;RT.t=setInterval(tick,250)} else RT.end+=15000; plan(); tick() };
   tick(); RT.t=setInterval(tick,250);
 }
 function afterSet(btn){
@@ -1173,6 +1177,7 @@ function updateDone(user){
   const cards=[...document.querySelectorAll('article.ex[data-card]')]; if(!cards.length&&!document.querySelector('li[data-warm]')) return;
   let done=0;
   cards.forEach(c=>{const was=c.classList.contains('complete'); const needw=c.dataset.needw==='1'; const ins=[...c.querySelectorAll('input[data-set]')].filter(x=>needw||/\|l?r$/.test(x.dataset.set)); const ok=ins.length>0&&ins.every(x=>x.value.trim()!==''); c.classList.toggle('complete',ok); if(ok) done++; if(user&&ok&&!was) haptic('success')});
+  const cur=cards.find(c=>!c.classList.contains('complete')); cards.forEach(c=>c.classList.toggle('current',c===cur)); cards.forEach(c=>c.classList.toggle('started',c===cur&&[...c.querySelectorAll('input[data-set]')].some(x=>x.value.trim()!==''&&!x.classList.contains('pre'))));
   const wl=[...document.querySelectorAll('li[data-warm]')]; wl.forEach(l=>{if(l.classList.contains('complete')) done++});
   const total=cards.length+wl.length; const p=document.getElementById('dprog');
   if(p) p.textContent=total?(done===total?'All '+total+' done. Tap Finish workout below.':done+' of '+total+' done'):'';
@@ -1221,13 +1226,14 @@ document.addEventListener('click',ev=>{
   else if(a==='calnav'){U.cal=Math.min(0,U.cal+(+b.dataset.d));render(true)}
   else if(a==='closesheet'){U.swap=null;render(true)}
   else if(a==='setdone'){
+    haptic(b.classList.contains('on')?'tick':'done');
     const ri=document.querySelector(`input[data-set="${b.dataset.set}"]`);
     const on=b.classList.contains('on');
     if(on) ri.value=''; else if(!ri.value) ri.value=ri.dataset.target;
     const wi=document.querySelector(`input[data-set="${b.dataset.set.replace(/r$/,'w')}"]`); if(wi) wi.classList.remove('pre');
-    storeSet(ri); b.classList.toggle('on',!on); b.setAttribute('aria-pressed',String(!on)); save(); haptic(on?'tick':'done'); updateDone(true);
+    storeSet(ri); b.classList.toggle('on',!on); b.setAttribute('aria-pressed',String(!on)); save(); updateDone(true);
     clearTimeout(b._rt); delete b.dataset.pend;
-    if(!on) afterSet(b);
+    if(!on) setTimeout(()=>afterSet(b),250);
   }
   else if(a==='adjust'){
     const w=getWorkout(U.wk,U.day); const list=b.dataset.b==='abs'?w.abs:w.main; const e=list[+b.dataset.i];
@@ -1342,6 +1348,16 @@ function ding(f,ms,vol){
     g.gain.setValueAtTime(gain,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+ms/1000);
     o.start();setTimeout(()=>{try{o.stop()}catch(e){}},ms+30)} }catch(e){}
 }
+
+function schedDing(f,ms,vol,when){ // pre-schedule a ding on the audio clock so it plays even if no tap happens at that moment
+  if(S.sound==='off'||S.engine==='player'||!audioCtx) return null;
+  try{ if(audioCtx.state!=='running') audioCtx.resume();
+    const t=audioCtx.currentTime+when, gain=Math.min(1,(vol||0.3)*(S.sound==='loud'?3:2.4));
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain(); o.type='triangle'; o.frequency.value=f; o.connect(g); g.connect(audioCtx.destination);
+    g.gain.setValueAtTime(0.0001,audioCtx.currentTime); g.gain.setValueAtTime(gain,t); g.gain.exponentialRampToValueAtTime(0.001,t+ms/1000);
+    o.start(t); o.stop(t+ms/1000+0.05); return o }catch(e){ return null }
+}
+function cancelSched(){ if(RT&&RT.nodes){ RT.nodes.forEach(o=>{try{o.stop()}catch(e){}}); RT.nodes=[] } }
 function beep(){
   ding(880,350);setTimeout(()=>ding(880,350),450);setTimeout(()=>ding(1175,700),900);
   haptic('success');
