@@ -80,6 +80,7 @@ h3{font-size:21px}
 .last{margin:2px 0 8px;font-size:14px;color:var(--muted)}
 .last b{color:var(--ink)}
 .sets{display:grid;grid-template-columns:auto 1fr 1fr 44px;gap:6px 8px;align-items:center;max-width:420px}
+.sets.nw{grid-template-columns:auto 1fr 44px;max-width:300px}
 .sets .sl{color:var(--muted);font-size:14px}
 .sets input{width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);text-align:center;min-width:0}
 .sets .hd{font-size:12px;color:var(--muted);text-align:center}
@@ -203,7 +204,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 12:40 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 12:55 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -868,7 +869,7 @@ function exCard(w,e,i,block){
       }
       const on=r[kr]!==undefined&&r[kr]!==''&&r[kr]!==null;
       return `<span class="sl">${lab}</span>`+
-        (showW?`<input inputmode="decimal" aria-label="Set ${n+1}${al} weight in ${isCable(ex)?'plates':'pounds'}" data-set="${block}|${i}|${n}|${kw}" class="${pre?'pre':''}" value="${wv??''}" placeholder="${isCable(ex)?'plates':'lb'}">`:`<span></span>`)+
+        (showW?`<input inputmode="decimal" aria-label="Set ${n+1}${al} weight in ${isCable(ex)?'plates':'pounds'}" data-set="${block}|${i}|${n}|${kw}" class="${pre?'pre':''}" value="${wv??''}" placeholder="${isCable(ex)?'plates':'lb'}">`:'')+
         `<input inputmode="numeric" aria-label="Set ${n+1}${al} ${unit}" data-set="${block}|${i}|${n}|${kr}" data-target="${tgt}" value="${r[kr]??''}" placeholder="${tgt}">`+
         `<button class="ck ${on?'on':''}" data-act="setdone" data-set="${block}|${i}|${n}|${kr}" aria-pressed="${on}" aria-label="Log set ${n+1}${al} as shown">✓</button>`;
     };
@@ -890,9 +891,9 @@ function exCard(w,e,i,block){
     <p class="aim">${aim}</p>
     ${timed?`<p class="coach">${esc(coachNote(ex))}</p>`:''}
     ${adjustPanel(w,e,ex,block,i)}
-    <p class="last">${prev?`Last time: <b>${fmtRows(prev.rows)}</b>. ${esc(sg.text)}`:'No history yet. Pick a weight that leaves 2 reps in the tank.'}</p>
+    <p class="last">${prev?`Last time: <b>${fmtRows(prev.rows)}</b>. ${esc(sg.text)}`:(showW?'No history yet. Pick a weight that leaves 2 reps in the tank.':'No history yet. Stop each set with about 2 reps left in the tank.')}</p>
     ${isCable(ex)&&showW?'<p class="note">Log the number of plates on the stack. One plate is about 7 lb.</p>':''}
-    <div class="sets">${showW?'<span></span><span class="hd">Weight ('+wu(ex)+')</span>':'<span></span><span></span>'}<span class="hd">${timed?'Seconds':'Reps'}</span><span></span>${rows}</div>
+    <div class="sets ${showW?'':'nw'}">${showW?'<span></span><span class="hd">Weight ('+wu(ex)+')</span>':'<span></span>'}<span class="hd">${timed?'Seconds':'Reps'}</span><span></span>${rows}</div>
     <div class="ex-actions">
       ${timed?`<button class="btn small teal" data-act="timer" data-secs="${e.secs}">Start ${e.secs} sec timer</button>`:''}
       <button class="btn small" data-act="adjust" data-b="${block}" data-i="${i}">Adjust sets or reps</button>
