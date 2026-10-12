@@ -165,12 +165,13 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 10:10 AM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 10:25 AM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 (() => {
 'use strict';
+try{ if(/[?&]r=\d+/.test(location.search)) history.replaceState(null,'',location.pathname+location.hash) }catch(e){}
 
 /* ---------- Gear ---------- */
 const GEAR = [
@@ -1055,6 +1056,9 @@ function renderSettings(){
       <option value="comp">Full-body compound</option><option value="cae">Core: anti-extension</option><option value="cro">Core: rotation</option><option value="cfl">Core: flexion</option></select>
       <button class="btn teal small" data-act="addcustom">Add</button></div>
     ${(S.custom||[]).map(c=>`<div class="row"><span>${esc(c.n)}</span><button class="btn small" data-act="delcustom" data-id="${c.id}">Remove</button></div>`).join('')}</div>
+  <div class="card"><h3>App version</h3>
+    <p class="note">${esc(($('#ver')||{}).textContent||'')}. If this doesn't match the newest update, tap below to reload from the web. Your workouts stay saved.</p>
+    <div class="row"><button class="btn teal" data-act="refreshapp">Get the latest version</button></div></div>
   <div class="card"><h3>Your data</h3>
     <p class="note">Everything lives in this browser. Export a backup now and then, and use it to move to a new phone or computer.</p>
     <div class="row"><button class="btn teal" data-act="export">Export backup</button>
@@ -1150,6 +1154,11 @@ document.addEventListener('click',ev=>{
     S.custom.push({id:'c_'+Date.now().toString(36),n,pat:$('#cp').value,eq:['none']}); save(); render(true); toast('Added to your library');
   }
   else if(a==='delcustom'){S.custom=S.custom.filter(c=>c.id!==b.dataset.id);save();render(true)}
+  else if(a==='refreshapp'){
+    toast('Checking for the latest version...');
+    const go=()=>location.replace(location.pathname+'?r='+Date.now()+'#/settings');
+    try{ if(window.caches&&caches.keys) caches.keys().then(k=>Promise.all(k.map(x=>caches.delete(x)))).then(()=>setTimeout(go,300),()=>setTimeout(go,300)); else setTimeout(go,300) }catch(e){ setTimeout(go,300) }
+  }
   else if(a==='export'){
     const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
     const l=document.createElement('a');l.href=URL.createObjectURL(blob);l.download='swimlift-backup-'+iso(new Date())+'.json';l.click();
