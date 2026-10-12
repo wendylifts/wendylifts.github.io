@@ -184,6 +184,8 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 .ex.complete{border-color:var(--ok);box-shadow:inset 5px 0 0 var(--ok)}
 .ex.current{scroll-margin-top:12px;border-color:#F59E0B;border-width:2px;box-shadow:inset 6px 0 0 #F59E0B,0 0 0 3px rgba(245,158,11,.25)}
 .ex.current:not(.started) h3::before{content:"UP NEXT ";font-size:.6em;letter-spacing:.06em;color:#B45309;background:#FEF3C7;border-radius:6px;padding:2px 6px;margin-right:6px;vertical-align:middle}
+.ex.skipped{opacity:.6;border-style:dashed}
+.ex.skipped h3::after{content:" (skipped)";font-size:.6em;color:var(--mut,#5b7083)}
 .ex.complete h3{color:var(--ok)}
 .ex.complete h3::after{content:" \2713"}
 .dprog{font-weight:600;color:var(--link);margin:2px 0 8px}
@@ -209,7 +211,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 12:57 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 12:59 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -890,7 +892,8 @@ function exCard(w,e,i,block){
   const yt='https://www.youtube.com/results?search_query='+encodeURIComponent(ex.n+' exercise form');
   const musc=muscOf(ex);
   const aim=timed?`Aim for ${e.secs} seconds${ex.u?' each side':''} per set.`:`Aim for ${tgt} reps per set${ex.u?' on each side':''}. Your range is ${e.lo}–${e.hi}.`;
-  return `<article class="ex" data-card="${block}|${i}" data-needw="${ex.l?1:0}">
+  const skipped=!!(s&&s.skip&&s.skip[e.id]);
+  return `<article class="ex${skipped?' skipped':''}" data-card="${block}|${i}" data-needw="${ex.l?1:0}">
     <div class="ex-head"><div class="nm">${grp}<h3>${esc(ex.n)}</h3></div>
       <div class="presc">${presc(e)}<small>rest ${e.grp&&w.format==='circuit'?'after the round':e.rest+' sec'}</small></div></div>
     <div class="tags">${musc?`<span>Works: ${esc(musc)}</span>`:''}${tags.map(t=>`<span>${esc(t)}</span>`).join('')}${ex.k>0?'<span>Stop at pain-free depth</span>':''}</div>
@@ -908,6 +911,7 @@ function exCard(w,e,i,block){
       <button class="btn small" data-act="adjust" data-b="${block}" data-i="${i}">Adjust sets or reps</button>
       <button class="btn small" data-act="swap" data-b="${block}" data-i="${i}">Swap for another</button>
       <button class="btn small ${(S.fav||[]).includes(e.id)?'favon':''}" data-act="fav" data-id="${e.id}" aria-pressed="${(S.fav||[]).includes(e.id)}">${(S.fav||[]).includes(e.id)?'♥ Favorite':'♡ Favorite'}</button>
+      <button class="btn small ${skipped?'teal':''}" data-act="skip" data-id="${e.id}">${skipped?'Undo skip':'Skip this one today'}</button>
       <button class="btn small ghost" data-act="hide" data-b="${block}" data-i="${i}">Never show this</button>
     </div></article>`;
 }
@@ -1181,11 +1185,11 @@ function setWarm(id,on){
 function updateDone(user){
   const cards=[...document.querySelectorAll('article.ex[data-card]')]; if(!cards.length&&!document.querySelector('li[data-warm]')) return;
   let done=0;
-  cards.forEach(c=>{const was=c.classList.contains('complete'); const needw=c.dataset.needw==='1'; const ins=[...c.querySelectorAll('input[data-set]')].filter(x=>needw||/\|l?r$/.test(x.dataset.set)); const ok=ins.length>0&&ins.every(x=>x.value.trim()!==''); c.classList.toggle('complete',ok); if(ok) done++; if(user&&ok&&!was) haptic('success')});
-  const cur=cards.find(c=>!c.classList.contains('complete')); cards.forEach(c=>c.classList.toggle('current',c===cur)); cards.forEach(c=>c.classList.toggle('started',c===cur&&[...c.querySelectorAll('input[data-set]')].some(x=>x.value.trim()!==''&&!x.classList.contains('pre'))));
+  cards.forEach(c=>{if(c.classList.contains('skipped')){c.classList.remove('complete');return} const was=c.classList.contains('complete'); const needw=c.dataset.needw==='1'; const ins=[...c.querySelectorAll('input[data-set]')].filter(x=>needw||/\|l?r$/.test(x.dataset.set)); const ok=ins.length>0&&ins.every(x=>x.value.trim()!==''); c.classList.toggle('complete',ok); if(ok) done++; if(user&&ok&&!was) haptic('success')});
+  const cur=cards.find(c=>!c.classList.contains('complete')&&!c.classList.contains('skipped')); cards.forEach(c=>c.classList.toggle('current',c===cur)); cards.forEach(c=>c.classList.toggle('started',c===cur&&[...c.querySelectorAll('input[data-set]')].some(x=>x.value.trim()!==''&&!x.classList.contains('pre'))));
   const wl=[...document.querySelectorAll('li[data-warm]')]; wl.forEach(l=>{if(l.classList.contains('complete')) done++});
-  const total=cards.length+wl.length; const p=document.getElementById('dprog');
-  if(p) p.textContent=total?(done===total?'All '+total+' done. Tap Finish workout below.':done+' of '+total+' done'):'';
+  const total=cards.filter(c=>!c.classList.contains('skipped')).length+wl.length; const p=document.getElementById('dprog');
+  if(p) p.textContent=total?(done===total?'All '+total+' done. Tap Finish workout below.':done+' of '+total+' done. Short on time? Tap Finish workout and keep what you logged.'):'';
 }
 function render(keep){
   const y=window.scrollY;
@@ -1221,6 +1225,7 @@ document.addEventListener('click',ev=>{
     location.hash=(n===0)?'#/':'#/week/'+(S.start&&wk<S.start?S.start:wk);
     if(n===0&&location.hash==='#/') route();
   }
+  else if(a==='skip'){const w=getWorkout(U.wk,U.day);const se=sess(w.id);se.skip=se.skip||{};const id=b.dataset.id; if(se.skip[id]) delete se.skip[id]; else se.skip[id]=1; save(); render(true); toast(se.skip[id]?'Skipped. It won\'t count against this workout.':'Skip undone')}
   else if(a==='finish'){const w=getWorkout(U.wk,U.day);const s=sess(w.id);s.done=s.date||iso(new Date());save();toast('Workout saved');render(true)}
   else if(a==='regen-day'){regenDay(U.wk,U.day);render(true);toast('New version built')}
   else if(a==='regen-week'){regenWeek(U.wk);render(true);toast('Week rebuilt')}
