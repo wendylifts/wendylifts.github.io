@@ -189,6 +189,9 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 .xnote small{color:#92400E}
 .nbox textarea{width:100%;box-sizing:border-box;font:inherit;border:1.5px solid var(--line);border-radius:10px;padding:8px;background:var(--surface);color:var(--ink);margin:4px 0 8px;resize:vertical}
 @media (prefers-color-scheme:dark){.xnote{background:#3A2C0B;color:#FDE9B0;border-left-color:#F59E0B}.xnote b,.xnote small{color:#FBBF24}}
+.addx{display:flex;flex-direction:column;gap:8px;margin:16px 0;padding:12px;border:1.5px dashed var(--line);border-radius:12px}
+.addx label{display:flex;flex-direction:column;gap:6px;font-weight:600}
+.addx select{font:inherit;padding:10px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink)}
 .fin-badge{background:var(--ok);border-color:var(--ok);color:#fff;cursor:default}
 .ex.skipped{opacity:.6;border-style:dashed}
 .ex.skipped h3::after{content:" (skipped)";font-size:.6em;color:var(--mut,#5b7083)}
@@ -217,7 +220,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 3:11 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 4:06 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -767,13 +770,15 @@ function regenDay(wk,di){
   const hist=Object.keys(S.weeks).filter(k=>k<wk).sort().flatMap(k=>S.weeks[k].workouts)
     .concat(wkObj.workouts.filter((_,i)=>i!==di));
   const w=genWorkout(wk,di,old.focus,wkObj.ph,S.regen[id],hist);
+  if(old&&old.extra){w.extra=true;w.date=old.date}
   wkObj.workouts[di]=w; save();
 }
 function regenWeek(wk){
   for(let i=0;i<4;i++){const id=wk+'#'+i;S.regen[id]=(S.regen[id]||0)+1}
+  const keepExtra=(S.weeks[wk]?S.weeks[wk].workouts.slice(4):[]);
   delete S.weeks[wk]; const later=Object.keys(S.weeks).filter(k=>k>wk);
   later.forEach(k=>delete S.weeks[k]);
-  genWeek(wk); save();
+  genWeek(wk); keepExtra.forEach(x=>S.weeks[wk].workouts.push(x)); save();
 }
 
 function altOptions(w,block,i){
@@ -849,7 +854,9 @@ const fmtRows=rows=>rows.map(r=>hasL(r)?one(r.w,r.r)+' R, '+one(r.lw,r.lr)+' L':
 /* ---------- UI state ---------- */
 const U={tab:'workout',wk:iso(mondayOf(new Date())),day:0,sel:null,metric:'top',swap:null,edit:null,cal:0};
 function sortedDays(){return [...S.days].sort((a,b)=>((a+6)%7)-((b+6)%7))}
-function dayDate(wk,di){return addDays(parse(wk),(sortedDays()[di]+6)%7)}
+function dayDate(wk,di){
+  if(di>=4){const w=S.weeks[wk]&&S.weeks[wk].workouts[di]; if(w&&w.date) return parse(w.date)}
+  return addDays(parse(wk),(sortedDays()[di]+6)%7)}
 
 /* ---------- Render ---------- */
 const $=s=>document.querySelector(s);
@@ -974,7 +981,7 @@ function renderHome(){
     return `<a class="daycard ${started?'prog':''} ${done?'fin':''}" href="#/day/${U.wk}/${i}">
       <span class="dc-top"><span class="dow">${DOWL[d.getDay()]}</span><span class="dt">${fmtShort(d)}</span>
         ${done?'<span class="badge dn">&#10003; Done '+fmtShort(parse(S.sessions[x.id].date||done))+'</span>':started?'<span class="badge ok">In progress</span>':iso(d)===todayIso?'<span class="badge hot">Today</span>':''}</span>
-      <span class="dc-foc">${f.n}</span><span class="dc-d">${esc(f.d)}</span>
+      <span class="dc-foc">${f.n}${x.extra?' <span class="chip">Extra</span>':''}</span><span class="dc-d">${esc(f.d)}</span>
       <span class="dc-meta"><span class="chip">About ${x.min} min</span><span class="chip">${x.main.length} strength moves</span><span class="chip">${FMTN[x.format]}</span><span class="chip">Abs included</span></span></a>`}).join('');
   return `
   <div class="weekbar">
@@ -988,6 +995,8 @@ function renderHome(){
   </div>
   <p class="note">Swimmer balance this week: ${bal.pull} pulling sets to ${bal.push} pushing sets. Tap a day to open its workout.</p>
   <div class="cards">${cards}</div>
+  <div class="addx"><label>Want to lift again this week?<select id="xfocus" aria-label="Focus for the extra workout">${Object.keys(FOCUS).map(k=>`<option value="${k}" ${k==='full'?'selected':''}>${esc(FOCUS[k].n)}</option>`).join('')}</select></label>
+    <button class="btn primary" data-act="addextra">+ Add extra workout</button></div>
   <div class="foot"><button class="btn ghost" data-act="regen-week">Rebuild whole week</button></div>`;
 }
 
@@ -1063,6 +1072,7 @@ function renderDay(){
     ${done?'<span class="btn fin-badge" role="status">✓ Finished</span><button class="btn" data-act="editwo">Edit workout</button>':'<button class="btn primary" data-act="finish">Finish workout</button>'}
     <a class="btn" href="#/week/${U.wk}">Back to week</a>
     <button class="btn" data-act="regen-day">New version of this day</button>
+    ${w.extra&&U.day===wkObj.workouts.length-1?'<button class="btn ghost" data-act="rmextra">Remove this extra workout</button>':''}
   </div>
   <p class="note">Weights and reps save as you type on this device. ${done?'Finished on '+esc(done)+'.':''}</p>
   <p style="margin:18px 0 6px"><a class="btn primary" href="#/" style="display:block;text-align:center">← Home: this week's workouts</a></p>
@@ -1263,7 +1273,7 @@ function route(){
   const h=location.hash.replace(/^#\/?/,'').split('/');
   const okWk=v=>/^\d{4}-\d{2}-\d{2}$/.test(v||'')?iso(mondayOf(parse(v))):null;
   U.swap=null;U.edit=null;
-  if(h[0]==='day'&&okWk(h[1])&&/^[0-3]$/.test(h[2]||'')){U.tab='day';U.wk=okWk(h[1]);U.day=+h[2]}
+  if(h[0]==='day'&&okWk(h[1])&&/^\d{1,2}$/.test(h[2]||'')){U.tab='day';U.wk=okWk(h[1]);U.day=+h[2]}
   else if(h[0]==='progress') U.tab='progress';
   else if(h[0]==='settings') U.tab='settings';
   else{U.tab='workout';U.wk=(h[0]==='week'&&okWk(h[1]))||iso(mondayOf(new Date()))}
@@ -1287,6 +1297,17 @@ document.addEventListener('click',ev=>{
   }
   else if(a==='note'){const id=b.dataset.id; const art=b.closest('article.ex'); const box=art&&art.querySelector(`[data-nbox="${id}"]`); if(box){box.hidden=!box.hidden; if(!box.hidden){const ta=box.querySelector('textarea'); ta.focus(); try{ta.setSelectionRange(ta.value.length,ta.value.length)}catch(e){}}}}
   else if(a==='skip'){const w=getWorkout(U.wk,U.day);const se=sess(w.id);se.skip=se.skip||{};const id=b.dataset.id; if(se.skip[id]) delete se.skip[id]; else se.skip[id]=1; save(); render(true); toast(se.skip[id]?'Skipped. It won\'t count against this workout.':'Skip undone')}
+  else if(a==='addextra'){
+    ensureWeek(U.wk); const wkObj=S.weeks[U.wk]; const di=wkObj.workouts.length;
+    const focus=(document.getElementById('xfocus')||{}).value||'full';
+    const hist=Object.keys(S.weeks).filter(k=>k<U.wk).sort().flatMap(k=>S.weeks[k].workouts).concat(wkObj.workouts);
+    const w=genWorkout(U.wk,di,focus,wkObj.ph,S.regen[U.wk+'#'+di]||0,hist); w.extra=true; w.date=iso(new Date());
+    wkObj.workouts.push(w); save(); location.hash='#/day/'+U.wk+'/'+di; toast('Extra workout added');
+  }
+  else if(a==='rmextra'){
+    const wkObj=S.weeks[U.wk]; const w=wkObj&&wkObj.workouts[U.day];
+    if(w&&w.extra&&U.day===wkObj.workouts.length-1&&confirm('Remove this extra workout and its logged sets?')){ delete S.sessions[w.id]; wkObj.workouts.pop(); save(); location.hash='#/'; toast('Extra workout removed') }
+  }
   else if(a==='editwo'){const w=getWorkout(U.wk,U.day);const se=sess(w.id);delete se.done;save();render(true);toast('Workout reopened. Tap Finish workout when you are done.')}
   else if(a==='cooldone'){const nowOn=!b.classList.contains('on'); haptic(nowOn?'done':'tick'); setCool(b.dataset.id,nowOn)}
   else if(a==='finish'){const w=getWorkout(U.wk,U.day);const s=sess(w.id);s.done=s.date||iso(new Date());save();toast('Workout saved');render(true)}
@@ -1537,7 +1558,7 @@ document.addEventListener('change',ev=>{
   else if(t.id==='autorest'){S.autoRest=t.checked;save(); if(!t.checked) stopRest()}
   else if(t.id==='wdate'){
     if(!t.value) return;
-    const w=getWorkout(U.wk,U.day); const se=sess(w.id); se.date=t.value; if(se.done) se.done=t.value;
+    const w=getWorkout(U.wk,U.day); const se=sess(w.id); se.date=t.value; if(se.done) se.done=t.value; if(w.extra) w.date=t.value;
     save(); toast('Date updated'); render(true);
   }
   else if(t.id==='tgt'){S.target=Math.min(90,Math.max(25,+t.value||45));save()}
