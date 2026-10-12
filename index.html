@@ -184,6 +184,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 .ex.complete{border-color:var(--ok);box-shadow:inset 5px 0 0 var(--ok)}
 .ex.current{scroll-margin-top:12px;border-color:#F59E0B;border-width:2px;box-shadow:inset 6px 0 0 #F59E0B,0 0 0 3px rgba(245,158,11,.25)}
 .ex.current:not(.started) h3::before{content:"UP NEXT ";font-size:.6em;letter-spacing:.06em;color:#B45309;background:#FEF3C7;border-radius:6px;padding:2px 6px;margin-right:6px;vertical-align:middle}
+.fin-badge{background:var(--ok);border-color:var(--ok);color:#fff;cursor:default}
 .ex.skipped{opacity:.6;border-style:dashed}
 .ex.skipped h3::after{content:" (skipped)";font-size:.6em;color:var(--mut,#5b7083)}
 .ex.complete h3{color:var(--ok)}
@@ -211,7 +212,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 12:59 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 1:09 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -333,7 +334,7 @@ hang_knee|Hanging knee raise|cfl|pullup|2|8-12|45|0|-|Curl your pelvis up. Don't
 rev_crunch|Reverse crunch|cfl|mat|2|12-15|30|0|-|Lift your hips off the floor, control the lowering.
 bench_leg|Bench leg raise|cfl|bench|2|10-15|30|0|-|Hold the bench behind your head and lower your legs slowly.
 wood|Cable woodchop|cro|cable|2|10-12|30|0|l u|Rotate from the trunk and pivot your back foot.
-russian|Russian twist|cro|mat|2|16-20|30|0|l|Count every touch to a side: 18 reps = 9 each side. Turn your ribcage, not just your arms.
+russian|Russian twist|cro|mat|2|16-20|30|0|l|One rep = left and right. 18 reps = 18 to each side. Turn your ribcage, not just your arms.
 bicycle|Bicycle crunch|cro|mat|2|t40|30|0|-|Slow and controlled, elbow to the opposite knee.
 side_plank|Side plank|cla|mat|2|t30|30|0|-u|Stack your feet and lift your hips high.
 suitcase|Suitcase carry|cla|db|2|t40|30|0|l|Walk tall holding one dumbbell. Don't lean.
@@ -342,6 +343,18 @@ hollow|Hollow-body hold|csw|mat|2|t30|30|0|-|Streamline arms overhead, low back 
 flutter_hold|Hollow-body flutter kicks|csw|mat|2|t40|30|0|-|Small fast kicks like your freestyle.
 vup|V-up|csw|mat|2|10-15|30|0|-|Reach your hands to your toes at the top.
 dolphin|Dolphin kick on the ball|csw|ball|2|t30|30|0|-|Lie over the ball and undulate through your chest and hips.
+c_chest|Doorway chest stretch|cool|none|1|t45|0|0|-|Gentle stretch across the front of your shoulders.
+c_cross|Cross-body shoulder stretch|cool|none|1|t45|0|0|-|Relax your shoulder down, switch arms halfway.
+c_lat|Child's pose with side reach|cool|mat|1|t45|0|0|-|Long, slow breaths into the sides of your back.
+c_tri|Overhead triceps and lat stretch|cool|none|1|t45|0|0|-|Reach tall and lean gently, switch arms halfway.
+c_fig4|Lying figure-4 glute stretch|cool|mat|1|t45|0|0|-|Keep your head and shoulders relaxed, switch legs halfway.
+c_ham|Lying hamstring stretch|cool|mat|1|t45|0|0|-|Keep your leg straight but relaxed, switch legs halfway.
+c_twist|Lying spinal twist|cool|mat|1|t45|0|0|-|Let your knees drop to one side, switch sides halfway.
+c_hip|Supine hip flexor stretch|cool|mat|1|t45|0|0|-|Hug one knee in, let the other leg rest long, switch halfway.
+c_neck|Neck and upper trap stretch|cool|none|1|t45|0|0|-|Let your head tip gently to one side, switch halfway. No pulling hard.
+c_calf|Wall calf stretch|cool|none|1|t45|0|0|-|Heel stays down, hips forward, switch legs halfway.
+c_fly|Seated butterfly stretch|cool|mat|1|t45|0|0|-|Sit tall, soles together, relax your knees out.
+c_wrist|Wrist and forearm stretch|cool|none|1|t45|0|0|-|Keep your elbow straight and pull your fingers back gently, switch halfway.
 `;
 
 const PAT_LABEL = {vpull:'Vertical pull',hpull:'Row',vpush:'Overhead press',hpush:'Press',shoulder:'Shoulder health',bi:'Biceps',tri:'Triceps',
@@ -350,6 +363,18 @@ const PAT_LABEL = {vpull:'Vertical pull',hpull:'Row',vpush:'Overhead press',hpus
 
 
 const HOWRAW = `
+c_chest|Stand in a doorway with your forearms on the frame, elbows at shoulder height.;Step one foot forward until you feel a gentle stretch across your chest.;Breathe slowly and keep your ribs down.
+c_cross|Bring one arm across your chest.;Hold it just above the elbow with your other hand and pull it gently closer.;Keep your shoulder down. Switch arms halfway.
+c_lat|Kneel on the mat (pad your knees) and sit your hips back toward your heels.;Reach both arms forward, then walk them to one side.;Breathe into the stretch. Switch sides halfway.
+c_tri|Reach one arm overhead and bend the elbow so your hand drops behind your head.;Use your other hand to press the elbow gently back and lean slightly sideways.;Switch arms halfway.
+c_fig4|Lie on your back with your knees bent.;Cross one ankle over the opposite knee and pull that thigh toward you.;Breathe and keep your head down. Switch legs halfway.
+c_ham|Lie on your back and raise one leg, holding behind the thigh or calf (a band works too).;Straighten the leg as far as is comfortable.;Switch legs halfway.
+c_twist|Lie on your back with your arms out to the sides and knees bent.;Let both knees fall to one side while your shoulders stay on the mat.;Switch sides halfway.
+c_hip|Lie on your back and hug one knee to your chest.;Let the other leg rest long on the mat, pressing it gently down.;Switch legs halfway.
+c_neck|Sit or stand tall with your shoulders relaxed down.;Let your right ear drift toward your right shoulder. Rest your hand lightly on your head if you like.;Hold, then switch sides halfway.
+c_calf|Stand facing a wall with both hands on it, one foot back.;Press the back heel down and bend the front knee slightly until you feel a stretch in the calf.;Switch legs halfway.
+c_fly|Sit on the mat with the soles of your feet together and knees dropped out.;Sit tall and hinge forward slightly from the hips.;Breathe and let your knees relax. Stop if your knees complain.
+c_wrist|Hold one arm straight out in front with your palm up.;Use the other hand to gently pull your fingers back toward you.;Then turn the palm down and gently press the fingers toward the floor. Switch arms halfway.
 w_catcow|On hands and knees (pad your knees with the mat), round your back and tuck your chin, then arch and look up.;Slide one arm under your chest and rotate, then switch sides.;Move slowly for the full minute.
 w_90|Sit on the floor with both knees bent about 90 degrees, one in front and one to the side.;Rotate your knees to the other side without using your hands, in a comfortable range.;Keep your chest tall and switch smoothly.
 w_roller|Lie with the roller under your upper back and your hands behind your head.;Lift your hips slightly and gently extend back over the roller.;Roll up and down your upper back and avoid your low back.
@@ -450,7 +475,7 @@ hang_knee|Hang from the pull-up bar, using the assist band or step if needed.;Cu
 rev_crunch|Lie on your back with your knees bent over your hips.;Curl your hips up off the floor toward your ribs.;Lower slowly.
 bench_leg|Lie on the bench and hold the top edge behind your head.;Raise your legs together until they're over your hips.;Lower slowly without arching your back.
 wood|Set a pulley high and stand sideways, holding the handle with both hands.;Pull diagonally down across your body, rotating from your trunk.;Return slowly. Finish all reps, then switch sides.
-russian|Sit on the mat with your knees bent and lean back slightly, holding a dumbbell at your chest.;Rotate your ribcage from side to side. Each touch to a side counts as 1 rep, so 18 reps is 9 to each side.;Keep your chest tall and move slowly.
+russian|Sit on the mat with your knees bent and lean back slightly, holding a dumbbell at your chest.;Rotate your ribcage from side to side. One rep is one twist to the left and one to the right, so 18 reps is 18 to each side.;Keep your chest tall and move slowly.
 bicycle|Lie on your back with your hands behind your head.;Bring one knee in as you rotate the opposite elbow toward it.;Switch sides in a slow, steady rhythm.
 side_plank|Lie on your side with your elbow under your shoulder.;Lift your hips so your body is in one line.;Hold, then switch sides.
 suitcase|Hold a heavy dumbbell in one hand at your side.;Walk with tall posture and don't lean.;Finish the time, then switch hands.
@@ -466,7 +491,7 @@ const MUSC = {vpull:'Lats, biceps',hpull:'Upper back, lats, biceps',vpush:'Shoul
   shoulder:'Rotator cuff, rear delts, shoulder blades',bi:'Biceps',tri:'Triceps',squat:'Quads, glutes',hinge:'Hamstrings, glutes, low back',
   single:'Glutes, hamstrings, balance',glute:'Glutes, hips',ham:'Hamstrings',calf:'Calves, ankles',comp:'Full body',carry:'Grip, core, back',
   cardio:'Heart and lungs',cae:'Deep core',car:'Obliques, deep core',cfl:'Abs',cro:'Obliques',cla:'Side core, obliques',csw:'Abs, hip flexors',
-  warm:'Mobility',wact:'Activation',wcard:'Heart rate'};
+  warm:'Mobility',wact:'Activation',wcard:'Heart rate',cool:'Cool-down'};
 const RELATED = {vpull:['hpull'],hpull:['vpull'],hpush:['vpush'],vpush:['hpush'],single:['glute'],glute:['single','hinge'],squat:['single'],ham:['hinge'],hinge:['ham','glute'],
   bi:['hpull'],tri:['hpush'],calf:['single'],shoulder:['hpull'],cardio:['hinge']};
 const muscOf = ex => MUSC[ex.pat.find(p => MUSC[p])] || '';
@@ -971,6 +996,13 @@ function sheetHtml(w){
     <button class="btn" data-act="closesheet">Cancel</button></div>`;
 }
 
+const COOL_START='2026-10-13'; // cool-downs begin with the workout on this date
+const COOL_POOL={pull:['c_lat','c_cross','c_tri','c_neck','c_twist'],legs:['c_fig4','c_hip','c_ham','c_calf','c_fly','c_twist'],
+  push:['c_chest','c_tri','c_cross','c_neck','c_wrist'],full:['c_twist','c_ham','c_lat','c_chest','c_hip','c_fig4']};
+function coolPair(w){ // two different stretches, varied by workout and by "new version", repeats allowed over time
+  const pool=COOL_POOL[w.focus]||COOL_POOL.full, key=w.id+'|'+(S.regen[w.id]||0);
+  let h=7; for(const ch of key) h=(h*31+ch.charCodeAt(0))>>>0;
+  const a=h%pool.length, b=(a+1+Math.floor(h/7)%(pool.length-1))%pool.length; return [pool[a],pool[b]] }
 function renderDay(){
   ensureWeek(U.wk);
   const wkObj=S.weeks[U.wk]; const w=wkObj&&wkObj.workouts[U.day];
@@ -983,6 +1015,14 @@ function renderDay(){
     return `<li class="${wd?'complete':''}" data-warm="${x.id}"><div class="wh"><button class="wck ${wd?'on':''}" data-act="warmdone" data-id="${x.id}" aria-pressed="${wd}" aria-label="Mark ${esc(ex.n)} done">✓</button><b>${esc(ex.n)}</b><span>${x.secs} sec</span></div><p class="note">${esc(ex.cue)}</p>
       <details class="how"><summary>How to</summary><ol>${steps.map(t=>`<li>${esc(t)}</li>`).join('')}</ol><a href="${yt}" target="_blank" rel="noopener">Find a demo video</a></details>
       <div class="ex-actions"><button class="btn small teal" data-act="timer" data-secs="${x.secs}" data-warm="${x.id}">Start ${x.secs} sec timer</button></div></li>`}).join('');
+  const coolOn=iso(d)>=COOL_START;
+  const cool=!coolOn?'':coolPair(w).map(id=>{const ex=exById(id); if(!ex) return '';
+    const steps=HOWTO[id]||['Move slowly and smoothly.','Stop if anything pinches.'];
+    const yt='https://www.youtube.com/results?search_query='+encodeURIComponent(ex.n+' stretch');
+    const cd=!!((S.sessions[w.id]||{}).cool||{})[id];
+    return `<li class="${cd?'complete':''}" data-cool="${id}"><div class="wh"><button class="wck ${cd?'on':''}" data-act="cooldone" data-id="${id}" aria-pressed="${cd}" aria-label="Mark ${esc(ex.n)} done">✓</button><b>${esc(ex.n)}</b><span>${ex.secs} sec</span></div><p class="note">${esc(ex.cue)}</p>
+      <details class="how"><summary>How to</summary><ol>${steps.map(t=>`<li>${esc(t)}</li>`).join('')}</ol><a href="${yt}" target="_blank" rel="noopener">Find a demo video</a></details>
+      <div class="ex-actions"><button class="btn small teal" data-act="timer" data-secs="${ex.secs}" data-cool="${id}">Start ${ex.secs} sec timer</button></div></li>`}).join('');
   const finIdx=w.main.findIndex(e=>e.fin);
   let mainHtml='';
   w.main.forEach((e,i)=>{
@@ -1006,8 +1046,9 @@ function renderDay(){
   ${mainHtml}
   <div class="sec"><h3>Core</h3><span class="t">${w.abs.length} moves, every workout</span></div>
   ${w.abs.map((e,i)=>exCard(w,e,i,'abs')).join('')}
+  ${coolOn?`<div class="sec"><h3>Cool-down</h3><span class="t">optional, about 2 min</span></div><div class="warm"><ul>${cool}</ul></div>`:''}
   <div class="foot">
-    <button class="btn primary" data-act="finish">${done?'Update saved workout':'Finish workout'}</button>
+    ${done?'<span class="btn fin-badge" role="status">✓ Finished</span><button class="btn" data-act="editwo">Edit workout</button>':'<button class="btn primary" data-act="finish">Finish workout</button>'}
     <a class="btn" href="#/week/${U.wk}">Back to week</a>
     <button class="btn" data-act="regen-day">New version of this day</button>
   </div>
@@ -1182,6 +1223,12 @@ function setWarm(id,on){
   if(li){li.classList.toggle('complete',!!on); const b=li.querySelector('.wck'); if(b){b.classList.toggle('on',!!on); b.setAttribute('aria-pressed',String(!!on))}}
   updateDone();
 }
+function setCool(id,on){
+  const w=getWorkout(U.wk,U.day); if(!w) return; const se=sess(w.id); se.cool=se.cool||{};
+  if(on) se.cool[id]=1; else delete se.cool[id]; save();
+  const li=document.querySelector(`li[data-cool="${id}"]`);
+  if(li){li.classList.toggle('complete',!!on); const b=li.querySelector('.wck'); if(b){b.classList.toggle('on',!!on); b.setAttribute('aria-pressed',String(!!on))}}
+}
 function updateDone(user){
   const cards=[...document.querySelectorAll('article.ex[data-card]')]; if(!cards.length&&!document.querySelector('li[data-warm]')) return;
   let done=0;
@@ -1226,6 +1273,8 @@ document.addEventListener('click',ev=>{
     if(n===0&&location.hash==='#/') route();
   }
   else if(a==='skip'){const w=getWorkout(U.wk,U.day);const se=sess(w.id);se.skip=se.skip||{};const id=b.dataset.id; if(se.skip[id]) delete se.skip[id]; else se.skip[id]=1; save(); render(true); toast(se.skip[id]?'Skipped. It won\'t count against this workout.':'Skip undone')}
+  else if(a==='editwo'){const w=getWorkout(U.wk,U.day);const se=sess(w.id);delete se.done;save();render(true);toast('Workout reopened. Tap Finish workout when you are done.')}
+  else if(a==='cooldone'){const nowOn=!b.classList.contains('on'); haptic(nowOn?'done':'tick'); setCool(b.dataset.id,nowOn)}
   else if(a==='finish'){const w=getWorkout(U.wk,U.day);const s=sess(w.id);s.done=s.date||iso(new Date());save();toast('Workout saved');render(true)}
   else if(a==='regen-day'){regenDay(U.wk,U.day);render(true);toast('New version built')}
   else if(a==='regen-week'){regenWeek(U.wk);render(true);toast('Week rebuilt')}
@@ -1412,6 +1461,7 @@ function runTimer(btn){
     if(left<=10&&left>0&&!TM.dinged&&total>10){TM.dinged=true;ding(1175,500,0.35)}
     if(left<=0){TM.done=true;clearInterval(TM.t);num.textContent='Done';fg.style.strokeDashoffset=String(C2);el.classList.remove('low');el.classList.add('fin');sub.textContent='Nice work';pb.textContent='Again';beep();
       if(btn.dataset.warm) setWarm(btn.dataset.warm,true);
+      else if(btn.dataset.cool) setCool(btn.dataset.cool,true);
       else { const tm=TM; setTimeout(()=>{ // timed exercise finished: log the next open set (this also starts the rest)
         if(!tm||TM!==tm||!tm.done) { if(TM&&TM!==tm) return }
         const art=btn.closest('article.ex'); const ck=art&&[...art.querySelectorAll('button.ck')].find(x=>!x.classList.contains('on')); if(ck) ck.click() },2200) } }
