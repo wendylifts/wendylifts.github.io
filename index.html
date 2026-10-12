@@ -146,6 +146,14 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 .ver{text-align:center;color:var(--muted,#6b7280);font-size:13px;padding:8px 16px 28px}
 .brand{display:flex;align-items:center;gap:10px}.brand img{border-radius:9px;display:block}
+.calhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}.calhead h3{margin:0}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;max-width:360px;margin:0 auto}
+.cw{text-align:center;font-size:12px;color:var(--muted)}
+.cd{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:14px;color:var(--ink)}
+.cd.on{background:var(--lane);color:var(--lane-ink);font-weight:600}
+.cd.part{border:2px solid var(--lane)}
+.cd.today{box-shadow:0 0 0 2px var(--buoy)}
+.btn:disabled{opacity:.4;cursor:default}
 </style>
 </head>
 <body>
@@ -157,7 +165,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 9:55 AM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 10:10 AM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -761,7 +769,7 @@ const wu=ex=>isCable(ex)?'plates':'lb';
 const fmtRows=rows=>rows.map(r=>hasL(r)?one(r.w,r.r)+' R, '+one(r.lw,r.lr)+' L':one(r.w,r.r)).join(', ');
 
 /* ---------- UI state ---------- */
-const U={tab:'workout',wk:iso(mondayOf(new Date())),day:0,sel:null,metric:'top',swap:null,edit:null};
+const U={tab:'workout',wk:iso(mondayOf(new Date())),day:0,sel:null,metric:'top',swap:null,edit:null,cal:0};
 function sortedDays(){return [...S.days].sort((a,b)=>((a+6)%7)-((b+6)%7))}
 function dayDate(wk,di){return addDays(parse(wk),(sortedDays()[di]+6)%7)}
 
@@ -961,6 +969,28 @@ function chartSvg(pts,yl){
     ${ticks}<path d="${line}" fill="none" stroke="var(--lane)" stroke-width="3" stroke-linejoin="round"/>${dots}
     <text x="${pl}" y="${H-10}">${pts[0].d}</text><text x="${W-pr}" y="${H-10}" text-anchor="end">${pts[pts.length-1].d}</text></svg>`;
 }
+function calendarCard(){
+  const days={};
+  Object.values(S.sessions).forEach(s=>{
+    const logged=Object.values(s.sets||{}).some(a=>a.some(r=>r&&r.r!==''&&r.r!=null));
+    if(!s.date||!(s.done||logged)) return;
+    days[s.date]=days[s.date]==='done'||s.done?'done':'part';
+  });
+  const now=new Date(); const m0=new Date(now.getFullYear(),now.getMonth()+U.cal,1);
+  const y=m0.getFullYear(), mo=m0.getMonth(); const dim=new Date(y,mo+1,0).getDate(); const lead=m0.getDay();
+  const today=iso(now); let cells='';
+  for(let i=0;i<lead;i++) cells+='<span class="cd"></span>';
+  let n=0;
+  for(let d=1;d<=dim;d++){
+    const k=y+'-'+pad(mo+1)+'-'+pad(d); const st=days[k]; if(st==='done') n++;
+    cells+=`<span class="cd ${st==='done'?'on':st==='part'?'part':''} ${k===today?'today':''}" ${st?`aria-label="${k}: lifted"`:''}>${d}</span>`;
+  }
+  const label=m0.toLocaleDateString(undefined,{month:'long',year:'numeric'});
+  return `<div class="card cal"><div class="calhead"><button class="btn small" data-act="calnav" data-d="-1" aria-label="Previous month">←</button><h3>${label}</h3>
+    <button class="btn small" data-act="calnav" data-d="1" aria-label="Next month" ${U.cal>=0?'disabled':''}>→</button></div>
+    <div class="calgrid">${['S','M','T','W','T','F','S'].map(x=>`<span class="cw">${x}</span>`).join('')}${cells}</div>
+    <p class="note">${n} ${n===1?'day':'days'} lifted this month. Filled = finished workout, outlined = sets logged but not finished.</p></div>`;
+}
 function renderProgress(){
   const sessions=Object.values(S.sessions).filter(s=>s.done);
   const doneIds=Object.keys(S.sessions).filter(k=>S.sessions[k].done);
@@ -993,6 +1023,7 @@ function renderProgress(){
       ${[...ss].reverse().map(s=>`<tr><td>${s.date}</td><td>${fmtRows(s.rows)}</td></tr>`).join('')}</tbody></table>`;
   }
   return `<h2>Progress</h2>
+  ${calendarCard()}
   <div class="stats" style="margin-top:12px">
     <div class="stat"><b>${doneIds.length}</b><span>workouts finished</span></div>
     <div class="stat"><b>${weeks.size}</b><span>weeks trained</span></div>
@@ -1069,6 +1100,7 @@ document.addEventListener('click',ev=>{
     if(!o.same.length&&!o.related.length) return toast('No other option fits your gear');
     U.swap={b:b.dataset.b,i:+b.dataset.i}; render(true);
   }
+  else if(a==='calnav'){U.cal=Math.min(0,U.cal+(+b.dataset.d));render(true)}
   else if(a==='closesheet'){U.swap=null;render(true)}
   else if(a==='setdone'){
     const ri=document.querySelector(`input[data-set="${b.dataset.set}"]`);
