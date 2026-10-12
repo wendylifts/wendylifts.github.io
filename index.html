@@ -60,9 +60,12 @@ h3{font-size:21px}
 .sec h3{font-size:24px}
 .sec .t{color:var(--muted);font-size:14px}
 .warm{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:6px 14px}
-.warm li>span:last-child{white-space:nowrap;color:var(--muted)}
-.warm li>span:first-child{flex:1;min-width:0}
-.warm li{padding:6px 0;border-bottom:1px solid var(--line);list-style:none;display:flex;justify-content:space-between;gap:10px}
+.warm .wh{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+.warm .wh span{white-space:nowrap;color:var(--muted)}
+.warm .wh b{flex:1;min-width:0}
+.warm .note{margin:2px 0 4px}
+.warm li{padding:10px 0;border-bottom:1px solid var(--line);list-style:none}
+.warm li li{border:0;padding:2px 0;list-style:decimal}
 .warm li:last-child{border-bottom:0}
 .warm ul{margin:0;padding:0}
 .ex{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px}
@@ -166,7 +169,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 10:50 AM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 11:05 AM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -924,7 +927,12 @@ function renderDay(){
   const wkObj=S.weeks[U.wk]; const w=wkObj&&wkObj.workouts[U.day];
   if(!w) return '<p class="empty">That workout isn\'t available.</p><a class="btn" href="#/">Back to this week</a>';
   const ph=PHASES[wkObj.ph]; const f=FOCUS[w.focus]; const d=dayDate(U.wk,U.day); const mon=parse(U.wk);
-  const warm=w.warm.map(x=>{const ex=exById(x.id);return `<li><span><b>${esc(ex.n)}</b><br><span class="note">${esc(ex.cue)}</span></span><span>${x.secs} sec</span></li>`}).join('');
+  const warm=w.warm.map(x=>{const ex=exById(x.id);
+    const steps=HOWTO[x.id]||['Move slowly and smoothly.','Stop if anything pinches.'];
+    const yt='https://www.youtube.com/results?search_query='+encodeURIComponent(ex.n+' exercise form');
+    return `<li><div class="wh"><b>${esc(ex.n)}</b><span>${x.secs} sec</span></div><p class="note">${esc(ex.cue)}</p>
+      <details class="how"><summary>How to</summary><ol>${steps.map(t=>`<li>${esc(t)}</li>`).join('')}</ol><a href="${yt}" target="_blank" rel="noopener">Find a demo video</a></details>
+      <div class="ex-actions"><button class="btn small teal" data-act="timer" data-secs="${x.secs}">Start ${x.secs} sec timer</button></div></li>`}).join('');
   const finIdx=w.main.findIndex(e=>e.fin);
   let mainHtml='';
   w.main.forEach((e,i)=>{
