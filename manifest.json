@@ -1,0 +1,2 @@
+{"name":"SwimLift","short_name":"SwimLift","start_url":"./","scope":"./","display":"standalone","background_color":"#0B3C5D","theme_color":"#0B3C5D",
+"icons":[{"src":"swimlift-180.png","sizes":"180x180","type":"image/png"},{"src":"swimlift-192.png","sizes":"192x192","type":"image/png"},{"src":"swimlift-512.png","sizes":"512x512","type":"image/png"}]}
