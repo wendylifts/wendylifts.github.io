@@ -240,7 +240,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 9:43 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 4:53 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -1628,7 +1628,15 @@ document.addEventListener('input',ev=>{
   if(t.dataset&&t.dataset.note) return; // notes save with the Save button
 
   if(t.dataset&&t.dataset.set){
-    t.classList.remove('pre'); storeSet(t);
+    t.classList.remove('pre'); delete t.dataset.auto; storeSet(t);
+    if(/\|l?w$/.test(t.dataset.set)){ // copy this weight into the empty boxes that follow, so you only type it once
+      const card=t.closest('article.ex'); const ws=card?[...card.querySelectorAll('input[data-set]')].filter(x=>/\|l?w$/.test(x.dataset.set)):[];
+      const me=ws.indexOf(t);
+      for(let q=me+1;q<ws.length;q++){ const x=ws[q];
+        if(x.value.trim()!==''&&!x.dataset.auto) break; // stop at a box you typed yourself or that came from last time
+        x.value=t.value; if(t.value.trim()===''){x.classList.remove('pre');delete x.dataset.auto} else {x.classList.add('pre');x.dataset.auto='1'}
+        storeSet(x) }
+    }
     if(/\|l?r$/.test(t.dataset.set)){
       const ck=document.querySelector(`[data-act="setdone"][data-set="${t.dataset.set}"]`);
       if(ck){
