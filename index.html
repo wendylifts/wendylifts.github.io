@@ -240,7 +240,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 5:20 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 13, 2026, 5:38 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -1421,7 +1421,7 @@ document.addEventListener('click',ev=>{
   }
   else if(a==='editwo'){const w=getWorkout(U.wk,U.day);const se=sess(w.id);delete se.done;save();render(true);toast('Workout reopened. Tap Finish workout when you are done.')}
   else if(a==='cooldone'){const nowOn=!b.classList.contains('on'); haptic(nowOn?'done':'tick'); setCool(b.dataset.id,nowOn)}
-  else if(a==='finish'){const w=getWorkout(U.wk,U.day);const s=sess(w.id);s.done=s.date||iso(new Date());save();toast('Workout saved');render(true)}
+  else if(a==='finish'){const w=getWorkout(U.wk,U.day);const s=sess(w.id);if(!s.dateEdited)s.date=iso(new Date());s.done=s.date;save();toast('Workout saved');render(true)}
   else if(a==='regen-day'){regenDay(U.wk,U.day);render(true);toast('New version built')}
   else if(a==='regen-week'){regenWeek(U.wk);render(true);toast('Week rebuilt')}
   else if(a==='swap'){
@@ -1687,7 +1687,7 @@ document.addEventListener('change',ev=>{
   else if(t.id==='autorest'){S.autoRest=t.checked;save(); if(!t.checked) stopRest()}
   else if(t.id==='wdate'){
     if(!t.value) return;
-    const w=getWorkout(U.wk,U.day); const se=sess(w.id); se.date=t.value; if(se.done) se.done=t.value; if(w.extra) w.date=t.value;
+    const w=getWorkout(U.wk,U.day); const se=sess(w.id); se.date=t.value; se.dateEdited=1; if(se.done) se.done=t.value; if(w.extra) w.date=t.value;
     save(); toast('Date updated'); render(true);
   }
   else if(t.id==='tgt'){S.target=Math.min(90,Math.max(25,+t.value||45));save()}
