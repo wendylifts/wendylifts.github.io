@@ -160,7 +160,20 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 .cd{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:14px;color:var(--ink)}
 .cd.on{background:var(--lane);color:var(--lane-ink);font-weight:600}
 .cd.part{border:2px solid var(--lane)}
+.cd{position:relative}
 .cd.today{box-shadow:0 0 0 2px var(--buoy)}
+.cd.sw::after{content:"";position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:7px;height:7px;border-radius:50%;background:#1D4ED8;box-shadow:0 0 0 1.5px #fff}
+.cd.sw:not(.on):not(.part){background:rgba(59,130,246,.18)}
+.swimbar{margin:12px 0}
+.swimbar h3{margin:0 0 2px;font-size:16px}
+.swimbar .swgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:8px}
+.swd{display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 0;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-size:12px;line-height:1.2;cursor:pointer}
+.swd b{font-size:16px}
+.swd .tk{height:16px;font-size:14px;line-height:16px;color:transparent}
+.swd.on{background:#1D4ED8;border-color:#1D4ED8;color:#fff}
+.swd.on .tk{color:#fff}
+.swd.today{box-shadow:0 0 0 2px var(--buoy)}
+@media (prefers-color-scheme:dark){.cd.sw::after{background:#60A5FA;box-shadow:0 0 0 1.5px #08171F}.swd.on{background:#2563EB;border-color:#3B82F6}}
 .btn:disabled{opacity:.4;cursor:default}
 .btn.favon{border-color:var(--buoy);color:var(--buoy);font-weight:600}
 #tmr{position:fixed;inset:0;z-index:50;background:rgba(6,20,30,.86);display:flex;align-items:center;justify-content:center;padding:16px}
@@ -224,7 +237,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 8:26 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 9:25 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -982,6 +995,13 @@ function weekBalance(wk){
   return {pull,push};
 }
 
+function swimBar(){
+  const sun=parse(U.wk), today=iso(new Date()), sw=S.swim||{}; const names=['Mon','Tue','Wed','Thu','Fri','Sat','Sun']; // same Monday-to-Sunday week as the workouts
+  const btns=names.map((nm,i)=>{const d=addDays(sun,i), k=iso(d), on=!!sw[k];
+    return `<button class="swd ${on?'on':''} ${k===today?'today':''}" data-act="swimday" data-d="${k}" aria-pressed="${on}" aria-label="${nm} ${fmtShort(d)}: swam"><span>${nm}</span><b>${d.getDate()}</b><span class="tk" aria-hidden="true">✓</span></button>`}).join('');
+  const cnt=names.filter((_,i)=>sw[iso(addDays(sun,i))]).length;
+  return `<div class="swimbar card"><h3>Swims this week</h3><span class="note">Tap the days you swam. ${cnt?cnt+(cnt===1?' swim day':' swim days')+' so far.':'They show on your Progress calendar.'}</span><div class="swgrid">${btns}</div></div>`;
+}
 function renderHome(){
   ensureWeek(U.wk);
   const wkObj=S.weeks[U.wk]; const ph=PHASES[wkObj.ph]; const mon=parse(U.wk);
@@ -1006,6 +1026,7 @@ function renderHome(){
     </div>
   </div>
   <p class="note">Swimmer balance this week: ${bal.pull} pulling sets to ${bal.push} pushing sets. Tap a day to open its workout.</p>
+  ${swimBar()}
   <div class="cards">${cards}</div>
   <div class="addx"><label>Want to lift again this week?<select id="xfocus" aria-label="Focus for the extra workout">${Object.keys(FOCUS).map(k=>`<option value="${k}" ${k==='full'?'selected':''}>${esc(FOCUS[k].n)}</option>`).join('')}</select></label>
     <button class="btn primary" data-act="addextra">+ Add extra workout</button></div>
@@ -1117,20 +1138,21 @@ function calendarCard(){
     if(!s.date||!(s.done||logged)) return;
     days[s.date]=days[s.date]==='done'||s.done?'done':'part';
   });
+  const swim=S.swim||{};
   const now=new Date(); const m0=new Date(now.getFullYear(),now.getMonth()+U.cal,1);
   const y=m0.getFullYear(), mo=m0.getMonth(); const dim=new Date(y,mo+1,0).getDate(); const lead=m0.getDay();
   const today=iso(now); let cells='';
   for(let i=0;i<lead;i++) cells+='<span class="cd"></span>';
-  let n=0;
+  let n=0, ns=0;
   for(let d=1;d<=dim;d++){
-    const k=y+'-'+pad(mo+1)+'-'+pad(d); const st=days[k]; if(st==='done') n++;
-    cells+=`<span class="cd ${st==='done'?'on':st==='part'?'part':''} ${k===today?'today':''}" ${st?`aria-label="${k}: lifted"`:''}>${d}</span>`;
+    const k=y+'-'+pad(mo+1)+'-'+pad(d); const st=days[k]; if(st==='done') n++; const sw=!!swim[k]; if(sw) ns++;
+    cells+=`<span class="cd ${st==='done'?'on':st==='part'?'part':''} ${sw?'sw':''} ${k===today?'today':''}" ${(st||sw)?`aria-label="${k}: ${st?'lifted':''}${st&&sw?' and ':''}${sw?'swam':''}"`:''}>${d}</span>`;
   }
   const label=m0.toLocaleDateString(undefined,{month:'long',year:'numeric'});
   return `<div class="card cal"><div class="calhead"><button class="btn small" data-act="calnav" data-d="-1" aria-label="Previous month">←</button><h3>${label}</h3>
     <button class="btn small" data-act="calnav" data-d="1" aria-label="Next month" ${U.cal>=0?'disabled':''}>→</button></div>
     <div class="calgrid">${['S','M','T','W','T','F','S'].map(x=>`<span class="cw">${x}</span>`).join('')}${cells}</div>
-    <p class="note">${n} ${n===1?'day':'days'} lifted this month. Filled = finished workout, outlined = sets logged but not finished.</p></div>`;
+    <p class="note">${n} ${n===1?'day':'days'} lifted and ${ns} ${ns===1?'day':'days'} swum this month.</p><p class="note">Teal fill = finished lift. Outline = sets logged but not finished. Blue dot = swam. Fill with a blue dot = you did both.</p></div>`;
 }
 function renderProgress(){
   const sessions=Object.values(S.sessions).filter(s=>s.done);
@@ -1367,6 +1389,7 @@ document.addEventListener('click',ev=>{
   }
   else if(a==='testsound'){haptic('success');unlockAudio();ding(880,250,0.4);setTimeout(()=>ding(1175,500,0.4),300);setTimeout(()=>ding(1320,700,0.4),700);toast('Test sound played')}
   else if(a==='warmdone'){const nowOn=!b.classList.contains('on'); haptic(nowOn?'done':'tick'); setWarm(b.dataset.id,nowOn)}
+  else if(a==='swimday'){S.swim=S.swim||{}; const k=b.dataset.d; if(S.swim[k]) delete S.swim[k]; else S.swim[k]=1; save(); render(true)}
   else if(a==='calnav'){U.cal=Math.min(0,U.cal+(+b.dataset.d));render(true)}
   else if(a==='closesheet'){U.swap=null;render(true)}
   else if(a==='setdone'){
