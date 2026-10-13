@@ -185,6 +185,9 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 .ex.current{scroll-margin-top:12px;border-color:#F59E0B;border-width:2px;box-shadow:inset 6px 0 0 #F59E0B,0 0 0 3px rgba(245,158,11,.25)}
 .ex.current:not(.started) h3::before{content:"UP NEXT ";font-size:.6em;letter-spacing:.06em;color:#B45309;background:#FEF3C7;border-radius:6px;padding:2px 6px;margin-right:6px;vertical-align:middle}
 .xnote{background:#FEF3C7;color:#5B3A06;border-left:4px solid #F59E0B;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:15px}
+.xnote{position:relative;padding-right:46px}
+.ndel{position:absolute;top:6px;right:6px;width:36px;height:36px;border-radius:50%;border:1.5px solid #D97706;background:transparent;color:#92400E;display:flex;align-items:center;justify-content:center;padding:0}
+@media (prefers-color-scheme:dark){.ndel{color:#FBBF24;border-color:#B45309}}
 .xnote b{display:block;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#92400E}
 .xnote small{color:#92400E}
 .nbox textarea{width:100%;box-sizing:border-box;font:inherit;border:1.5px solid var(--line);border-radius:10px;padding:8px;background:var(--surface);color:var(--ink);margin:4px 0 8px;resize:vertical}
@@ -220,7 +223,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 4:06 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 8:16 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -899,8 +902,16 @@ function coachNote(ex){
 }
 function noteHtml(id){
   const n=(S.notes||{})[id]; const has=n&&n.t&&n.t.trim();
-  return `<div class="xnote" data-nshow="${id}" ${has?'':'hidden'}><b>Your note</b><span data-ntxt>${has?esc(n.t):''}</span><small>${has&&n.d?' ('+esc(n.d)+')':''}</small></div>
-    <div class="nbox" data-nbox="${id}" hidden><textarea data-note="${id}" rows="3" maxlength="500" placeholder="Jot a note, like which band or seat setting. It will show up next time this exercise comes up.">${has?esc(n.t):''}</textarea></div>`;
+  return `<div class="xnote" data-nshow="${id}" ${has?'':'hidden'}><button class="ndel" data-act="notedel" data-id="${id}" aria-label="Delete note" title="Delete note"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 10v7M14 10v7"/></svg></button><b>Your note</b><span data-ntxt>${has?esc(n.t):''}</span><small>${has&&n.d?' ('+esc(n.d)+')':''}</small></div>
+    <div class="nbox" data-nbox="${id}" hidden><textarea data-note="${id}" rows="3" maxlength="500" placeholder="Jot a note, like which band or seat setting. It will show up next time this exercise comes up.">${has?esc(n.t):''}</textarea>
+    <div class="ex-actions"><button class="btn small primary" data-act="notesave" data-id="${id}">Save note</button><button class="btn small" data-act="notecancel" data-id="${id}">Cancel</button></div></div>`;
+}
+function saveNote(id,txt){
+  S.notes=S.notes||{};
+  if(txt.trim()) S.notes[id]={t:txt.trim(),d:fmtShort(new Date())}; else delete S.notes[id];
+  save(); const has=!!txt.trim();
+  document.querySelectorAll(`[data-nshow="${id}"]`).forEach(el=>{ el.hidden=!has; const sp=el.querySelector('[data-ntxt]'); if(sp) sp.textContent=has?S.notes[id].t:''; const sm=el.querySelector('small'); if(sm) sm.textContent=has?' ('+S.notes[id].d+')':'' });
+  document.querySelectorAll(`[data-act="note"][data-id="${id}"]`).forEach(bt=>bt.textContent=has?'Edit note':'Add note');
 }
 function exCard(w,e,i,block){
   const ex=exById(e.id); if(!ex) return '';
@@ -1256,7 +1267,8 @@ function updateDone(user){
   const cards=[...document.querySelectorAll('article.ex[data-card]')]; if(!cards.length&&!document.querySelector('li[data-warm]')) return;
   let done=0;
   cards.forEach(c=>{if(c.classList.contains('skipped')){c.classList.remove('complete');return} const was=c.classList.contains('complete'); const needw=c.dataset.needw==='1'; const ins=[...c.querySelectorAll('input[data-set]')].filter(x=>needw||/\|l?r$/.test(x.dataset.set)); const ok=ins.length>0&&ins.every(x=>x.value.trim()!==''); c.classList.toggle('complete',ok); if(ok) done++; if(user&&ok&&!was) haptic('success')});
-  const cur=cards.find(c=>!c.classList.contains('complete')&&!c.classList.contains('skipped')); cards.forEach(c=>c.classList.toggle('current',c===cur)); cards.forEach(c=>c.classList.toggle('started',c===cur&&[...c.querySelectorAll('input[data-set]')].some(x=>x.value.trim()!==''&&!x.classList.contains('pre'))));
+  const warmLeft=[...document.querySelectorAll('li[data-warm]')].some(l=>!l.classList.contains('complete')); const anyLogged=cards.some(c=>c.classList.contains('complete')||[...c.querySelectorAll('input[data-set]')].some(x=>x.value.trim()!==''&&!x.classList.contains('pre')));
+  const cur=(warmLeft&&!anyLogged)?null:cards.find(c=>!c.classList.contains('complete')&&!c.classList.contains('skipped')); cards.forEach(c=>c.classList.toggle('current',c===cur)); cards.forEach(c=>c.classList.toggle('started',c===cur&&[...c.querySelectorAll('input[data-set]')].some(x=>x.value.trim()!==''&&!x.classList.contains('pre'))));
   const wl=[...document.querySelectorAll('li[data-warm]')]; wl.forEach(l=>{if(l.classList.contains('complete')) done++});
   const total=cards.filter(c=>!c.classList.contains('skipped')).length+wl.length; const p=document.getElementById('dprog');
   if(p) p.textContent=total?(done===total?'All '+total+' done. Tap Finish workout below.':done+' of '+total+' done. Short on time? Tap Finish workout and keep what you logged.'):'';
@@ -1296,6 +1308,16 @@ document.addEventListener('click',ev=>{
     if(n===0&&location.hash==='#/') route();
   }
   else if(a==='note'){const id=b.dataset.id; const art=b.closest('article.ex'); const box=art&&art.querySelector(`[data-nbox="${id}"]`); if(box){box.hidden=!box.hidden; if(!box.hidden){const ta=box.querySelector('textarea'); ta.focus(); try{ta.setSelectionRange(ta.value.length,ta.value.length)}catch(e){}}}}
+  else if(a==='notedel'){
+    const id=b.dataset.id; if(!confirm('Delete this note?')) return;
+    saveNote(id,''); document.querySelectorAll(`textarea[data-note="${id}"]`).forEach(t=>t.value=''); document.querySelectorAll(`[data-nbox="${id}"]`).forEach(x=>x.hidden=true); toast('Note deleted');
+  }
+  else if(a==='notesave'||a==='notecancel'){
+    const id=b.dataset.id; const box=b.closest('[data-nbox]'); const ta=box&&box.querySelector('textarea'); if(!ta) return;
+    if(a==='notesave'){ saveNote(id,ta.value); toast(ta.value.trim()?'Note saved':'Note removed') }
+    else { const n=(S.notes||{})[id]; ta.value=(n&&n.t)||'' }
+    box.hidden=true;
+  }
   else if(a==='skip'){const w=getWorkout(U.wk,U.day);const se=sess(w.id);se.skip=se.skip||{};const id=b.dataset.id; if(se.skip[id]) delete se.skip[id]; else se.skip[id]=1; save(); render(true); toast(se.skip[id]?'Skipped. It won\'t count against this workout.':'Skip undone')}
   else if(a==='addextra'){
     ensureWeek(U.wk); const wkObj=S.weeks[U.wk]; const di=wkObj.workouts.length;
@@ -1522,13 +1544,8 @@ function storeSet(t){
 }
 document.addEventListener('input',ev=>{
   const t=ev.target;
-  if(t.dataset&&t.dataset.note){
-    const id=t.dataset.note; S.notes=S.notes||{}; const txt=t.value;
-    if(txt.trim()) S.notes[id]={t:txt,d:fmtShort(new Date())}; else delete S.notes[id];
-    document.querySelectorAll(`[data-nshow="${id}"]`).forEach(el=>{ const has=!!txt.trim(); el.hidden=!has; const sp=el.querySelector('[data-ntxt]'); if(sp) sp.textContent=txt; const sm=el.querySelector('small'); if(sm) sm.textContent=has?' ('+S.notes[id].d+')':'' });
-    document.querySelectorAll(`[data-act="note"][data-id="${id}"]`).forEach(bt=>bt.textContent=txt.trim()?'Edit note':'Add note');
-    clearTimeout(window.__sv); window.__sv=setTimeout(save,250); return;
-  }
+  if(t.dataset&&t.dataset.note) return; // notes save with the Save button
+
   if(t.dataset&&t.dataset.set){
     t.classList.remove('pre'); storeSet(t);
     if(/\|l?r$/.test(t.dataset.set)){
