@@ -209,6 +209,9 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 .addx{display:flex;flex-direction:column;gap:8px;margin:16px 0;padding:12px;border:1.5px dashed var(--line);border-radius:12px}
 .addx label{display:flex;flex-direction:column;gap:6px;font-weight:600}
 .addx select{font:inherit;padding:10px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink)}
+.backupnote{border-color:#F59E0B;border-width:2px;margin:12px 0}
+.backupnote h3{margin:0 0 4px}
+.backupnote .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
 .fin-badge{background:var(--ok);border-color:var(--ok);color:#fff;cursor:default}
 .ex.skipped{opacity:.6;border-style:dashed}
 .ex.skipped h3::after{content:" (skipped)";font-size:.6em;color:var(--mut,#5b7083)}
@@ -237,7 +240,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 9:25 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 9:37 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -1002,6 +1005,34 @@ function swimBar(){
   const cnt=names.filter((_,i)=>sw[iso(addDays(sun,i))]).length;
   return `<div class="swimbar card"><h3>Swims this week</h3><span class="note">Tap the days you swam. ${cnt?cnt+(cnt===1?' swim day':' swim days')+' so far.':'They show on your Progress calendar.'}</span><div class="swgrid">${btns}</div></div>`;
 }
+function hasData(){
+  return Object.values(S.sessions||{}).some(x=>x.done||Object.values(x.sets||{}).some(a=>a.some(r=>r&&((r.r!==''&&r.r!=null)||(r.lr!==''&&r.lr!=null)))))||Object.keys(S.swim||{}).length>0||Object.keys(S.notes||{}).length>0;
+}
+function backupDue(){
+  if(!hasData()) return false; const b=S.backup||{}, now=Date.now();
+  if(b.skipUntil&&now<b.skipUntil) return false;
+  return !b.last||now-b.last>=7*864e5;
+}
+function lastBackupText(){
+  const l=(S.backup||{}).last; if(!l) return 'Last backup: never';
+  const d=Math.floor((Date.now()-l)/864e5); return 'Last backup: '+(d<=0?'today':d===1?'yesterday':d+' days ago');
+}
+async function doBackup(){ // opens the iPhone share sheet: choose "Save to Files" and pick iCloud Drive
+  const prev=S.backup; S.backup=Object.assign({},prev,{last:Date.now(),skipUntil:0});
+  const name='swimlift-backup-'+iso(new Date())+'.json';
+  let file=null; const text=JSON.stringify(S,null,2);
+  try{ file=new File([text],name,{type:'application/json'}) }catch(e){}
+  try{
+    if(file&&navigator.canShare&&navigator.canShare({files:[file]})){
+      await navigator.share({files:[file],title:'SwimLift backup'});
+      save(); toast('Backed up. Choose Save to Files to keep it in iCloud.');
+    } else {
+      const blob=new Blob([text],{type:'application/json'}); const l=document.createElement('a'); l.href=URL.createObjectURL(blob); l.download=name; l.click(); setTimeout(()=>URL.revokeObjectURL(l.href),1000);
+      save(); toast('Backup downloaded');
+    }
+  }catch(e){ S.backup=prev; if(!e||e.name!=='AbortError') toast('Could not back up. Try again.') }
+  render(true);
+}
 function renderHome(){
   ensureWeek(U.wk);
   const wkObj=S.weeks[U.wk]; const ph=PHASES[wkObj.ph]; const mon=parse(U.wk);
@@ -1015,7 +1046,9 @@ function renderHome(){
         ${done?'<span class="badge dn">&#10003; Done '+fmtShort(parse(S.sessions[x.id].date||done))+'</span>':started?'<span class="badge ok">In progress</span>':iso(d)===todayIso?'<span class="badge hot">Today</span>':''}</span>
       <span class="dc-foc">${f.n}${x.extra?' <span class="chip">Extra</span>':''}</span><span class="dc-d">${esc(f.d)}</span>
       <span class="dc-meta"><span class="chip">About ${x.min} min</span><span class="chip">${x.main.length} strength moves</span><span class="chip">${FMTN[x.format]}</span><span class="chip">Abs included</span></span></a>`}).join('');
+  const bk=backupDue()?`<div class="card backupnote" role="status"><h3>Time for your weekly backup</h3><span class="note">Save a copy of your workouts to Files so you never lose your progress. Tap Back up now, then choose Save to Files and pick iCloud Drive.</span><div class="row"><button class="btn primary" data-act="export">Back up now</button><button class="btn" data-act="backupskip">Skip this week</button></div></div>`:'';
   return `
+  ${bk}
   <div class="weekbar">
     <div class="ttl"><h2>Week of ${fmtShort(mon)}</h2>
       <span class="sub"><span class="chip">${ph.n} phase</span> ${esc(ph.d)}</span></div>
@@ -1236,7 +1269,8 @@ function renderSettings(){
     <div class="row"><button class="btn teal" data-act="refreshapp">Get the latest version</button></div></div>
   <div class="card"><h3>Your data</h3>
     <p class="note">Everything lives in this browser. Export a backup now and then, and use it to move to a new phone or computer.</p>
-    <div class="row"><button class="btn teal" data-act="export">Export backup</button>
+    <p class="note">${lastBackupText()}. Tap Back up now, then choose Save to Files and pick iCloud Drive.</p>
+    <div class="row"><button class="btn teal" data-act="export">Back up now</button>
       <label class="btn" for="imp">Import backup</label><input type="file" id="imp" accept="application/json" hidden>
       <button class="btn ghost" data-act="reset">Erase everything</button></div></div>`;
 }
@@ -1453,11 +1487,8 @@ document.addEventListener('click',ev=>{
     const go=()=>location.replace(location.pathname+'?r='+Date.now()+'#/settings');
     try{ if(window.caches&&caches.keys) caches.keys().then(k=>Promise.all(k.map(x=>caches.delete(x)))).then(()=>setTimeout(go,300),()=>setTimeout(go,300)); else setTimeout(go,300) }catch(e){ setTimeout(go,300) }
   }
-  else if(a==='export'){
-    const blob=new Blob([JSON.stringify(S,null,2)],{type:'application/json'});
-    const l=document.createElement('a');l.href=URL.createObjectURL(blob);l.download='swimlift-backup-'+iso(new Date())+'.json';l.click();
-    setTimeout(()=>URL.revokeObjectURL(l.href),1000);
-  }
+  else if(a==='export'){doBackup()}
+  else if(a==='backupskip'){S.backup=Object.assign({},S.backup,{skipUntil:Date.now()+7*864e5}); save(); render(true); toast('Skipped. I will remind you again in a week.')}
   else if(a==='reset'){if(confirm('Erase all workouts and logs on this device? Export a backup first if you want to keep them.')){S=DEFAULTS();save();location.hash='#/';route()}}
 });
 let audioCtx=null, audioSessTimer=null, playerUnlocked=false;
