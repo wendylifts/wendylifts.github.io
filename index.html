@@ -229,6 +229,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 #rest.low .rn{color:#FF9A7E}
 #rest.fin{background:var(--ok)}
 #rest .btn:not(.teal){background:rgba(255,255,255,.15);border-color:transparent;color:#fff}
+.kneebox{margin:10px 0 2px}.kneebox .hd{display:block;margin-bottom:4px}
 </style>
 </head>
 <body>
@@ -240,7 +241,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 13, 2026, 5:38 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 13, 2026, 5:56 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -575,6 +576,7 @@ const exById = id => lib().find(x=>x.id===id);
 function available(ex){
   if(S.avoid.includes(ex.id)) return false;
   if(ex.k>S.knee) return false;
+  if(ex.k>=1){const ks=kneeState(ex.id); if(ks&&ks.rest) return false}
   return ex.eq.every(spec => spec==='none' || spec.split('/').some(k => S.gear[k]));
 }
 
@@ -843,6 +845,29 @@ function swapEntry(w,idx,blockName,exId){
 
 /* ---------- Sessions & suggestions ---------- */
 function sess(wid){return S.sessions[wid]||(S.sessions[wid]={date:iso(new Date()),sets:{},done:null})}
+function kneeHist(id){
+  const ok=(S.kneeOk&&S.kneeOk[id])||'';
+  return Object.values(S.sessions).filter(s=>s.knee&&s.knee[id]&&s.date&&s.date>ok).map(s=>({d:s.date,v:s.knee[id]})).sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:0);
+}
+/* v: 1 fine, 2 twinge, 3 sore. Rest the move 3 weeks after one sore or two twinges/sores in a row. */
+function kneeState(id){
+  const h=kneeHist(id); if(!h.length) return null;
+  const last=h[h.length-1], pv=h[h.length-2];
+  const days=Math.floor((parse(iso(new Date()))-parse(last.d))/864e5);
+  if(days>=21) return null;
+  const rest=last.v===3||(last.v>=2&&pv&&pv.v>=2);
+  return {last,rest,hold:!rest&&last.v===2,until:iso(addDays(parse(last.d),21))};
+}
+function kneeHtml(ex,wid){
+  if(!(ex.k>=1)) return '';
+  const cur=(S.sessions[wid]&&S.sessions[wid].knee&&S.sessions[wid].knee[ex.id])||0;
+  const ks=kneeState(ex.id);
+  const btn=(v,l)=>`<button class="btn small ${cur===v?'teal':''}" data-act="knee" data-id="${ex.id}" data-v="${v}" aria-pressed="${cur===v}">${l}</button>`;
+  let msg='';
+  if(ks&&ks.rest) msg=`<p class="note">Your knee flagged this move. I'll leave it out of new workouts until ${ks.until}. Use "Swap for another" to change it today.</p>`;
+  else if(ks&&ks.hold) msg='<p class="note">Your knee twinged on this one. Keep the weight the same and stay pain-free. Another twinge and I will rest it.</p>';
+  return `<div class="kneebox"><span class="hd">How did your knee feel?</span><div class="ex-actions">${btn(1,'Fine')}${btn(2,'Twinge')}${btn(3,'Sore')}</div>${msg}</div>`;
+}
 function exSessions(exId){
   const out=[];
   Object.entries(S.sessions).forEach(([wid,s])=>{
@@ -939,7 +964,8 @@ function saveNote(id,txt){
 function exCard(w,e,i,block){
   const ex=exById(e.id); if(!ex) return '';
   const wid=w.id; const timed=!!e.secs;
-  const prev=lastBefore(e.id,wid,timed); const sg=suggest(ex,e,prev);
+  const prev=lastBefore(e.id,wid,timed); let sg=suggest(ex,e,prev);
+  if(sg&&prev&&ex.k>=1){const ks=kneeState(ex.id); if(ks&&(ks.hold||ks.rest)){const tw=Math.max(...flat(prev.rows).map(r=>+r.w||0)); sg={...sg,w:tw||sg.w,text:'Your knee flagged this move. Stay at '+(tw||'the same')+(tw?' '+wu(ex):' effort')+' and keep it pain-free.'}}}
   const tgt=targetReps(e,sg);
   const s=S.sessions[wid]; const saved=(s&&s.sets[e.id])||[];
   const showW=!!ex.l;
@@ -983,6 +1009,7 @@ function exCard(w,e,i,block){
     ${noteHtml(e.id)}
     ${isCable(ex)&&showW?'<p class="note">Log the number of plates on the stack. One plate is about 7 lb.</p>':''}
     <div class="sets ${showW?'':'nw'}">${showW?'<span></span><span class="hd">Weight ('+wu(ex)+')</span>':'<span></span>'}<span class="hd">${timed?'Seconds':'Reps'}</span><span></span>${rows}</div>
+    ${kneeHtml(ex,wid)}
     <div class="ex-actions">
       ${timed?`<button class="btn small teal" data-act="timer" data-secs="${e.secs}">Start ${e.secs} sec timer</button>`:''}
       <button class="btn small" data-act="adjust" data-b="${block}" data-i="${i}">Adjust sets or reps</button>
@@ -1239,6 +1266,7 @@ function renderSettings(){
   const dayOpts=n=>DOWL.map((d,i)=>`<option value="${i}" ${sortedDays()[n]===i?'selected':''}>${d}</option>`).join('');
   const avoid=S.avoid.map(id=>exById(id)).filter(Boolean);
   const fav=(S.fav||[]).map(id=>exById(id)).filter(Boolean);
+  const kr=lib().filter(x=>x.k>=1).map(x=>({x,ks:kneeState(x.id)})).filter(o=>o.ks&&o.ks.rest);
   return `<h2>Gear & settings</h2>
   <div class="card" style="margin-top:12px"><h3>Workout days</h3>
     <div class="row">${[0,1,2,3].map(n=>`<select data-day="${n}" aria-label="Day ${n+1}">${dayOpts(n)}</select>`).join('')}</div>
@@ -1263,7 +1291,8 @@ function renderSettings(){
   <div class="card"><h3>Favorite exercises</h3>
     ${fav.length?fav.map(x=>`<div class="row"><span>♥ ${esc(x.n)}</span><button class="btn small" data-act="fav" data-id="${x.id}">Remove</button></div>`).join(''):'<p class="note">None yet. Tap ♡ Favorite on any exercise and it will show up a bit more often in new workouts.</p>'}</div>
   <div class="card"><h3>Hidden exercises</h3>
-    ${avoid.length?avoid.map(x=>`<div class="row"><span>${esc(x.n)}</span><button class="btn small" data-act="unhide" data-id="${x.id}">Bring back</button></div>`).join(''):'<p class="note">Nothing hidden. Use "Never show this" on any exercise you don\'t want.</p>'}</div>
+    ${avoid.length?avoid.map(x=>`<div class="row"><span>${esc(x.n)}</span><button class="btn small" data-act="unhide" data-id="${x.id}">Bring back</button></div>`).join(''):'<p class="note">Nothing hidden. Use "Never show this" on any exercise you don\'t want.</p>'}
+    ${kr.length?'<h3 style="margin-top:14px">Resting for your knee</h3>'+kr.map(o=>`<div class="row"><span>${esc(o.x.n)} (until ${o.ks.until})</span><button class="btn small" data-act="kneeok" data-id="${o.x.id}">Bring back</button></div>`).join(''):''}</div>
   <div class="card"><h3>Add your own exercise</h3>
     <div class="row"><input type="text" id="cn" placeholder="Name" aria-label="Exercise name">
       <select id="cp" aria-label="Type"><option value="hpull">Row</option><option value="vpull">Vertical pull</option><option value="hpush">Press</option><option value="vpush">Overhead press</option>
@@ -1483,6 +1512,9 @@ document.addEventListener('click',ev=>{
     S.fav=S.fav.includes(id)?S.fav.filter(x=>x!==id):[...S.fav,id]; save();
     toast(S.fav.includes(id)?'Added to favorites. It will show up more in new workouts.':'Removed from favorites'); render(true);
   }
+  else if(a==='knee'){const w=getWorkout(U.wk,U.day);const s=sess(w.id);s.knee=s.knee||{};const v=+b.dataset.v;if(s.knee[b.dataset.id]===v)delete s.knee[b.dataset.id];else s.knee[b.dataset.id]=v;save();render(true);
+    const ks=kneeState(b.dataset.id);if(v===3||(ks&&ks.rest))toast('Noted. Resting this move for 3 weeks.');else if(v===2)toast('Noted. Keep it pain-free.')}
+  else if(a==='kneeok'){S.kneeOk=S.kneeOk||{};S.kneeOk[b.dataset.id]=iso(new Date());save();render(true)}
   else if(a==='unhide'){S.avoid=S.avoid.filter(x=>x!==b.dataset.id);save();render(true)}
   else if(a==='metric'){U.metric=b.dataset.k;render(true)}
   else if(a==='addcustom'){
