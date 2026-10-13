@@ -149,7 +149,8 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 .adjust label{display:inline-flex;gap:8px;align-items:center}
 .adjust input{width:72px}
 .datef{display:inline-flex;gap:8px;align-items:center;font-size:14px;color:var(--muted)}
-.datef input{padding:5px 8px}
+.datef input{padding:6px 10px;font:inherit;font-size:15px;font-weight:600;min-height:36px;border-radius:10px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);-webkit-text-fill-color:var(--ink);opacity:1;color-scheme:light}
+@media (prefers-color-scheme:dark){.datef input{color-scheme:dark}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 .ver{text-align:center;color:var(--muted,#6b7280);font-size:13px;padding:8px 16px 28px}
 .brand{display:flex;align-items:center;gap:10px;color:inherit;text-decoration:none}.brand img{border-radius:9px;display:block}
@@ -223,7 +224,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 8:16 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 8:26 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -1071,6 +1072,8 @@ function renderDay(){
   <div class="hero"><h2>${f.n}</h2><span class="note">${DOWL[d.getDay()]}, ${fmtShort(d)}</span></div>
   <div class="meta"><span class="chip">About ${w.min} min</span><span class="chip">${FMTN[w.format]}</span><span class="chip">Abs included</span><span class="chip">No jumping</span><label class="datef">Date done <input type="date" id="wdate" value="${dateVal}"></label></div>
   <p class="note">${esc(f.d)} ${esc(fmtNote)}</p>
+  ${w.format==='superset'?'<details class="how fmthelp"><summary>What are A1, A2, B1, B2?</summary><ol><li>A1 and A2 are a pair. Do one set of A1, then go straight into one set of A2 with no rest between.</li><li>Now rest for the time shown, then repeat A1, A2 until all the sets are done.</li><li>Then do the same with B1 and B2, and so on.</li></ol><p class="note">The two moves in a pair use different muscles, so one rests while the other works. The rest bar starts after each check, so you can skip it after A1 and only rest after A2.</p></details>':''}
+  ${w.format==='circuit'?'<details class="how fmthelp"><summary>What are C1, C2, C3?</summary><ol><li>Do one set of C1, then one set of C2, and keep going in order to the last move.</li><li>That is one round. Rest 60 to 90 seconds.</li><li>Repeat for every round shown.</li></ol></details>':''}
   <p class="dprog" id="dprog" aria-live="polite"></p>
   <div class="sec"><h3>Warm-up</h3><span class="t">about 5 min</span></div>
   <div class="warm"><ul>${warm}</ul></div>
@@ -1239,14 +1242,36 @@ function startRest(secs,label){
   el.querySelector('#rplus').onclick=()=>{ if(!RT) return; if(RT.done){RT.done=false;RT.dinged=true;l.textContent='Rest';el.classList.remove('fin');RT.end=Date.now()+15000;RT.t=setInterval(tick,250)} else RT.end+=15000; plan(); tick() };
   tick(); RT.t=setInterval(tick,250);
 }
+function isGroupedBtn(b){ const d=b.dataset.set.split('|'); if(d[0]!=='main') return false; const w=getWorkout(U.wk,U.day); const e=w&&w.main[+d[1]]; return !!(e&&e.grp) }
+function focusSet(b){ // put the cursor in the next weight box (if empty) or reps box
+  const d=b.dataset.set.split('|'); const kw=d[3]==='lr'?'lw':'w';
+  const wi=document.querySelector(`input[data-set="${d[0]}|${d[1]}|${d[2]}|${kw}"]`), ri=document.querySelector(`input[data-set="${b.dataset.set}"]`);
+  const inp=(wi&&wi.value.trim()==='')?wi:ri; if(!inp) return;
+  try{ inp.focus({preventScroll:true}); inp.scrollIntoView({block:'center',behavior:'smooth'}) }catch(e){}
+}
 function afterSet(btn){
   const [block,i,n,k]=btn.dataset.set.split('|'); const art=btn.closest('article.ex'); if(!art) return;
+  const w=getWorkout(U.wk,U.day); const list=block==='abs'?w.abs:w.main; const e=list[+i]; const ex=e&&exById(e.id);
+  if(block==='main'&&e&&e.grp){ // superset or circuit: hop A1 -> A2 -> (rest) -> A1 ...
+    const idxs=w.main.map((x,ix)=>x.grp===e.grp?ix:-1).filter(ix=>ix>=0), pos=idxs.indexOf(+i), nn=+n;
+    const openIn=(ix,s)=>{const c=document.querySelector(`article.ex[data-card="main|${ix}"]`); return c&&[...c.querySelectorAll(`button.ck[data-set^="main|${ix}|${s}|"]`)].find(x=>!x.classList.contains('on'))};
+    let target=openIn(+i,nn), rest=false;
+    if(!target){ for(let p=pos+1;p<idxs.length&&!target;p++) target=openIn(idxs[p],nn);
+      if(!target){ rest=true;
+        for(let s2=nn+1;s2<12&&!target;s2++) for(let p=0;p<idxs.length&&!target;p++) target=openIn(idxs[p],s2);
+        for(let s2=0;s2<=nn&&!target;s2++) for(let p=0;p<idxs.length&&!target;p++) target=openIn(idxs[p],s2);
+        if(!target){ const lastCard=document.querySelector(`article.ex[data-card="main|${idxs[idxs.length-1]}"]`); const all=[...document.querySelectorAll('article.ex')]; const nx=all[all.indexOf(lastCard)+1]; if(nx) target=nx.querySelector('button.ck:not(.on)')||nx }
+      } }
+    if(!target){ const f=document.querySelector('[data-act="finish"]'); if(f) f.scrollIntoView({behavior:'smooth',block:'center'}); return }
+    if(rest&&S.autoRest!==false){ const lastE=w.main[idxs[idxs.length-1]]; setTimeout(()=>startRest((lastE&&lastE.rest)||e.rest||60),250) }
+    if(target.matches&&target.matches('button.ck')) focusSet(target); else target.scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
   let target=[...art.querySelectorAll('button.ck')].find(x=>!x.classList.contains('on'));
   let atEnd=false;
   if(!target){ const arts=[...document.querySelectorAll('article.ex')]; const nx=arts[arts.indexOf(art)+1];
     if(nx) target=nx.querySelector('button.ck:not(.on)')||nx; else atEnd=true }
-  const w=getWorkout(U.wk,U.day); const list=block==='abs'?w.abs:w.main; const e=list[+i]; const ex=e&&exById(e.id);
-  if(S.autoRest!==false&&ex&&!e.grp&&(!ex.u||k==='lr')&&!atEnd) startRest(e.rest||60);
+  if(S.autoRest!==false&&ex&&(!ex.u||k==='lr')&&!atEnd) setTimeout(()=>startRest(e.rest||60),250);
   if(atEnd){ const f=document.querySelector('[data-act="finish"]'); if(f) f.scrollIntoView({behavior:'smooth',block:'center'}); return }
   if(target) setTimeout(()=>target.scrollIntoView({behavior:'smooth',block:'center'}),80);
 }
@@ -1352,7 +1377,7 @@ document.addEventListener('click',ev=>{
     const wi=document.querySelector(`input[data-set="${b.dataset.set.replace(/r$/,'w')}"]`); if(wi) wi.classList.remove('pre');
     storeSet(ri); b.classList.toggle('on',!on); b.setAttribute('aria-pressed',String(!on)); save(); updateDone(true);
     clearTimeout(b._rt); delete b.dataset.pend;
-    if(!on) setTimeout(()=>afterSet(b),250);
+    if(!on) afterSet(b);
   }
   else if(a==='adjust'){
     const w=getWorkout(U.wk,U.day); const list=b.dataset.b==='abs'?w.abs:w.main; const e=list[+b.dataset.i];
@@ -1556,7 +1581,7 @@ document.addEventListener('input',ev=>{
         if(!on){ clearTimeout(ck._rt); delete ck.dataset.pend }
         else if(!wasOn||ck.dataset.pend){
           ck.dataset.pend='1'; clearTimeout(ck._rt);
-          ck._rt=setTimeout(()=>{ delete ck.dataset.pend; if(t.value!==''&&ck.classList.contains('on')){ try{t.blur()}catch(e){} afterSet(ck) } },1400);
+          ck._rt=setTimeout(()=>{ delete ck.dataset.pend; if(t.value!==''&&ck.classList.contains('on')){ if(!isGroupedBtn(ck)){ try{t.blur()}catch(e){} } afterSet(ck) } },1400);
         }
       }
     }
