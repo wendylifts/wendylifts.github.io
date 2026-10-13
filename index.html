@@ -240,7 +240,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 4:53 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 5:20 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -254,7 +254,7 @@ const GEAR = [
   ['bench','Adjustable bench'],['bb','Barbell, plates and power rack'],['hex','Hex (trap) bar'],['trx','TRX straps'],
   ['band','Stretch cords / bands'],['pullup','Pull-up bar with assist band'],['ball','Stability ball'],['blocks','Yoga blocks'],
   ['sliders','Sliders'],['step','Aerobic step'],['ankle','Ankle weights'],['pushbars','Push-up bars'],['mat','Exercise mat'],
-  ['roller','Foam roller'],['rope','Battle rope']
+  ['roller','Foam roller'],['rope','Battle rope'],['hyper','Back extension bench (45° Roman chair)'],['abwheel','Ab wheel']
 ];
 const GEAR_NAME = Object.fromEntries(GEAR.map(g => [g[0], g[1].split(' (')[0]]));
 
@@ -315,6 +315,8 @@ goblet_box|Goblet squat to bench|squat|kb/db,bench|3|8-12|75|1|l|Sit back until 
 trx_squat|TRX-assisted squat|squat|trx|3|10-15|60|1|b|Hold the straps for support and sit into a comfortable depth.
 rdl_db|Dumbbell Romanian deadlift|hinge|db|3|8-12|75|0|l|Soft knees, hips back, flat back. Feel the hamstrings load.
 rdl_bb|Barbell Romanian deadlift|hinge|bb|3|6-10|90|0|l|Keep the bar close to your legs.
+back_ext|Back extension (45° bench)|hinge glute|hyper|3|10-15|60|0|b|Hinge at the hips and rise to a straight line. Don't over-arch.
+back_ext_w|Weighted back extension|hinge glute|hyper,db|3|8-12|75|0|l|Hold a dumbbell at your chest. Rise to a straight line, no over-arching.
 hex_dl|Hex-bar deadlift|hinge|hex|3|5-8|90|1|l|Push the floor away and keep your back flat.
 kb_dl|Kettlebell sumo deadlift|hinge|kb|3|8-12|75|0|l|Wide stance, chest tall, push the floor apart.
 pullthru|Cable pull-through|hinge|cable|3|10-15|60|0|l|Hinge back, then squeeze your glutes to stand.
@@ -349,6 +351,7 @@ slider_mc|Slider mountain climbers|cardio|sliders,mat|3|t30|30|0|-|Hands under s
 bear_tap|Bear-crawl shoulder taps|cardio|mat|3|t30|30|0|-|Knees hover. Hips stay still as you tap.
 step_taps|Fast taps on the step|cardio|step|3|t40|20|0|-|Alternate feet, no jumping.
 plank|Plank|cae|mat|2|t40|30|0|-|Ribs down, glutes tight, one straight line.
+ab_wheel|Ab wheel rollout|cae|abwheel,mat|2|6-10|45|1|-|Kneel on the mat, roll out only as far as you can brace. Ribs stay down.
 body_saw|Slider body saw|cae|sliders,mat|2|t30|30|0|-|Forearms on sliders, rock forward and back with a stiff body.
 dead_bug|Dead bug|cae|mat|2|8-12|30|0|-|Low back stays pressed down as arms and legs reach.
 rollout|Stability-ball rollout|cae|ball|2|8-12|30|0|-|Forearms on the ball, roll out only as far as you can brace.
@@ -391,6 +394,9 @@ const PAT_LABEL = {vpull:'Vertical pull',hpull:'Row',vpush:'Overhead press',hpus
 
 
 const HOWRAW = `
+back_ext|Set the pad just below your hip bones and hook your heels under the rollers.;Cross your arms over your chest and hinge forward at the hips with a flat back.;Squeeze your glutes to rise until your body is in a straight line. Don't arch past that.
+back_ext_w|Set the pad just below your hip bones and hook your heels under the rollers.;Hold a dumbbell against your chest and hinge forward with a flat back.;Squeeze your glutes to rise to a straight line. Don't arch past that.
+ab_wheel|Kneel on a padded mat holding the wheel under your shoulders.;Roll forward slowly while you keep your ribs down and your body in one line.;Roll back using your abs. Stop before your lower back sags.
 c_chest|Stand in a doorway with your forearms on the frame, elbows at shoulder height.;Step one foot forward until you feel a gentle stretch across your chest.;Breathe slowly and keep your ribs down.
 c_cross|Bring one arm across your chest.;Hold it just above the elbow with your other hand and pull it gently closer.;Keep your shoulder down. Switch arms halfway.
 c_lat|Kneel on the mat (pad your knees) and sit your hips back toward your heels.;Reach both arms forward, then walk them to one side.;Breathe into the stretch. Switch sides halfway.
@@ -1286,7 +1292,7 @@ function startRest(secs,label){
   el.innerHTML=`<div class="rinfo"><span class="rl">Rest</span><b class="rn">${secs}</b><span class="rs">sec</span></div><div class="rbtns"><button class="btn small" id="rplus">+15</button><button class="btn small teal" id="rskip">Skip</button></div>`;
   document.body.appendChild(el);
   RT={end:Date.now()+secs*1000,t:null,dinged:false,done:false,nodes:[],pre:false};
-  const plan=()=>{ cancelSched(); const left=Math.max(0,(RT.end-Date.now())/1000); const ns=[]; if(left>10&&secs>15) ns.push(schedDing(1175,400,0.3,left-10)); ns.push(schedDing(880,250,0.35,left),schedDing(1320,500,0.4,left+0.3)); RT.nodes=ns.filter(Boolean); RT.pre=RT.nodes.length>=2; RT.preWarn=ns.length===3&&!!ns[0]; RT.tgt=audioCtx?audioCtx.currentTime+left:0; RT.tgtW=audioCtx?audioCtx.currentTime+left-10:0; };
+  const plan=()=>{ cancelSched(); const left=Math.max(0,(RT.end-Date.now())/1000); const ns=[]; let wn=null; if(left>10&&secs>15){wn=schedDing(1175,400,0.3,left-10); ns.push(wn)} ns.push(schedDing(880,250,0.35,left),schedDing(1320,500,0.4,left+0.3),schedDing(1320,450,0.35,left+0.85)); RT.nodes=ns.filter(Boolean); RT.pre=RT.nodes.length>=3; RT.preWarn=!!wn; RT.tgt=audioCtx?audioCtx.currentTime+left:0; RT.tgtW=audioCtx?audioCtx.currentTime+left-10:0; };
   const played=t=>!!(audioCtx&&audioCtx.state==='running'&&audioCtx.currentTime>=t-0.3); // did the pre-scheduled sound really get its turn?
   plan();
   const n=el.querySelector('.rn'), l=el.querySelector('.rl');
@@ -1294,7 +1300,7 @@ function startRest(secs,label){
     const left=Math.max(0,Math.ceil((RT.end-Date.now())/1000)); n.textContent=left;
     el.classList.toggle('low',left<=10&&left>0);
     if(left<=10&&left>0&&!RT.dinged&&secs>15){RT.dinged=true;if(!(RT.preWarn&&played(RT.tgtW)))ding(1175,400,0.3)}
-    if(left<=0&&!RT.done){RT.done=true;clearInterval(RT.t);l.textContent='Go!';n.textContent='';el.classList.add('fin');if(!(RT.pre&&played(RT.tgt))){cancelSched();ding(880,250,0.35);setTimeout(()=>ding(1320,500,0.4),300)}haptic('go'); setTimeout(()=>{if(RT&&RT.done)stopRest()},4000)}
+    if(left<=0&&!RT.done){RT.done=true;clearInterval(RT.t);l.textContent='Go!';n.textContent='';el.classList.add('fin');if(!(RT.pre&&played(RT.tgt))){cancelSched();chime([[880,0,250,0.35],[1320,0.3,500,0.4],[1320,0.85,450,0.35]])}haptic('go'); setTimeout(()=>{if(RT&&RT.done)stopRest()},4000)}
   };
   el.querySelector('#rskip').onclick=stopRest;
   el.querySelector('#rplus').onclick=()=>{ if(!RT) return; if(RT.done){RT.done=false;RT.dinged=true;l.textContent='Rest';el.classList.remove('fin');RT.end=Date.now()+15000;RT.t=setInterval(tick,250)} else RT.end+=15000; plan(); tick() };
@@ -1538,6 +1544,22 @@ function haptic(kind){
     else if(kind==='go'){ setTimeout(pulse,90); setTimeout(pulse,180) }
   }catch(e){}
 }
+function chime(notes){ // several notes as one sound: waits until the audio is awake, then plays them back to back so none is swallowed
+  if(S.sound==='off') return;
+  if(S.engine==='player'){ notes.forEach(([f,at,ms,v])=>setTimeout(()=>ding(f,ms,v),at*1000)); return }
+  try{
+    if(!audioCtx){ unlockAudio() }
+    if(!audioCtx) return;
+    const total=notes.reduce((m,[,at,ms])=>Math.max(m,at*1000+ms),0);
+    if(S.sound==='loud'){ setSess('playback'); clearTimeout(audioSessTimer); audioSessTimer=setTimeout(()=>setSess('ambient'),total+900) }
+    const go=()=>{ try{ const t0=audioCtx.currentTime+0.12;
+      notes.forEach(([f,at,ms,v])=>{ const gain=Math.min(1,(v||0.3)*(S.sound==='loud'?3:2.4));
+        const o=audioCtx.createOscillator(),g=audioCtx.createGain(); o.type='triangle'; o.frequency.value=f; o.connect(g); g.connect(audioCtx.destination);
+        g.gain.setValueAtTime(0.0001,audioCtx.currentTime); g.gain.setValueAtTime(gain,t0+at); g.gain.exponentialRampToValueAtTime(0.001,t0+at+ms/1000);
+        o.start(t0+at); o.stop(t0+at+ms/1000+0.05) }) }catch(e){} };
+    if(audioCtx.state==='running') go(); else { const p=audioCtx.resume(); if(p&&p.then) p.then(go).catch(go); else go() }
+  }catch(e){}
+}
 function ding(f,ms,vol){
   if(S.sound==='off') return;
   if(S.engine==='player'){ try{ const a=playerEl(f,ms); a.currentTime=0; const p=a.play(); if(p&&p.catch) p.catch(()=>{}) }catch(e){} return }
@@ -1560,7 +1582,7 @@ function schedDing(f,ms,vol,when){ // pre-schedule a ding on the audio clock so 
 }
 function cancelSched(){ if(RT&&RT.nodes){ RT.nodes.forEach(o=>{try{o.stop()}catch(e){}}); RT.nodes=[] } }
 function beep(){
-  ding(880,350);setTimeout(()=>ding(880,350),450);setTimeout(()=>ding(1175,700),900);
+  chime([[880,0,350,0.3],[880,0.45,350,0.3],[1175,0.9,700,0.3]]);
   haptic('success');
 }
 let TM=null;
