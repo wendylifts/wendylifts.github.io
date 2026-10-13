@@ -240,7 +240,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 12, 2026, 9:37 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 12, 2026, 9:43 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -1008,10 +1008,11 @@ function swimBar(){
 function hasData(){
   return Object.values(S.sessions||{}).some(x=>x.done||Object.values(x.sets||{}).some(a=>a.some(r=>r&&((r.r!==''&&r.r!=null)||(r.lr!==''&&r.lr!=null)))))||Object.keys(S.swim||{}).length>0||Object.keys(S.notes||{}).length>0;
 }
+function bkDays(){const v=S.backupDays; return v===undefined?7:+v}
 function backupDue(){
-  if(!hasData()) return false; const b=S.backup||{}, now=Date.now();
+  const N=bkDays(); if(!N||!hasData()) return false; const b=S.backup||{}, now=Date.now();
   if(b.skipUntil&&now<b.skipUntil) return false;
-  return !b.last||now-b.last>=7*864e5;
+  return !b.last||now-b.last>=N*864e5;
 }
 function lastBackupText(){
   const l=(S.backup||{}).last; if(!l) return 'Last backup: never';
@@ -1046,7 +1047,7 @@ function renderHome(){
         ${done?'<span class="badge dn">&#10003; Done '+fmtShort(parse(S.sessions[x.id].date||done))+'</span>':started?'<span class="badge ok">In progress</span>':iso(d)===todayIso?'<span class="badge hot">Today</span>':''}</span>
       <span class="dc-foc">${f.n}${x.extra?' <span class="chip">Extra</span>':''}</span><span class="dc-d">${esc(f.d)}</span>
       <span class="dc-meta"><span class="chip">About ${x.min} min</span><span class="chip">${x.main.length} strength moves</span><span class="chip">${FMTN[x.format]}</span><span class="chip">Abs included</span></span></a>`}).join('');
-  const bk=backupDue()?`<div class="card backupnote" role="status"><h3>Time for your weekly backup</h3><span class="note">Save a copy of your workouts to Files so you never lose your progress. Tap Back up now, then choose Save to Files and pick iCloud Drive.</span><div class="row"><button class="btn primary" data-act="export">Back up now</button><button class="btn" data-act="backupskip">Skip this week</button></div></div>`:'';
+  const bk=backupDue()?`<div class="card backupnote" role="status"><h3>Time for your ${bkDays()===7?'weekly ':''}backup</h3><span class="note">Save a copy of your workouts to Files so you never lose your progress. Tap Back up now, then choose Save to Files and pick iCloud Drive.</span><div class="row"><button class="btn primary" data-act="export">Back up now</button><button class="btn" data-act="backupskip">${bkDays()===7?'Skip this week':'Skip for '+bkDays()+' days'}</button></div></div>`:'';
   return `
   ${bk}
   <div class="weekbar">
@@ -1270,6 +1271,7 @@ function renderSettings(){
   <div class="card"><h3>Your data</h3>
     <p class="note">Everything lives in this browser. Export a backup now and then, and use it to move to a new phone or computer.</p>
     <p class="note">${lastBackupText()}. Tap Back up now, then choose Save to Files and pick iCloud Drive.</p>
+    <label class="row" style="align-items:center;gap:8px">Remind me to back up <select id="bkdays" aria-label="Backup reminder">${[[3,'every 3 days'],[7,'every week'],[14,'every 2 weeks'],[30,'every month'],[0,'never']].map(([v,l])=>`<option value="${v}" ${bkDays()===v?'selected':''}>${l}</option>`).join('')}</select></label>
     <div class="row"><button class="btn teal" data-act="export">Back up now</button>
       <label class="btn" for="imp">Import backup</label><input type="file" id="imp" accept="application/json" hidden>
       <button class="btn ghost" data-act="reset">Erase everything</button></div></div>`;
@@ -1488,7 +1490,7 @@ document.addEventListener('click',ev=>{
     try{ if(window.caches&&caches.keys) caches.keys().then(k=>Promise.all(k.map(x=>caches.delete(x)))).then(()=>setTimeout(go,300),()=>setTimeout(go,300)); else setTimeout(go,300) }catch(e){ setTimeout(go,300) }
   }
   else if(a==='export'){doBackup()}
-  else if(a==='backupskip'){S.backup=Object.assign({},S.backup,{skipUntil:Date.now()+7*864e5}); save(); render(true); toast('Skipped. I will remind you again in a week.')}
+  else if(a==='backupskip'){S.backup=Object.assign({},S.backup,{skipUntil:Date.now()+Math.max(1,bkDays())*864e5}); save(); render(true); toast('Skipped. I will remind you again in '+(bkDays()===7?'a week':bkDays()+' days')+'.')}
   else if(a==='reset'){if(confirm('Erase all workouts and logs on this device? Export a backup first if you want to keep them.')){S=DEFAULTS();save();location.hash='#/';route()}}
 });
 let audioCtx=null, audioSessTimer=null, playerUnlocked=false;
@@ -1651,6 +1653,7 @@ document.addEventListener('change',ev=>{
   else if(t.id==='sound'){S.sound=t.value;save();unlockAudio();ding(1175,500,0.4);setTimeout(()=>ding(1320,500,0.4),350)}
   else if(t.id==='engine'){S.engine=t.value;save();playerUnlocked=false;unlockAudio();ding(1175,500,0.4);setTimeout(()=>ding(1320,500,0.4),350)}
   else if(t.id==='haptics'){S.haptics=t.checked;save(); if(t.checked) haptic('done')}
+  else if(t.id==='bkdays'){S.backupDays=+t.value; save(); toast(S.backupDays?'Backup reminder updated':'Backup reminder turned off')}
   else if(t.id==='autorest'){S.autoRest=t.checked;save(); if(!t.checked) stopRest()}
   else if(t.id==='wdate'){
     if(!t.value) return;
