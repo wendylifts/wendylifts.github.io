@@ -241,7 +241,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 13, 2026, 9:32 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 13, 2026, 9:56 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -255,7 +255,7 @@ const GEAR = [
   ['bench','Adjustable bench'],['bb','Barbell, plates and power rack'],['hex','Hex (trap) bar'],['trx','TRX straps'],
   ['band','Stretch cords / bands'],['pullup','Pull-up bar with assist band'],['ball','Stability ball'],['blocks','Yoga blocks'],
   ['sliders','Sliders'],['step','Aerobic step'],['ankle','Ankle weights'],['pushbars','Push-up bars'],['mat','Exercise mat'],
-  ['roller','Foam roller'],['rope','Battle rope'],['hyper','Back extension bench (45° Roman chair)'],['abwheel','Ab wheel'],['bar','Lat bar for the cable machine'],['cuff','Ankle cuff for the cable machine']
+  ['roller','Foam roller'],['rope','Battle rope'],['hyper','Back extension bench (45° Roman chair)'],['abwheel','Ab wheel'],['bar','Lat bar for the cable machine'],['cuff','Ankle cuff for the cable machine'],['ezbar','Curl (EZ) bar and plates'],['plate','Weight plates (10 lb rubber)']
 ];
 const GEAR_NAME = Object.fromEntries(GEAR.map(g => [g[0], g[1].split(' (')[0]]));
 
@@ -268,13 +268,47 @@ w_90|Hip 90/90 switches|warm|mat|1|t60|0|0|-|Sit tall and rotate both knees side
 w_roller|Foam roller thoracic extension|warm|roller|1|t60|0|0|-|Hands behind your head, extend over the roller up your upper back.
 w_dead|Slow dead bugs|warm|mat|1|t60|0|0|-|Low back stays flat on the floor.
 w_circ|Arm circles and swimmer swings|warm|none|1|t60|0|0|-|Big and easy. Open the chest and shoulders.
-y_child|Child's pose with side reach|warm|mat|1|t60|0|0|-|Sit your hips back toward your heels and breathe. Walk your hands to each side.
 y_dog|Downward dog with pedaling heels|warm|mat|1|t60|0|0|-|Press the floor away and bend one knee at a time to stretch your calves.
 y_fold|Standing forward fold, rag doll|warm|none|1|t60|0|0|-|Soft knees. Let your head and arms hang heavy and sway gently.
 y_lunge|Low lunge with arm sweep|warm|mat|1|t60|0|1|-|Pad your back knee. Sink your hips forward and sweep your arms up.
 y_cobra|Sphinx to cobra|warm|mat|1|t60|0|0|-|Press through your forearms and lift your chest. Keep your neck long.
 y_sun|Slow sun salutation|warm|mat|1|t60|0|0|-|Step, don't jump. Move with your breath through the flow.
 y_cow|Cow-face arms|warm|none|1|t60|0|0|-|Reach one arm up and one behind your back. Switch halfway.
+y_mountain|Mountain pose with arm sweeps|warm|none|1|t60|0|0|-|Stand tall, press through your feet, and sweep your arms up with your breath.
+y_updog|Upward dog|warm|mat|1|t45|0|0|-|Press through your hands and lift your chest. Shoulders away from your ears.
+y_flow|Dog to forward fold flow|warm|mat|1|t60|0|0|-|Move with your breath from downward dog to a hanging fold.
+c_dog|Downward dog hold|cool|mat|1|t45|0|0|-|Press the floor away and lengthen your spine. Bend your knees if your hamstrings are tight.
+c_fold|Standing forward fold hold|cool|none|1|t45|0|0|-|Soft knees. Let your head and arms hang heavy.
+c_mountain|Mountain pose with overhead reach|cool|none|1|t45|0|0|-|Stand tall, reach up, and lean gently side to side.
+c_updog|Upward dog stretch|cool|mat|1|t45|0|0|-|Open the front of your chest and hips. Use a sphinx if it's too much.
+thread_plank|Side plank thread-the-needle|car|mat|2|8-10|30|0|u|Reach your top arm under your body and rotate through your ribs, then open back up.
+copenhagen|Copenhagen plank|cla|bench,mat|2|t20|30|0|u|Top leg on the bench, lift your hips. Inner thigh and side core.
+scissor|Scissor kicks|cfl|mat|2|t40|30|0|-|Low back pressed down. Small controlled kicks.
+hollow_rock|Hollow rock|csw|mat|2|10-15|30|0|-|Hold the hollow shape and rock like a banana.
+slider_pike|Slider pike|cfl|sliders,mat|2|8-12|45|0|-|From a plank, slide your feet in and lift your hips high.
+pallof_hk|Half-kneeling cable Pallof press|car|cable|2|10-12|30|1|l u|Pad your knee. Press out and resist the cable pulling you around.
+cable_twist|Cable standing trunk rotation|cro|cable|2|10-12|30|0|l u|Arms straight out, rotate through your ribs, hips stay square.
+crunch|Crunch (knees bent, feet down)|cfl|mat|2|15-20|30|0|-|Curl your ribs toward your hips. Don't pull on your neck.
+crunch_up|Crunch (knees up)|cfl|mat|2|15-20|30|0|-|Knees stacked over your hips. Curl up and pause.
+crunch_side|Side-to-side crunch (knees down)|cro|mat|2|16-20|30|0|-|One rep = left and right. Reach toward each ankle.
+crunch_cross|Crossover crunch (knees up)|cro|mat|2|16-20|30|0|-|One rep = left and right. Rotate your ribs, elbow to opposite knee.
+ez_curl|EZ-bar curl|bi|ezbar|3|8-12|60|0|l|Elbows pinned, no swinging.
+ez_rev_curl|EZ-bar reverse curl|bi|ezbar|3|10-12|60|0|l r|Overhand grip, light weight. Great for forearms.
+ez_skull|EZ-bar skull crusher|tri|ezbar,bench|3|8-12|60|0|l|Elbows point at the ceiling. Lower to your forehead.
+ez_oh_tri|EZ-bar overhead triceps extension|tri|ezbar|3|10-12|60|0|l|Elbows point forward, lower behind your head.
+ez_row|EZ-bar reverse-grip row|hpull|ezbar|3|8-12|75|0|l|Hinge forward with a flat back and row to your belly.
+ez_drag|EZ-bar drag curl|bi|ezbar|3|8-12|60|0|l r|Drag the bar up your body, elbows going back.
+hex_squat|Hex-bar squat|squat|hex|3|6-10|90|1|l|Stand tall in the middle of the bar. Push the floor away.
+hex_rdl|Hex-bar Romanian deadlift|hinge|hex|3|8-10|90|0|l|Hinge your hips back, soft knees, flat back.
+hex_carry|Hex-bar carry|carry|hex|3|t40|60|0|l|Stand tall in the bar and walk with steady steps.
+hex_row|Hex-bar bent-over row|hpull|hex|3|8-10|90|0|l|Hinge forward with a flat back and row to your belly.
+hex_shrug|Hex-bar shrug|shoulder|hex|3|10-15|60|0|l r|Straight up, pause, lower slowly.
+plate_bridge|Plate glute bridge|glute|plate,mat|3|10-15|60|0|l|Plate across your hips. Squeeze your glutes at the top.
+plate_halo|Plate halo|shoulder|plate|3|8-10|45|0|l|Slow circles around your head. Ribs down.
+plate_russian|Plate Russian twist|cro|plate,mat|2|16-20|30|0|l|One rep = left and right. Turn your ribcage, not just your arms.
+plate_front_raise|Plate front raise|shoulder|plate|3|10-12|45|0|l|Raise to shoulder height. No swinging.
+plate_goblet|Plate goblet squat|squat|plate|3|10-15|60|1|l|Hold the plate at your chest. Sit back and stay tall.
+plate_crunch|Plate crunch|cfl|plate,mat|2|12-15|30|0|l|Hold the plate on your chest, curl up and pause.
 w_bird|Bird dog reaches|warm|mat|1|t60|0|0|-|Reach long, keep your hips square and your back flat.
 w_pull|Band pull-aparts|wact|band|1|t50|0|0|-|Squeeze your shoulder blades together, arms straight.
 w_y|TRX Y raises|wact|trx|1|t50|0|0|-|Walk your feet forward to make it harder.
@@ -333,7 +367,7 @@ kb_swing|Kettlebell swing|hinge cardio|kb|3|12-20|60|0|l|Hips snap, arms guide. 
 sl_rdl|Single-leg Romanian deadlift|single|db|3|8-10|60|0|l u|Fingertips on the rack for balance.
 sl_bridge|Single-leg glute bridge|single glute|mat|3|10-15|45|0|b u|Drive through your heel. Hips stay level.
 step_up|Low step-up|single|step|3|8-12|60|2|l u|Drive through the heel of the top foot.
-hip_thrust|Bench hip thrust|glute|bench,db/bb|3|8-12|75|0|l|Upper back on the bench. Hold the top for a second.
+hip_thrust|Bench hip thrust|glute|bench,db/bb/plate|3|8-12|75|0|l|Upper back on the bench. Hold the top for a second.
 band_walk|Banded lateral walk|glute|band|3|12-20|45|0|-|Keep tension on the band with small steady steps.
 sl_abd|Side-lying leg raise with ankle weight|glute|ankle,mat|3|12-15|45|0|l u|Slightly behind your body, toes forward.
 slider_curl|Slider hamstring curl|ham|sliders,mat|3|8-12|60|0|b|Lift your hips, slide your heels out, curl back in.
@@ -491,7 +525,7 @@ vup|V-up|csw|mat|2|10-15|30|0|-|Reach your hands to your toes at the top.
 dolphin|Dolphin kick on the ball|csw|ball|2|t30|30|0|-|Lie over the ball and undulate through your chest and hips.
 c_chest|Doorway chest stretch|cool|none|1|t45|0|0|-|Gentle stretch across the front of your shoulders.
 c_cross|Cross-body shoulder stretch|cool|none|1|t45|0|0|-|Relax your shoulder down, switch arms halfway.
-c_lat|Child's pose with side reach|cool|mat|1|t45|0|0|-|Long, slow breaths into the sides of your back.
+c_lat|Standing side reach stretch|cool|none|1|t45|0|0|-|Long, slow breaths into the sides of your back.
 c_tri|Overhead triceps and lat stretch|cool|none|1|t45|0|0|-|Reach tall and lean gently, switch arms halfway.
 c_fig4|Lying figure-4 glute stretch|cool|mat|1|t45|0|0|-|Keep your head and shoulders relaxed, switch legs halfway.
 c_ham|Lying hamstring stretch|cool|mat|1|t45|0|0|-|Keep your leg straight but relaxed, switch legs halfway.
@@ -514,7 +548,7 @@ back_ext_w|Set the pad just below your hip bones and hook your heels under the r
 ab_wheel|Kneel on a padded mat holding the wheel under your shoulders.;Roll forward slowly while you keep your ribs down and your body in one line.;Roll back using your abs. Stop before your lower back sags.
 c_chest|Stand in a doorway with your forearms on the frame, elbows at shoulder height.;Step one foot forward until you feel a gentle stretch across your chest.;Breathe slowly and keep your ribs down.
 c_cross|Bring one arm across your chest.;Hold it just above the elbow with your other hand and pull it gently closer.;Keep your shoulder down. Switch arms halfway.
-c_lat|Kneel on the mat (pad your knees) and sit your hips back toward your heels.;Reach both arms forward, then walk them to one side.;Breathe into the stretch. Switch sides halfway.
+c_lat|Stand tall and reach one arm overhead.;Lean gently to the opposite side until you feel a stretch along your side and back.;Breathe slowly and switch sides halfway.
 c_tri|Reach one arm overhead and bend the elbow so your hand drops behind your head.;Use your other hand to press the elbow gently back and lean slightly sideways.;Switch arms halfway.
 c_fig4|Lie on your back with your knees bent.;Cross one ankle over the opposite knee and pull that thigh toward you.;Breathe and keep your head down. Switch legs halfway.
 c_ham|Lie on your back and raise one leg, holding behind the thigh or calf (a band works too).;Straighten the leg as far as is comfortable.;Switch legs halfway.
@@ -525,13 +559,47 @@ c_calf|Stand facing a wall with both hands on it, one foot back.;Press the back 
 c_fly|Sit on the mat with the soles of your feet together and knees dropped out.;Sit tall and hinge forward slightly from the hips.;Breathe and let your knees relax. Stop if your knees complain.
 c_wrist|Hold one arm straight out in front with your palm up.;Use the other hand to gently pull your fingers back toward you.;Then turn the palm down and gently press the fingers toward the floor. Switch arms halfway.
 w_catcow|On hands and knees (pad your knees with the mat), round your back and tuck your chin, then arch and look up.;Slide one arm under your chest and rotate, then switch sides.;Move slowly for the full minute.
-y_child|Kneel on the mat (pad your knees) and sit your hips back toward your heels.;Reach both arms forward and rest your forehead down, breathing slowly.;Walk your hands to the right for a few breaths, then to the left.
 y_dog|Start on hands and knees, tuck your toes, and lift your hips up and back into an upside-down V.;Press the floor away and keep your head between your arms.;Bend one knee at a time to pedal your heels and stretch your calves.
 y_fold|Stand with your feet hip-width and bend your knees slightly.;Fold forward and let your head and arms hang heavy.;Sway gently side to side, then roll up slowly one vertebra at a time.
 y_lunge|Step one foot forward into a lunge and lower your back knee onto the mat with padding.;Sink your hips forward until you feel the front of the back hip stretch.;Sweep your arms overhead and breathe. Switch legs halfway.
 y_cobra|Lie on your stomach with your forearms on the mat and your elbows under your shoulders.;Press down and lift your chest into the sphinx. If it feels good, straighten your arms into a low cobra.;Keep your neck long and your hips on the floor. Lower slowly.
 y_sun|Stand tall, sweep your arms up, then fold forward.;Step back to a plank, lower down, then press into a cobra or sphinx and push back to downward dog.;Step forward, rise up, and repeat slowly with your breath. Step, don't jump.
 y_cow|Reach your right arm up, bend the elbow, and drop your hand behind your neck.;Reach your left arm behind your back and try to clasp hands. Use a towel if they don't reach.;Breathe and keep your ribs down. Switch sides halfway.
+y_mountain|Stand tall with your feet together or hip-width and your arms at your sides.;Inhale and sweep your arms overhead, lifting through your chest.;Exhale and lower your arms. Repeat slowly with your breath.
+y_updog|Lie on your stomach with your hands under your shoulders.;Press through your hands and lift your chest, keeping your thighs off the mat if it feels good.;Keep your shoulders down and your neck long, then lower slowly. Use a sphinx if your wrists complain.
+y_flow|Start in downward dog and press the floor away.;Walk or step your feet toward your hands into a forward fold with soft knees.;Roll up to mountain pose with your arms overhead, then fold and return. Repeat slowly.
+c_dog|Start on hands and knees, tuck your toes, and lift your hips up and back.;Press the floor away and lengthen your spine with your head between your arms.;Bend your knees if you need to and breathe slowly.
+c_fold|Stand with your feet hip-width and bend your knees slightly.;Fold forward and let your head and arms hang heavy.;Breathe slowly, then roll up one vertebra at a time.
+c_mountain|Stand tall with your feet together or hip-width and reach both arms overhead.;Lean gently to the right for a few breaths, then to the left.;Lower your arms and take a few deep breaths.
+c_updog|Lie on your stomach with your hands under your shoulders.;Press through your hands and lift your chest, keeping your shoulders down.;Hold and breathe, then lower slowly. Use a sphinx if it's too much.
+thread_plank|Get into a side plank on your forearm, or on your knees if you need an easier version, with your top arm reaching to the ceiling.;Sweep your top arm under your body, rotating your chest toward the floor.;Reach back up to the ceiling. Finish all reps, then switch sides.
+copenhagen|Lie on your side with your forearm on the mat and your top leg resting on the bench, with the bottom leg underneath.;Lift your hips so your body is in a straight line.;Hold for the time shown, then switch sides. Bend your knee on the bench if it is too hard.
+scissor|Lie on your back with your legs straight and your hands under your hips.;Lift your legs a few inches and cross them over each other in small scissor kicks.;Keep your low back pressed down and stop if it arches.
+hollow_rock|Lie in a hollow-body hold with your arms overhead and your low back pressed to the floor.;Rock gently back and forth, keeping the same shape.;Stop if your low back lifts off the floor.
+slider_pike|Start in a high plank with your toes on the sliders.;Slide your feet toward your hands, lifting your hips into a pike.;Slide back out to a plank without letting your hips sag.
+pallof_hk|Set a pulley at chest height and kneel on one knee on a pad, side-on to the machine, holding the handle at your chest.;Press the handle straight out and hold for a moment without twisting.;Bring it back to your chest. Finish all reps, then switch sides.
+cable_twist|Set a pulley at chest height and stand side-on, holding the handle with both hands and your arms straight out in front of you.;Rotate your torso away from the machine, keeping your arms extended and your hips square.;Return slowly. Finish all reps, then switch sides.
+crunch|Lie on your back with your knees bent and feet flat on the floor, hands lightly behind your head.;Curl your head and shoulders off the floor by drawing your ribs toward your hips.;Lower slowly without pulling on your neck.
+crunch_up|Lie on your back with your knees bent over your hips and your shins parallel to the floor, hands lightly behind your head.;Curl your head and shoulders up, drawing your ribs toward your hips.;Lower slowly.
+crunch_side|Lie on your back with your knees bent and feet flat, arms by your sides.;Curl up and reach your right hand toward your right ankle, then lower.;Curl up and reach your left hand toward your left ankle. One rep is a right and a left.
+crunch_cross|Lie on your back with your knees bent over your hips and your hands lightly behind your head.;Curl up and rotate your right elbow toward your left knee.;Lower, then curl up and rotate your left elbow toward your right knee. One rep is a right and a left.
+ez_curl|Stand holding the curl bar on the angled grips with your palms up.;Curl the bar to your shoulders with your elbows pinned to your sides.;Lower slowly until your arms are straight.
+ez_rev_curl|Stand holding the curl bar with an overhand grip on the angled handles.;Curl the bar up with your elbows pinned to your sides.;Lower slowly.
+ez_skull|Lie on the bench holding the curl bar over your chest with your arms straight.;Bend your elbows to lower the bar toward your forehead, keeping your upper arms still.;Press back up until your arms are straight.
+ez_oh_tri|Sit or stand holding the curl bar overhead with your elbows pointing forward.;Lower the bar behind your head by bending your elbows.;Straighten your arms to press it back up.
+ez_row|Hinge forward with a flat back holding the curl bar with an underhand grip.;Pull the bar to your belly button, squeezing your shoulder blades.;Lower slowly.
+ez_drag|Stand holding the curl bar with your palms up.;Pull the bar up along your body by driving your elbows behind you.;Lower slowly.
+hex_squat|Stand inside the hex bar with your feet hip-width and hold the handles.;Sit your hips back and bend your knees to a pain-free depth.;Push through your heels to stand tall.
+hex_rdl|Stand inside the hex bar and hold the handles with soft knees.;Hinge your hips back, lowering the bar along your legs.;Squeeze your glutes to stand tall.
+hex_carry|Stand inside the hex bar and lift it with a tall chest.;Walk slowly with steady steps, shoulders down and ribs stacked.;Set the bar down with control when time is up.
+hex_row|Stand inside the hex bar, hinge forward with a flat back, and hold the handles.;Pull the bar toward your belly, squeezing your shoulder blades.;Lower slowly.
+hex_shrug|Stand inside the hex bar holding the handles with your arms straight.;Raise your shoulders straight up toward your ears and pause.;Lower slowly.
+plate_bridge|Lie on your back with your knees bent and a plate resting across your hips.;Press through your heels to lift your hips into a bridge.;Squeeze your glutes at the top, then lower slowly.
+plate_halo|Stand holding a plate at chest height with both hands.;Circle it slowly around your head, keeping your elbows close.;Reverse direction halfway through.
+plate_russian|Sit on the mat with your knees bent and lean back slightly, holding a plate at your chest.;Rotate your ribcage from side to side.;One rep is a twist to the left and a twist to the right.
+plate_front_raise|Stand holding a plate with both hands at your thighs.;Raise it straight in front of you to shoulder height.;Lower slowly without leaning back.
+plate_goblet|Hold a plate against your chest with both hands and stand with your feet shoulder-width.;Sit your hips back and down to a pain-free depth.;Push through your heels to stand.
+plate_crunch|Lie on your back with your knees bent, holding a plate against your chest.;Curl your head and shoulders up by drawing your ribs toward your hips.;Lower slowly.
 w_bird|Get on your hands and knees on the mat with your knees under your hips.;Reach one arm forward and the opposite leg back until they are level with your back.;Pause, return, and switch sides. Keep your hips square.
 w_90|Sit on the floor with both knees bent about 90 degrees, one in front and one to the side.;Rotate your knees to the other side without using your hands, in a comfortable range.;Keep your chest tall and switch smoothly.
 w_roller|Lie with the roller under your upper back and your hands behind your head.;Lift your hips slightly and gently extend back over the roller.;Roll up and down your upper back and avoid your low back.
@@ -592,7 +660,7 @@ kb_swing|Stand with your feet wide and the kettlebell slightly in front of you.;
 sl_rdl|Stand on one leg holding a dumbbell, with one hand on the rack for balance.;Hinge forward while the other leg reaches back.;Return by squeezing your glute. Finish all reps, then switch legs.
 sl_bridge|Lie on your back with one foot flat and the other leg extended.;Press through your heel to lift your hips.;Lower slowly. Finish all reps, then switch legs.
 step_up|Stand facing the low step.;Step up with one foot and stand tall, then step back down slowly.;Finish all reps, then switch legs.
-hip_thrust|Sit on the floor with your upper back against the bench and a weight on your hips.;Press through your heels to lift your hips until your body is flat.;Squeeze at the top, then lower slowly.
+hip_thrust|Sit on the floor with your upper back against the bench and a weight on your hips. For a barbell, roll it over your hips with the pad on.;Press through your heels to lift your hips until your body is flat.;Squeeze at the top, then lower slowly.
 band_walk|Put a band around your thighs or ankles and stand with your knees slightly bent.;Step sideways, keeping tension on the band.;Step back the other way with your toes pointing forward.
 sl_abd|Lie on your side with an ankle weight on your top leg.;Lift the top leg slightly back and up with your toes pointing forward.;Lower slowly. Finish all reps, then switch sides.
 slider_curl|Lie on your back with your heels on the sliders and lift your hips.;Slide your heels away until your legs are almost straight.;Curl your heels back in, keeping your hips high.
@@ -1346,8 +1414,8 @@ function sheetHtml(w){
 }
 
 const COOL_START='2026-10-13'; // cool-downs begin with the workout on this date
-const COOL_POOL={pull:['c_lat','c_cross','c_tri','c_neck','c_twist'],legs:['c_fig4','c_hip','c_ham','c_calf','c_fly','c_twist'],
-  push:['c_chest','c_tri','c_cross','c_neck','c_wrist'],full:['c_twist','c_ham','c_lat','c_chest','c_hip','c_fig4']};
+const COOL_POOL={pull:['c_lat','c_cross','c_tri','c_neck','c_twist','c_dog','c_fold'],legs:['c_fig4','c_hip','c_ham','c_calf','c_fly','c_twist','c_dog','c_fold'],
+  push:['c_chest','c_tri','c_cross','c_neck','c_wrist','c_dog','c_mountain','c_updog'],full:['c_twist','c_ham','c_lat','c_chest','c_hip','c_fig4','c_dog','c_fold','c_mountain']};
 function coolPair(w){ // two different stretches, varied by workout and by "new version", repeats allowed over time
   const pool=COOL_POOL[w.focus]||COOL_POOL.full, key=w.id+'|'+(S.regen[w.id]||0);
   let h=7; for(const ch of key) h=(h*31+ch.charCodeAt(0))>>>0;
@@ -1357,7 +1425,7 @@ function renderDay(){
   const wkObj=S.weeks[U.wk]; const w=wkObj&&wkObj.workouts[U.day];
   if(!w) return '<p class="empty">That workout isn\'t available.</p><a class="btn" href="#/">Back to this week</a>';
   const ph=PHASES[wkObj.ph]; const f=FOCUS[w.focus]; const d=dayDate(U.wk,U.day); const mon=parse(U.wk);
-  const warm=w.warm.map(x=>{const ex=exById(x.id);
+  const warm=w.warm.filter(x=>exById(x.id)).map(x=>{const ex=exById(x.id);
     const steps=HOWTO[x.id]||['Move slowly and smoothly.','Stop if anything pinches.'];
     const yt='https://www.youtube.com/results?search_query='+encodeURIComponent(ex.n+' exercise form');
     const wd=!!((S.sessions[w.id]||{}).warm||{})[x.id];
