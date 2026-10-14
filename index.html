@@ -241,7 +241,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 13, 2026, 9:13 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 13, 2026, 9:26 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -456,6 +456,11 @@ rope_waves|Battle rope waves|cardio|rope|3|t30|30|0|-|Alternate arms, soft knees
 slider_mc|Slider mountain climbers|cardio|sliders,mat|3|t30|30|0|-|Hands under shoulders, slide your knees in fast.
 bear_tap|Bear-crawl shoulder taps|cardio|mat|3|t30|30|0|-|Knees hover. Hips stay still as you tap.
 step_taps|Fast taps on the step|cardio|step|3|t40|20|0|-|Alternate feet, no jumping.
+skater_step|Skater steps (no hop)|cardio|none|3|t40|20|0|-|Step wide side to side, sweep the back leg behind you and tap down. Both feet stay low.
+skater_jump|Skater jumps|cardio|none|3|t40|20|1|-|Bound side to side, landing softly on one leg with the other swinging behind.
+mtn_climb|Mountain climbers|cardio|mat|3|t30|30|0|-|Hands under shoulders, drive your knees in fast, hips level.
+plank_drag|Plank dumbbell drag-through|cae|db,mat|2|10-16|30|0|l|High plank, feet wide. Drag the dumbbell under you without rocking your hips. One rep = one drag.
+knee_lift_steps|Three steps and knee lift|cardio|none|3|t40|20|0|-|Three quick steps one way, drive your knee up, then back the other way.
 plank|Plank|cae|mat|2|t40|30|0|-|Ribs down, glutes tight, one straight line.
 ab_wheel|Ab wheel rollout|cae|abwheel,mat|2|6-10|45|1|-|Kneel on the mat, roll out only as far as you can brace. Ribs stay down.
 body_saw|Slider body saw|cae|sliders,mat|2|t30|30|0|-|Forearms on sliders, rock forward and back with a stiff body.
@@ -706,6 +711,11 @@ rope_waves|Hold a battle rope in each hand with your knees slightly bent.;Altern
 slider_mc|Start in a plank with your feet on the sliders.;Slide one knee toward your chest, then switch quickly.;Keep your hips low and level.
 bear_tap|Get on your hands and knees, then lift your knees an inch off the floor.;Tap one shoulder with the opposite hand.;Keep your hips still and switch hands.
 step_taps|Stand facing the step.;Tap one foot on, then the other, alternating quickly.;Stay light with no jumping.
+skater_step|Stand on one leg with a slight bend in the knee.;Take a big step sideways onto the other leg while your back leg sweeps behind you and your arms swing across.;Tap your back toe lightly, then step back the other way. No hopping.
+skater_jump|Stand on one leg with a slight bend in the knee.;Bound sideways to the other leg, landing softly while your back leg sweeps behind you and your arms swing across.;Keep going side to side with a steady rhythm.
+mtn_climb|Start in a high plank with your hands under your shoulders.;Drive one knee toward your chest, then switch legs quickly, like running in place.;Keep your hips level and your core tight.
+plank_drag|Start in a high plank with your feet wide and a dumbbell on the floor beside one hand.;Reach under your body with the opposite hand and drag the dumbbell across to the other side.;Keep your hips level and still, then drag it back the other way. Alternate sides.
+knee_lift_steps|Take three quick steps to the right.;On the third step, drive your left knee up to hip height.;Take three steps back to the left and lift your right knee. Keep repeating.
 plank|Place your forearms under your shoulders and extend your legs.;Squeeze your glutes and brace your core so your body is in one line.;Hold for the time shown and keep breathing.
 body_saw|Start in a forearm plank with your feet on the sliders.;Rock your body forward and back by sliding your feet.;Keep your body stiff and your hips level.
 dead_bug|Lie on your back with your arms up and knees bent over your hips.;Lower the opposite arm and leg while your low back stays flat.;Return and switch sides.
@@ -1153,7 +1163,7 @@ function adjustPanel(w,e,ex,block,i){
 }
 function coachNote(ex){
   if(ex.pat.includes('carry')) return 'Coach: go by the clock. Walk tall with steady steps and put the weights down if your grip or posture slips.';
-  if(ex.pat.includes('cardio')) return 'Coach: go by the clock. Work hard for the time, then rest. No jumping.';
+  if(ex.pat.includes('cardio')) return 'Coach: go by the clock. Work hard for the time, then rest. Stay light on your feet.';
   if(ex.pat.some(q=>/^c(ae|ar|la|sw)$/.test(q))) return 'Coach: hold or work for time here. Keep your position strong the whole way and stop early if your form slips.';
   if(ex.pat.includes('shoulder')) return 'Coach: go by the clock here. Light weight, slow and controlled, and keep your shoulder blades steady.';
   return 'Coach: go by the clock here. Steady, controlled work for the full time.';
