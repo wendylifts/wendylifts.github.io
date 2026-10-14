@@ -241,7 +241,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 13, 2026, 5:56 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 13, 2026, 9:13 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -255,19 +255,27 @@ const GEAR = [
   ['bench','Adjustable bench'],['bb','Barbell, plates and power rack'],['hex','Hex (trap) bar'],['trx','TRX straps'],
   ['band','Stretch cords / bands'],['pullup','Pull-up bar with assist band'],['ball','Stability ball'],['blocks','Yoga blocks'],
   ['sliders','Sliders'],['step','Aerobic step'],['ankle','Ankle weights'],['pushbars','Push-up bars'],['mat','Exercise mat'],
-  ['roller','Foam roller'],['rope','Battle rope'],['hyper','Back extension bench (45° Roman chair)'],['abwheel','Ab wheel']
+  ['roller','Foam roller'],['rope','Battle rope'],['hyper','Back extension bench (45° Roman chair)'],['abwheel','Ab wheel'],['bar','Lat bar for the cable machine'],['cuff','Ankle cuff for the cable machine']
 ];
 const GEAR_NAME = Object.fromEntries(GEAR.map(g => [g[0], g[1].split(' (')[0]]));
 
 /* ---------- Exercise library ----------
    id|name|patterns|equipment (a/b = either)|sets|reps or tSECONDS|rest|knee load 0-2|flags|cue
-   flags: l = weighted (track weight), b = bodyweight (weight optional), u = one side at a time, f=focus list for compound moves */
+   flags: r = rare (general fitness, less swim-specific: shows up about a quarter as often), l = weighted (track weight), b = bodyweight (weight optional), u = one side at a time, f=focus list for compound moves */
 const RAW = `
 w_catcow|Cat-cow into thread-the-needle|warm|mat|1|t60|0|0|-|Move slowly and breathe into your upper back.
 w_90|Hip 90/90 switches|warm|mat|1|t60|0|0|-|Sit tall and rotate both knees side to side with control.
 w_roller|Foam roller thoracic extension|warm|roller|1|t60|0|0|-|Hands behind your head, extend over the roller up your upper back.
 w_dead|Slow dead bugs|warm|mat|1|t60|0|0|-|Low back stays flat on the floor.
 w_circ|Arm circles and swimmer swings|warm|none|1|t60|0|0|-|Big and easy. Open the chest and shoulders.
+y_child|Child's pose with side reach|warm|mat|1|t60|0|0|-|Sit your hips back toward your heels and breathe. Walk your hands to each side.
+y_dog|Downward dog with pedaling heels|warm|mat|1|t60|0|0|-|Press the floor away and bend one knee at a time to stretch your calves.
+y_fold|Standing forward fold, rag doll|warm|none|1|t60|0|0|-|Soft knees. Let your head and arms hang heavy and sway gently.
+y_lunge|Low lunge with arm sweep|warm|mat|1|t60|0|1|-|Pad your back knee. Sink your hips forward and sweep your arms up.
+y_cobra|Sphinx to cobra|warm|mat|1|t60|0|0|-|Press through your forearms and lift your chest. Keep your neck long.
+y_sun|Slow sun salutation|warm|mat|1|t60|0|0|-|Step, don't jump. Move with your breath through the flow.
+y_cow|Cow-face arms|warm|none|1|t60|0|0|-|Reach one arm up and one behind your back. Switch halfway.
+w_bird|Bird dog reaches|warm|mat|1|t60|0|0|-|Reach long, keep your hips square and your back flat.
 w_pull|Band pull-aparts|wact|band|1|t50|0|0|-|Squeeze your shoulder blades together, arms straight.
 w_y|TRX Y raises|wact|trx|1|t50|0|0|-|Walk your feet forward to make it harder.
 w_er|Band external rotations|wact|band|1|t50|0|0|-|Elbow glued to your side.
@@ -337,6 +345,103 @@ cable_sq_press|Cable squat to overhead press|comp|cable|3|8-12|75|0|l f=legs,pus
 goblet_press|Goblet squat to overhead press|comp|kb/db|3|8-10|75|1|l f=push,full,legs|Shallow squat, drive up and press the weight overhead.
 thruster|Dumbbell thruster from the bench|comp|db,bench|3|8-12|75|1|l f=push,full,legs|Sit to stand with weights at your shoulders, press at the top.
 rdl_row|Romanian deadlift to row|comp|db|3|8-12|75|0|l f=pull,legs,full|Hinge, row both dumbbells, lower, then stand.
+wall_curl|Wall sit with biceps curls|squat bi|db|3|10-12|60|1|l r|Back flat on the wall, thighs near parallel or higher. Curl while you hold the sit.
+hammer_press|Hammer curl to overhead press|bi vpush|db|3|8-12|60|0|l|Curl with thumbs up, then rotate and press overhead in one smooth move.
+skull|Skull crushers|tri|db,bench|3|10-12|60|0|l|Elbows point at the ceiling. Lower toward your forehead, then press back up.
+cable_row_squat|Cable row to squat|comp|cable|3|8-12|75|1|l f=pull,legs,full|Squat down, then stand as you row. Keep the squat pain-free.
+lat_pd_floor|Seated bar lat pulldown from the floor|vpull|cable,bar|3|8-12|75|0|l|Sit on the mat facing the stack. Pull the bar to your upper chest, elbows down.
+squat_walk|High knees, squat, walk back|squat|none|3|8-10|45|1|b r|March forward with high knees, sit into a shallow squat, then walk back.
+plank_jack|Plank jack (step feet out)|cardio cae|mat|3|t30|30|0|r|Step your feet wide, then together. No hopping.
+lying_slr|Lying straight leg raise|cfl|mat|2|10-15|30|0|-|Press your low back down. Lower your straight legs slowly.
+cable_kick|Cable triceps kickback|tri|cable|3|10-12|45|0|l u|Elbow pinned at your side. Extend the arm straight back.
+sq_upright|Squat to upright row|comp|kb/db|3|8-12|75|1|l r f=pull,legs,full|Squat down, then stand as you pull the weight to chest height.
+superman|Superman|glute|mat|3|10-15|45|0|b|Lift your arms and legs a few inches. Squeeze your back and glutes.
+skier|Dumbbell straight-arm skier lift|vpull|db|3|10-15|60|0|l|Arms stay straight. Sweep the weights from overhead down to your thighs.
+pullover|Dumbbell pullover|vpull|db,bench|3|10-15|60|0|l|Reach back with soft elbows and pull the weight over your chest.
+chest_fly|Dumbbell chest fly|hpush|db,bench|3|10-15|60|0|l|Wide arc with soft elbows. Squeeze your chest at the top.
+tri_bench|Dumbbell close-grip bench press|tri|db,bench|3|10-15|60|0|l|Elbows tucked close to your sides. Press straight up.
+db_oh_tri|Dumbbell overhead triceps extension|tri|db|3|10-15|45|0|l|Elbows point up. Lower the weight behind your head.
+db_kick|Dumbbell triceps kickback|tri|db|3|12-15|45|0|l|Upper arms stay pinned beside your ribs. Straighten your elbows.
+row_kick|Dumbbell row to triceps kickback|comp|db|3|10-15|60|0|l f=pull,push,full|Row to your ribs, then kick the weight straight back.
+curl_press|Dumbbell curl to press out|bi|db|3|10-15|60|0|l|Curl, then press the weights straight out in front.
+rope_situp|Invisible rope climb sit-up|cfl|mat|2|15-20|30|0|-|Reach hand over hand as you sit up. Lower slowly.
+knee_crunch|Knee-up crunch|cfl|mat|2|15-20|30|0|-|Pull your knees toward your chest as you curl your shoulders up.
+elbow_slp|Alternating elbow single-leg plank|cae|mat|2|t40|30|0|-|Lift one leg at a time. Keep your hips level.
+wsitup|Weighted sit-up|cfl|mat,db|2|12-20|45|0|l|Hold a dumbbell at your chest and curl all the way up.
+situp_press|Sit-up with press|cfl|mat,db|2|10-15|45|0|l|Sit up, then press the weight overhead.
+bench_mc|Bench mountain climbers|cardio|bench|3|t30|30|0|-|Hands on the bench, drive your knees in quickly.
+db_calf|Dumbbell calf raise|calf|db|3|15-25|45|0|l|Rise high, pause, and lower slowly.
+butterfly_bridge|Butterfly bridge|glute|mat|3|15-20|45|0|b|Soles together, knees open. Squeeze your glutes at the top.
+wall_oh|Wall sit with overhead raise|squat shoulder|db|3|10-15|60|1|l r|Hold the sit. Raise the weights overhead with control.
+sumo|Dumbbell sumo squat|squat|db|3|10-15|75|1|l r|Wide stance, toes out. Hold one weight between your legs.
+goblet15|1.5-rep goblet squat|squat|kb/db|3|8-12|75|1|l r|Go down, come halfway up, go down again, then stand.
+sq_curl|Dumbbell squat and curl|squat bi|db|3|10-15|75|1|l r|Curl as you stand. Keep the squat pain-free.
+rev_lunge_oh|Reverse lunge with overhead raise|single|db|3|8-12|75|1|l u r|Step back, raise the weights overhead as you stand.
+plank_shift|Plank shift with push-up|hpush cae|mat|3|8-12|45|0|b r|Shift side to side in a plank, then add a push-up.
+bench_dip|Bench dip|tri|bench|3|10-15|45|0|b r|Hands on the bench. Lower only as far as feels good for your shoulders.
+db21|Dumbbell 21s|bi|db|2|21-21|60|0|l r|Seven bottom half curls, seven top half curls, seven full curls.
+bulgarian|Bulgarian split squat|single|db,bench|3|8-12|75|2|l u r|Back foot on the bench. Lower straight down.
+sl_bench|Single-leg bench squat|single|bench|3|8-12|60|2|b u r|Sit back to the bench on one leg.
+curtsy|Curtsy lunge|single|db|3|10-12|60|2|l u r|Step behind and across. Keep your front knee over your toes.
+lunge3d|3D lunge|single|none|3|8-10|60|2|b u r|Lunge forward, to the side, and behind in one flow.
+stat_lunge_curl|Stationary lunge with curls|single bi|db|3|10-12|60|2|l u r|Hold the lunge and curl.
+stat_lunge_press|Stationary lunge with shoulder press|single vpush|db|3|10-12|60|2|l u r|Lunge down, press as you stand.
+incl_curl|Incline dumbbell biceps curl|bi|db,bench|3|10-12|60|0|l|Arms hang straight down. Curl one at a time, turning your palms up.
+bent_kick|Bent-leg kickback|glute|mat|3|12-20|45|0|b u|Keep your knee bent and squeeze your glute to lift. Keep your back neutral.
+shrug|Dumbbell shrug|shoulder|db|3|12-15|45|0|l r|Raise your shoulders straight up, pause, lower slowly.
+conc_curl|Dumbbell concentration curl|bi|db,bench|3|10-12|45|0|l u r|Elbow braced on your inner thigh. Curl with just your biceps.
+iso_curl|Dumbbell isometric biceps curl|bi|db|3|10-12|60|0|l u r|Hold one arm at 90 degrees while the other arm curls.
+wrist_curl|Dumbbell palm-up wrist curl|bi|db,bench|3|15-20|45|0|l r|Forearms stay still on the bench. Only your wrists move.
+pendlay|Pendlay row|hpull|bb|3|6-10|90|0|l r|Bar returns to the floor each rep. Flat back, explosive pull.
+prone_kick|Prone dumbbell triceps kickback|tri|db,bench|3|10-15|45|0|l r|Lie face down on the bench. Straighten your arms back.
+pulse_sq|Pulse squat|squat|none|3|15-25|45|1|b r|Stay low and pulse in a small range. Keep it pain-free.
+er_side|Side-lying dumbbell external rotation|shoulder|db,mat|3|12-15|45|0|l u|Elbow pinned to your side. Rotate the weight up toward the ceiling.
+side_bend|Dumbbell side bend|cla|db|3|12-15|45|0|l u|Bend straight sideways. Don't lean forward or back.
+toe_touch|Toe touch|cfl|mat|2|15-20|30|0|-|Reach for your toes by rolling your ribs up. Bend your knees if needed.
+db_bridge|Dumbbell glute bridge|glute|db,mat|3|10-15|60|0|l|Dumbbell across your hips. Squeeze your glutes to lift.
+sl_kick|Straight-leg kickback|glute|mat|3|12-20|45|0|b u|Reach one leg straight back and squeeze your glute.
+band_kick|Band glute kickback|glute|band|3|12-20|45|0|b u|Band around your feet. Kick straight back against the tension.
+drag_curl|Dumbbell drag curl|bi|db|3|10-12|45|0|l r|Drag the weights up your body, elbows going back.
+wn_squat|Dumbbell wide-narrow squat walk|squat|db|3|8-12|60|1|l r|Squat wide, step in and squat narrow, alternating sides.
+db_front_sq|Dumbbell front squat|squat|db|3|8-12|75|1|l r|Dumbbells at your shoulders. Knees, feet and hips in line.
+atlas|Dumbbell Atlas press|vpush|db|3|8-12|60|0|l r|Press one dumbbell overhead and bring it down to the other shoulder.
+band_tri_kick|Band triceps kickback|tri|band|3|12-15|45|0|b r|Elbow pinned, straighten your arm back against the band.
+db_ham|Dumbbell hamstring curl|ham|db,mat|3|10-15|60|0|l r|Hold a dumbbell between your feet. Curl your heels toward your hips.
+cable_glute_kick|Cable glute kickback|glute|cable,cuff|3|12-15|60|0|l u|Cuff on your ankle. Hold the stack and kick straight back.
+db_decline|Dumbbell decline bench press|hpush|db,bench|3|10-15|75|0|l r|Bench set to decline. Press straight up over your lower chest.
+decline_fly|Dumbbell decline chest fly|hpush|db,bench|3|10-15|60|0|l r|Soft elbows, wide arc, squeeze your chest at the top.
+front_raise|Dumbbell front raise|shoulder|db|3|10-12|45|0|l|Light weights. Raise to shoulder height, no swinging.
+lying_ir|Side-lying dumbbell internal rotation|shoulder|db,mat|3|12-15|45|0|l u|Light weight. Great for healthy swimming shoulders.
+sl_calf|Single-leg dumbbell calf raise|calf|db|3|12-15|45|0|l u|Hold the rack for balance. Rise high and lower slowly.
+plank_pu|Plank to push-up|comp|pushbars|3|6-10|60|0|b f=push,full|Keep your hips steady as you switch between forearms and hands.
+plank_row|Plank row|comp|db,pushbars|3|8-10|60|0|l u f=pull,full|Wide feet, hips square. Row without twisting.
+skull_bridge|Dumbbell skull crusher in a bridge|comp|db,mat|3|10-12|60|0|l f=push,legs,full|Hips stay high while only your elbows bend.
+kb_alt_row|Kettlebell alternating row|hpull|kb,pushbars|3|8-10|60|0|l|Hands on kettlebells in a plank, hips square.
+sl_wall_dl|Single-leg wall deadlift|single|db|3|8-10|60|0|l u|Back foot presses into the wall behind you for balance.
+sa_ohp|Single-arm dumbbell shoulder press|shoulder|db|3|8-12|60|0|l u|Brace your core so you do not lean.
+wrist_ext|Dumbbell palm-down wrist curl|bi|db,bench|3|15-20|45|0|l r|Forearms stay still. Only your wrists move.
+bb_rear_row|Barbell rear-delt row|shoulder|bb|3|10-12|60|0|l r|Wide grip, elbows flare out, light weight.
+incl_front|Incline dumbbell front raise|shoulder|db,bench|3|10-12|45|0|l r|Chest on the incline bench. Light and strict.
+press_fly|Dumbbell shoulder press to chest fly|comp|db,bench|3|8-10|60|0|l r f=push|Light weights. Smooth transitions.
+db_squat|Dumbbell squat|squat|db|3|10-12|75|1|l|Dumbbells at your sides. Sit back and stay tall.
+ball_side_plank|Stability-ball elbow side plank|cla|ball|2|t30|30|0|u|Elbow on the ball under your shoulder. Lift your hips into a straight line.
+ball_plank|Stability-ball plank|cae|ball|2|t30|30|0|-|Hands evenly spaced on the ball. Glutes and abs on.
+ball_tuck|Stability-ball tuck|cfl|ball|2|10-12|30|0|-|Drag the ball in with your feet. Hips don't sag.
+ball_deadbug|Stability-ball dead bug|cae|ball|2|8-12|30|0|-|Squeeze the ball between your hands and knees.
+roller_ll|Active leg lowering to the roller|cfl|roller,mat|2|8-12|30|0|-|Stiff abs. One rep = one leg lowered. Alternate legs.
+side_leg_abd|Side plank leg raise|cla|mat|2|8-12|30|0|u|Lift through the heel. Drop the bottom knee to make it easier.
+ball_jack|Stability-ball jackknife|cfl|ball|2|8-12|30|0|-|Keep your back flat, pike with your abs.
+ball_back_ext|Stability-ball back extension|hinge|ball|3|10-15|60|0|b|Smooth lift to a straight line. No over-arching.
+decline_pu|Decline push-up|hpush|bench,pushbars|3|8-15|60|0|b|Feet on the bench, hands on the push-up bars. Body in one line.
+cable_rev_curl|Cable reverse curl|bi|cable,bar|3|10-15|45|0|l|Overhand grip, elbows pinned. Good for forearms.
+cable_rev_tri|Cable reverse-grip triceps pushdown|tri|cable,bar|3|10-15|45|0|l|Palms up, elbows pinned to your sides.
+cable_wide_row|Cable seated wide-grip row|hpull|cable,bar|3|8-12|75|0|l|Pull to your chest, elbows wide, squeeze your shoulder blades.
+cable_bent_row|Cable bent-over row|hpull|cable|3|8-12|60|0|l|Hinge with a flat back and row to your ribs.
+crab_walk|Crab walk|wact|none|1|t45|0|1|-|Hips up, small steps.
+jab_cross|Dumbbell jab and cross punch|shoulder|db|2|20-30|45|0|l r|Light weights. Alternate punches and rotate your torso.
+ball_twist|Stability-ball torso twist|car|ball|2|8-10|30|0|u r|Slow and controlled. Rotate through your ribs.
+arnold_lat|Dumbbell Arnold press to lateral raise|shoulder|db|3|8-10|60|0|l r|Light weights and smooth transitions.
+cable_rot_row|Cable seated rotational row|hpull|cable|3|8-12|60|0|l r|Rotate your torso as you pull.
 squat_row|Cable squat to row|comp|cable|3|10-12|75|0|l f=pull,full,legs|Sit back while your arms reach, row as you stand.
 hang_clean|Dumbbell hang clean to press|comp|db|3|6-10|75|0|l f=full,push|Hinge, whip the weights to your shoulders, press overhead.
 kb_clean_press|Kettlebell clean and press|comp|kb|3|6-8|75|0|l u f=full,push|Clean to your shoulder and press with a tall posture.
@@ -411,6 +516,14 @@ c_calf|Stand facing a wall with both hands on it, one foot back.;Press the back 
 c_fly|Sit on the mat with the soles of your feet together and knees dropped out.;Sit tall and hinge forward slightly from the hips.;Breathe and let your knees relax. Stop if your knees complain.
 c_wrist|Hold one arm straight out in front with your palm up.;Use the other hand to gently pull your fingers back toward you.;Then turn the palm down and gently press the fingers toward the floor. Switch arms halfway.
 w_catcow|On hands and knees (pad your knees with the mat), round your back and tuck your chin, then arch and look up.;Slide one arm under your chest and rotate, then switch sides.;Move slowly for the full minute.
+y_child|Kneel on the mat (pad your knees) and sit your hips back toward your heels.;Reach both arms forward and rest your forehead down, breathing slowly.;Walk your hands to the right for a few breaths, then to the left.
+y_dog|Start on hands and knees, tuck your toes, and lift your hips up and back into an upside-down V.;Press the floor away and keep your head between your arms.;Bend one knee at a time to pedal your heels and stretch your calves.
+y_fold|Stand with your feet hip-width and bend your knees slightly.;Fold forward and let your head and arms hang heavy.;Sway gently side to side, then roll up slowly one vertebra at a time.
+y_lunge|Step one foot forward into a lunge and lower your back knee onto the mat with padding.;Sink your hips forward until you feel the front of the back hip stretch.;Sweep your arms overhead and breathe. Switch legs halfway.
+y_cobra|Lie on your stomach with your forearms on the mat and your elbows under your shoulders.;Press down and lift your chest into the sphinx. If it feels good, straighten your arms into a low cobra.;Keep your neck long and your hips on the floor. Lower slowly.
+y_sun|Stand tall, sweep your arms up, then fold forward.;Step back to a plank, lower down, then press into a cobra or sphinx and push back to downward dog.;Step forward, rise up, and repeat slowly with your breath. Step, don't jump.
+y_cow|Reach your right arm up, bend the elbow, and drop your hand behind your neck.;Reach your left arm behind your back and try to clasp hands. Use a towel if they don't reach.;Breathe and keep your ribs down. Switch sides halfway.
+w_bird|Get on your hands and knees on the mat with your knees under your hips.;Reach one arm forward and the opposite leg back until they are level with your back.;Pause, return, and switch sides. Keep your hips square.
 w_90|Sit on the floor with both knees bent about 90 degrees, one in front and one to the side.;Rotate your knees to the other side without using your hands, in a comfortable range.;Keep your chest tall and switch smoothly.
 w_roller|Lie with the roller under your upper back and your hands behind your head.;Lift your hips slightly and gently extend back over the roller.;Roll up and down your upper back and avoid your low back.
 w_dead|Lie on your back with your arms up and knees bent over your hips.;Lower the opposite arm and leg slowly while your low back stays flat.;Return and switch sides.
@@ -482,6 +595,103 @@ cable_sq_press|Set the pulleys low and hold the handles at your shoulders, facin
 goblet_press|Hold a kettlebell or dumbbell at your chest.;Squat to a shallow depth, then stand up and press it overhead.;Lower it back to your chest and repeat.
 thruster|Sit on the bench holding dumbbells at your shoulders.;Stand up and press the weights overhead in one motion.;Lower the weights and sit back down slowly.
 rdl_row|Hold dumbbells in front of your thighs and hinge your hips back.;Row both dumbbells to your ribs.;Lower them, then stand up by driving your hips forward.
+wall_curl|Stand with your back against a wall and slide down until your thighs are near parallel to the floor. Stay in a pain-free range.;Hold a dumbbell in each hand and curl them up while you keep the wall sit.;Lower slowly. Stand up to rest if your knees complain.
+hammer_press|Stand tall holding dumbbells at your sides with your palms facing in.;Curl up with your thumbs toward the ceiling, then rotate your palms forward and press overhead.;Lower back to your sides under control.
+skull|Lie on a flat bench holding a dumbbell in each hand over your chest with your palms facing in.;Bend your elbows to lower the weights toward your forehead, keeping your upper arms still.;Press back up until your arms are straight.
+cable_row_squat|Set the pulley at hip height and hold the handle with straight arms, feet shoulder-width apart.;Sit your hips back into a shallow squat, arms reaching forward.;Stand up as you pull the handle to your ribs. Stay in a pain-free squat depth.
+lat_pd_floor|Attach the lat bar to the high pulley. Sit on the mat facing the machine with your knees bent or legs extended.;Reach up and hold the bar slightly wider than your shoulders.;Pull the bar to your upper chest, elbows down toward your ribs. Return slowly.
+squat_walk|Stand tall. Drive one knee up, then the other, as you march forward a few steps.;Sit into a shallow, pain-free squat.;Walk backward to your start and repeat.
+plank_jack|Start in a plank with your hands under your shoulders on the mat.;Step your feet out wide one at a time, then step them back together. No hopping.;Keep your hips level and your core tight.
+lying_slr|Lie on your back with your legs straight and your hands under your hips.;Raise both legs to point at the ceiling.;Lower them slowly without letting your low back arch.
+cable_kick|Set the pulley at hip height and hold the handle in one hand. Hinge forward with a flat back and your elbow at your side.;Straighten your arm back until it is fully extended, keeping your upper arm still.;Return slowly. Finish all reps, then switch sides.
+sq_upright|Stand with your feet in squat width, holding a kettlebell or dumbbell with both hands in front of you.;Squat down, lowering the weight toward the floor with your palms facing you.;Stand up as you pull the weight to chest height with your elbows high. Lower as you squat again.
+superman|Lie face down with your arms reaching forward and your legs straight.;Lift your arms, chest and legs a few inches off the floor while keeping your neck long.;Hold for a second, then lower slowly.
+skier|Stand with a light dumbbell in each hand and your arms straight overhead, with a slight hinge at the hips.;Sweep both arms down in a wide arc toward your thighs, driving with your lats.;Return overhead slowly. Keep your arms straight and ribs down.
+pullover|Lie on the bench with your shoulders on it and hold one dumbbell with both hands over your chest.;Lower it back behind your head with your elbows slightly bent, until you feel a lat stretch.;Pull it back over your chest using your lats.
+chest_fly|Lie on the bench holding dumbbells over your chest with your palms facing each other.;Open your arms wide in an arc with soft elbows until you feel a chest stretch.;Bring the weights back together over your chest.
+tri_bench|Lie on the bench holding dumbbells over your chest with your palms facing each other.;Lower them with your elbows tucked close to your ribs.;Press back up, squeezing your triceps.
+db_oh_tri|Stand or sit holding one dumbbell with both hands overhead.;Bend your elbows to lower it behind your head, keeping your elbows pointed up.;Straighten your arms to press it back overhead.
+db_kick|Hinge forward with a flat back, holding a dumbbell in each hand with your elbows bent beside your ribs.;Straighten both arms back until fully extended.;Return slowly without moving your upper arms.
+row_kick|Hinge forward with a flat back, holding a dumbbell in each hand.;Row both weights to your ribs.;Straighten your arms back into a kickback, then lower and repeat.
+curl_press|Stand holding dumbbells at your sides.;Curl them up to your shoulders.;Press them straight out in front of you at chest height, then bring them back in and lower.
+rope_situp|Lie on your back with your knees bent and your arms reaching overhead.;Sit up while pulling your hands down in a hand-over-hand rope climbing motion.;Lower back down slowly and reach overhead again.
+knee_crunch|Lie on your back with your hands behind your head and your legs lifted.;Curl your shoulders up as you pull your knees in toward your chest.;Lower slowly without letting your low back arch.
+elbow_slp|Start in a forearm plank with your body in a straight line.;Lift one leg a few inches and hold it briefly.;Lower and switch legs. Keep your hips level.
+wsitup|Lie on your back with your knees bent and a dumbbell held at your chest.;Curl up to sitting using your abs.;Lower slowly.
+situp_press|Lie on your back with your knees bent, holding a light dumbbell at your chest.;Sit up and press the weight straight overhead.;Lower it to your chest and roll back down slowly.
+bench_mc|Place your hands on the bench in an incline plank.;Drive one knee toward your chest, then switch quickly.;Keep your hips low and your core tight.
+db_calf|Stand holding a dumbbell in each hand, feet hip-width.;Rise onto your toes as high as you can.;Pause, then lower slowly.
+butterfly_bridge|Lie on your back with the soles of your feet together and your knees dropped open.;Press through the outsides of your feet to lift your hips.;Squeeze your glutes at the top, then lower slowly.
+wall_oh|Slide down a wall until your thighs are near parallel, in a pain-free range.;Hold light dumbbells and raise them overhead.;Lower slowly. Stand up to rest if your knees complain.
+sumo|Stand with your feet wide and your toes turned out, holding a dumbbell between your legs.;Sit your hips down with your chest tall to a pain-free depth.;Drive through your heels to stand.
+goblet15|Hold a dumbbell or kettlebell at your chest and squat to a pain-free depth.;Come halfway up, then lower again.;Stand all the way up. That is one rep.
+sq_curl|Hold dumbbells at your sides and squat to a pain-free depth.;Stand up as you curl the weights to your shoulders.;Lower the weights as you squat again.
+rev_lunge_oh|Hold light dumbbells at your sides.;Step one foot back into a lunge in a pain-free range.;Push up to stand and raise the weights overhead. Finish one side, then switch.
+plank_shift|Start in a plank on your hands with your body in a straight line.;Shift your weight slightly to one side and then the other without twisting.;Lower into a push-up and press back up. Repeat.
+bench_dip|Sit on the edge of the bench with your hands beside your hips and your legs out in front.;Slide your hips off and bend your elbows to lower a few inches.;Press back up. Stop if your shoulders complain.
+db21|Stand holding dumbbells and curl from the bottom to halfway, seven reps.;Curl from halfway to the top, seven reps.;Do seven full curls. That is one set of 21.
+bulgarian|Stand a step in front of the bench and rest the top of your back foot on it.;Lower your back knee straight down in a pain-free range.;Drive through your front heel to stand. Finish one side, then switch.
+sl_bench|Stand in front of the bench on one leg.;Sit back until you lightly touch the bench.;Stand up through your heel. Finish one side, then switch.
+curtsy|Stand tall, holding a light dumbbell at your chest.;Step one foot behind and across your body into a curtsy lunge in a pain-free range.;Return to standing. Finish one side, then switch.
+lunge3d|Step one foot forward into a lunge, then return.;Step it out to the side and return.;Step it back and return. That is one rep. Switch legs after each set.
+stat_lunge_curl|Hold dumbbells at your sides and set up in a split stance.;Lower into a lunge in a pain-free range.;Curl the weights as you hold the lunge, then stand. Finish one side, then switch.
+stat_lunge_press|Hold dumbbells at your shoulders and set up in a split stance.;Lower into a lunge in a pain-free range.;Press the weights overhead as you stand. Finish one side, then switch.
+incl_curl|Sit back on an incline bench with your arms hanging and a dumbbell in each hand, palms facing in.;Curl one weight to shoulder level while turning your palm up at the top.;Lower slowly and alternate arms.
+bent_kick|Get on your hands and knees on the mat, with your knees padded and your abs braced.;Lift one leg with the knee bent, squeezing your glute, until your thigh is level with your back.;Lower without letting your low back sway. Finish one side, then switch.
+shrug|Stand holding a dumbbell in each hand with your arms at your sides.;Raise your shoulders straight up toward your ears as high as you can.;Pause, then lower slowly.
+conc_curl|Sit on the end of the bench with your legs apart and rest one elbow on your inner thigh, letting the dumbbell hang.;Curl the weight toward your shoulder using only your biceps.;Pause at the top and lower slowly. Finish one side, then switch.
+iso_curl|Hold a dumbbell in each hand and curl one arm up to 90 degrees. Keep it there.;Curl the other arm up toward your shoulder, pause, and lower.;Finish all reps with that arm while the other holds, then switch.
+wrist_curl|Kneel or sit beside a bench and rest your forearms on it, palms up, with your wrists past the edge.;Lower the dumbbells as far as you can, pause, then curl them up as high as possible.;Keep your forearms still the whole time.
+pendlay|Stand with your feet hip-width and the barbell over the middle of your feet. Hinge forward with a flat back and grip the bar.;Pull the bar to your lower chest, keeping your torso parallel to the floor.;Lower it to the floor, reset, and repeat.
+prone_kick|Lie face down on a flat bench holding a dumbbell in each hand with your elbows bent at 90 degrees at shoulder height.;Raise the dumbbells up and back, straightening your arms.;Lower with steady shoulders and repeat.
+pulse_sq|Stand with your feet shoulder-width apart and squat to a pain-free depth.;Stay low and pulse up and down a few inches.;Stand up to finish the set.
+er_side|Lie on your side with your top elbow bent 90 degrees and pinned against your ribs, holding a light dumbbell.;Rotate your forearm up toward the ceiling without moving your elbow.;Lower slowly. Finish all reps, then switch sides.
+side_bend|Stand tall with a dumbbell in one hand and your other hand on your waist.;Bend sideways toward the weight, then lift back up past center.;Keep your hips still. Finish all reps, then switch hands.
+toe_touch|Lie on your back and point your legs straight up. Bend your knees if your hamstrings are tight.;Roll your ribs up and reach toward your toes.;Lower back down slowly.
+db_bridge|Lie on your back with your knees bent and a dumbbell across your hips, held in place with your hands.;Squeeze your glutes to lift your hips until your body is a straight line.;Keep your abs on so you don't arch your low back. Lower slowly.
+sl_kick|Get on your hands and knees on the mat with your knees padded and your abs braced.;Extend one leg straight back until it is level with your back.;Lower under control without letting your low back sway. Finish one side, then switch.
+band_kick|Get on your hands and knees on the mat with a band around your feet or secured under one hand.;Kick one leg straight back against the band, squeezing your glute.;Return slowly. Finish one side, then switch.
+drag_curl|Stand holding dumbbells at your sides.;Curl the weights up close to your body, letting your elbows travel behind you.;Lower slowly.
+wn_squat|Hold dumbbells at shoulder height with your feet a little wider than normal.;Squat, then step one foot in close to the other and squat narrow.;Step back out wide and squat, then bring the other foot in. Alternate sides.
+db_front_sq|Hold dumbbells at your shoulders with your elbows forward.;Sit your hips back and down to a pain-free depth with your knees tracking over your feet.;Drive through your heels to stand.
+atlas|Stand holding one dumbbell with both hands at one shoulder.;Press it overhead until your arms are straight.;Lower it to the other shoulder and press again, alternating sides each rep.
+band_tri_kick|Hinge forward with the band anchored under your front foot or hand, holding the other end with your elbow at your side.;Straighten your arm back until fully extended.;Return slowly. Finish all reps, then switch sides.
+db_ham|Lie face down on the mat with a dumbbell held between your feet.;Curl your heels toward your hips.;Lower slowly without arching your back.
+cable_glute_kick|Set the pulley low and attach the ankle cuff to one ankle. Face the machine and hold the frame for balance.;Kick that leg straight back, squeezing your glute, without arching your low back.;Return slowly. Finish all reps, then switch legs.
+db_decline|Set the bench to a decline and lie back holding dumbbells at your chest.;Press the weights straight up until your arms are straight.;Lower slowly and repeat.
+decline_fly|Set the bench to a decline and lie back holding dumbbells over your chest with your palms facing each other.;Open your arms in a wide arc with soft elbows.;Bring the weights back together over your chest.
+front_raise|Stand holding light dumbbells in front of your thighs.;Raise both arms straight in front of you to shoulder height.;Lower slowly without leaning back.
+lying_ir|Lie on your side with your elbow bent 90 degrees against your ribs, holding a light dumbbell.;Rotate your forearm up across your belly.;Lower slowly. Finish all reps, then switch sides.
+sl_calf|Stand on one foot holding a dumbbell in one hand and the rack with the other.;Rise onto your toes as high as you can.;Lower slowly. Finish all reps, then switch legs.
+plank_pu|Start in a forearm plank.;Press up onto one hand, then the other, into a high plank.;Lower back to your forearms one arm at a time. Alternate which arm leads.
+plank_row|Start in a high plank with your hands on dumbbells and your feet wide.;Row one dumbbell to your ribs without twisting.;Lower it and repeat. Finish all reps, then switch arms.
+skull_bridge|Lie on your back with your knees bent and lift your hips into a bridge, holding dumbbells over your chest.;Bend your elbows to lower the weights toward your forehead.;Straighten your arms while keeping your hips high.
+kb_alt_row|Start in a high plank with your hands on two kettlebells and your feet wide.;Row one kettlebell to your ribs without twisting.;Lower it and switch sides.
+sl_wall_dl|Stand facing away from a wall on one leg with the other foot lightly on the wall behind you, holding a dumbbell.;Hinge forward, pressing your back foot into the wall.;Return by squeezing your glute. Finish all reps, then switch legs.
+sa_ohp|Hold one dumbbell at your shoulder with your core braced.;Press it straight overhead.;Lower slowly. Finish all reps, then switch arms.
+wrist_ext|Rest your forearms on a bench, palms down, wrists past the edge.;Lower the dumbbells, then raise your wrists as high as possible.;Keep your forearms still.
+bb_rear_row|Hinge forward holding the bar with a wide overhand grip.;Pull the bar toward your upper chest with elbows flared wide.;Lower with control, keeping a flat back.
+incl_front|Set the bench to an incline and lie face down on it holding light dumbbells.;Raise both arms forward to head level.;Lower slowly.
+press_fly|Sit on the bench holding dumbbells at your shoulders and press them overhead.;Lower them and lie back, then open your arms into a chest fly.;Bring them together and sit back up. Repeat.
+db_squat|Stand holding dumbbells at your sides, feet shoulder-width.;Sit your hips back and down to a comfortable depth.;Push through your heels to stand.
+ball_side_plank|Prop yourself on your side with your elbow and forearm centered on top of the stability ball.;Stack or stagger your feet and lift your hips so your body forms one straight line.;Squeeze your glutes and abs and hold for the time shown, then switch sides.
+ball_plank|Place your hands on the ball under your shoulders.;Walk your feet back one at a time into a high plank.;Squeeze your glutes, draw in your abs, and hold a neutral spine.
+ball_tuck|Start in a push-up position with your feet or shins on the ball.;Pull the ball toward your chest by bending your knees and hips.;Roll it back out to a straight body and repeat.
+ball_deadbug|Lie on your back holding the ball between your hands and knees over your hips.;Slowly extend one leg while the ball stays squeezed and your low back stays flat.;Return and switch legs.
+roller_ll|Lie on your back on the mat with a foam roller by your feet.;Raise both legs straight up, then slowly lower one leg to tap the roller while the other stays up.;Return it to the top and alternate legs.
+side_leg_abd|Get into a side plank on your forearm, or lie on your side if that is too hard.;Lift your top leg as high as you can, leading with the heel.;Lower slowly. Finish all reps, then switch sides.
+ball_jack|Start in a push-up position with your shins on the ball and a straight line from head to ankles.;Without rounding your low back, pull the ball toward your chest by bending your knees.;Pause, then roll back to the start.
+ball_back_ext|Lie face down over the ball with your toes on the floor and your hands across your chest.;Lift your chest until your body is in one line.;Lower slowly.
+decline_pu|Put your feet on the bench and your hands on the push-up bars under your shoulders.;Lower your chest between the bars with your body in one straight line.;Press back up. Move your feet to the floor if it's too hard.
+cable_rev_curl|Attach the bar to a low pulley and hold it with a shoulder-width overhand grip.;With your elbows at your sides, raise the bar until your forearms are vertical.;Lower until your arms are straight.
+cable_rev_tri|Set a high pulley with the bar and hold it with an underhand grip.;Press down until your arms are straight, elbows tight.;Return slowly.
+cable_wide_row|Sit at the low pulley and hold the bar with a wide overhand grip.;Pull the bar to your lower chest with your elbows out.;Pause, then return slowly.
+cable_bent_row|Set a low pulley and face it, hinged forward with a flat back.;Row the handle to your ribs.;Lower slowly.
+crab_walk|Sit on the floor with your hands behind you and your feet flat.;Lift your hips by squeezing your glutes.;Take small alternating steps with your hands and feet, keeping your hips up.
+jab_cross|Stand with your feet staggered, holding light dumbbells at your chin.;Punch one arm forward while pulling the other back.;Alternate smoothly and rotate through your torso.
+ball_twist|Lie face down on the ball in a push-up position with your feet on the floor.;Raise one arm toward the ceiling in line with the hand on the floor, twisting your torso.;Lower back and finish one side, then switch.
+arnold_lat|Hold light dumbbells at your chest with your palms facing you.;Rotate and press them overhead like an Arnold press.;Lower, then raise your arms out to the sides for a lateral raise.
+cable_rot_row|Sit at the low pulley and hold the handle with both hands.;Pull toward your ribs while rotating your torso slightly.;Return slowly and finish one side, then switch.
 squat_row|Set the pulleys at chest height and hold the handles, facing the machine with your arms straight.;Sit back into a comfortable squat while your arms reach forward.;Stand up and row the handles to your ribs.
 hang_clean|Hold dumbbells in front of your thighs and hinge back slightly.;Snap your hips forward and pull the dumbbells up to your shoulders.;Press them overhead, then lower with control.
 kb_clean_press|Hinge back and grab the kettlebell handle on the floor in front of you.;Pull the bell up to your shoulder in one motion, then press it overhead.;Lower it to your shoulder, then to the floor. Switch sides.
@@ -536,7 +746,7 @@ function parseLine(l){
   const [id,n,pat,eq,sets,rep,rest,knee,flags,cue] = l.split('|');
   const fl = (flags||'').split(/\s+/);
   const ex = {id,n,pat:pat.split(' '),eq:eq.split(','),sets:+sets,rest:+rest,k:+knee,cue,
-    l:fl.includes('l'),b:fl.includes('b'),u:fl.includes('u')||flags.includes('-u'),f:[]};
+    l:fl.includes('l'),b:fl.includes('b'),r:fl.includes('r'),u:fl.includes('u')||flags.includes('-u'),f:[]};
   if(rep[0]==='t'){ex.secs=+rep.slice(1);ex.lo=ex.hi=0}
   else{const [a,b]=rep.split('-').map(Number);ex.lo=a;ex.hi=b}
   const fo = fl.find(x=>x.startsWith('f='));
@@ -658,7 +868,7 @@ function build(rng,focus,phi,hist,seedTag){
   const prevSame=[...hist].reverse().find(w=>w.focus===focus);
   const prevIds=new Set(prevSame?[...prevSame.main,...prevSame.abs].map(e=>e.id):[]);
   const used=new Set();
-  const wf=x=>(1/(1+(recent[x.id]||0)*0.8))*(prevIds.has(x.id)?0.3:1)*(S.fav&&S.fav.includes(x.id)?2.5:1);
+  const wf=x=>(1/(1+(recent[x.id]||0)*0.8))*(prevIds.has(x.id)?0.3:1)*(S.fav&&S.fav.includes(x.id)?2.5:(x.r?0.25:1));
   const pick=(pats,f)=>{
     const c=all.filter(x=>!used.has(x.id)&&x.pat.some(p=>pats.includes(p))&&(!f||x.f.includes(f)));
     const x=weightedPick(c,wf,rng); if(x) used.add(x.id); return x;
