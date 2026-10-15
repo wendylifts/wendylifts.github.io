@@ -241,7 +241,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 15, 2026, 5:18 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 15, 2026, 5:29 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -333,9 +333,9 @@ w_pull|Band pull-aparts|wact|band|1|t50|0|0|-|Squeeze your shoulder blades toget
 w_er|Band external rotations|wact|band|1|t50|0|0|-|Elbow glued to your side.
 w_angel|Floor angels|wact|mat|1|t50|0|0|-|Ribs down, arms sliding along the floor.
 w_bridge|Glute bridge holds|wact|mat|1|t45|0|0|-|Squeeze your glutes at the top.
-w_march|Marching high knees|wcard|none|1|t180|0|0|-|Drive your knees up, no jumping.
-w_run|Run in place|wcard|none|1|t180|0|0|-|Light and quick on the balls of your feet.
-w_step|Fast taps on the step|wcard|step|1|t180|0|0|-|Alternate feet, no jumping.
+w_march|Marching high knees|wcard|none|1|t60|0|0|-|Drive your knees up, no jumping.
+w_run|Run in place|wcard|none|1|t60|0|0|-|Light and quick on the balls of your feet.
+w_step|Fast taps on the step|wcard|step|1|t60|0|0|-|Alternate feet, no jumping.
 lat_pd|Cable lat pulldown|vpull|cable|3|8-12|75|0|l|Pull your elbows down toward your ribs. Don't shrug.
 lat_pd_sa|Single-arm cable pulldown|vpull|cable|3|10-12|60|0|l u|Reach tall at the top, then drive the elbow to your hip.
 assist_pu|Assisted pull-up|vpull|pullup|3|4-8|90|0|b|Use the assist band. Chin over the bar, slow on the way down.
@@ -1462,7 +1462,7 @@ function renderDay(){
   const wkObj=S.weeks[U.wk]; const w=wkObj&&wkObj.workouts[U.day];
   if(!w) return '<p class="empty">That workout isn\'t available.</p><a class="btn" href="#/">Back to this week</a>';
   const ph=PHASES[wkObj.ph]; const f=FOCUS[w.focus]; const d=dayDate(U.wk,U.day); const mon=parse(U.wk);
-  const warm=w.warm.filter(x=>exById(x.id)).map(x=>{const ex=exById(x.id); const wsecs=ex.pat.includes('wcard')?Math.max(ex.secs,180):x.secs;
+  const warm=w.warm.filter(x=>exById(x.id)).map(x=>{const ex=exById(x.id); const wsecs=ex.pat.includes('wcard')?60:x.secs;
     const steps=HOWTO[x.id]||['Move slowly and smoothly.','Stop if anything pinches.'];
     const yt='https://www.youtube.com/results?search_query='+encodeURIComponent(ex.n+' exercise form');
     const wd=!!((S.sessions[w.id]||{}).warm||{})[x.id];
