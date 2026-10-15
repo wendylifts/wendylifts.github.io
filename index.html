@@ -218,6 +218,12 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 .ex.complete h3{color:var(--ok)}
 .ex.complete h3::after{content:" \2713"}
 .dprog{font-weight:600;color:var(--link);margin:2px 0 8px}
+#dpill{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:39;background:var(--deep);color:#fff;padding:5px 13px;border-radius:999px;font-weight:700;font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.25);opacity:.92;pointer-events:none;transition:transform .25s,background .25s,bottom .2s,opacity .2s}
+#dpill[hidden]{display:none}
+body:has(#rest) #dpill{bottom:92px}
+#dpill.pop{transform:translateX(-50%) scale(1.18);background:var(--ok);opacity:1}
+#dpill.all{background:var(--ok)}
+.toast{z-index:50}
 #tmr.ready .tfg{stroke:#E8A317}
 #tmr.ready .tnum{color:#C98A00}
 #rest{position:fixed;left:12px;right:12px;bottom:14px;z-index:40;max-width:420px;margin:0 auto;background:var(--deep);color:#fff;border-radius:16px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 6px 20px rgba(0,0,0,.3)}
@@ -241,7 +247,8 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 15, 2026, 5:29 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 15, 2026, 5:48 PM CT</footer>
+<div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -1723,11 +1730,24 @@ function updateDone(user){
   const cur=(warmLeft&&!anyLogged)?null:cards.find(c=>!c.classList.contains('complete')&&!c.classList.contains('skipped')); cards.forEach(c=>c.classList.toggle('current',c===cur)); cards.forEach(c=>c.classList.toggle('started',c===cur&&[...c.querySelectorAll('input[data-set]')].some(x=>x.value.trim()!==''&&!x.classList.contains('pre'))));
   const wl=[...document.querySelectorAll('li[data-warm]')]; wl.forEach(l=>{if(l.classList.contains('complete')) done++});
   const total=cards.filter(c=>!c.classList.contains('skipped')).length+wl.length; const p=document.getElementById('dprog');
-  if(p) p.textContent=total?(done===total?'All '+total+' done. Tap Finish workout below.':done+' of '+total+' done. Short on time? Tap Finish workout and keep what you logged.'):'';
+  if(p) p.textContent=total?(done===total?'All done. Tap Finish workout below.':'Short on time? Tap Finish workout and keep what you logged.'):'';
+  const pl=document.getElementById('dpill');
+  if(pl){
+    if(U.tab!=='day'||!total){pl.hidden=true;delete pl.dataset.n;return}
+    const prev=pl.dataset.n===undefined?null:+pl.dataset.n; pl.dataset.n=done; pl.hidden=false;
+    pl.classList.toggle('all',done===total);
+    clearTimeout(updateDone.pt);
+    if(prev!==null&&done>prev){
+      pl.textContent=done===total?'All '+total+' done!':done+' of '+total+' done';
+      pl.classList.add('pop');
+      updateDone.pt=setTimeout(()=>{pl.classList.remove('pop');pl.textContent=done+' / '+total},2200);
+    } else if(!pl.classList.contains('pop')||prev===null){ pl.classList.remove('pop'); pl.textContent=done+' / '+total }
+  }
 }
 function render(keep){
   const y=window.scrollY;
   renderNav();
+  const dpl=document.getElementById('dpill'); if(dpl){delete dpl.dataset.n; dpl.classList.remove('pop')}
   $('#app').innerHTML=U.tab==='day'?renderDay():U.tab==='progress'?renderProgress():U.tab==='settings'?renderSettings():renderHome();
   updateDone();
   if(keep) window.scrollTo(0,y);
