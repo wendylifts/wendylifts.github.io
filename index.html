@@ -241,7 +241,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 13, 2026, 10:22 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 15, 2026, 5:06 PM CT</footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -1623,6 +1623,7 @@ function startRest(secs,label){
   const plan=()=>{ cancelSched(); const left=Math.max(0,(RT.end-Date.now())/1000); const ns=[]; let wn=null; if(left>10&&secs>15){wn=schedDing(1175,400,0.3,left-10); ns.push(wn)} ns.push(schedDing(880,250,0.35,left),schedDing(1320,500,0.4,left+0.3),schedDing(1320,450,0.35,left+0.85)); RT.nodes=ns.filter(Boolean); RT.pre=RT.nodes.length>=3; RT.preWarn=!!wn; RT.tgt=audioCtx?audioCtx.currentTime+left:0; RT.tgtW=audioCtx?audioCtx.currentTime+left-10:0; };
   const played=t=>!!(audioCtx&&audioCtx.state==='running'&&audioCtx.currentTime>=t-0.3); // did the pre-scheduled sound really get its turn?
   plan();
+  ding(523,170,0.3); // soft low note: the rest has started
   const n=el.querySelector('.rn'), l=el.querySelector('.rl');
   const tick=()=>{ if(!RT) return;
     const left=Math.max(0,Math.ceil((RT.end-Date.now())/1000)); n.textContent=left;
