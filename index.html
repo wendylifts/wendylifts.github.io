@@ -226,6 +226,7 @@ body:has(#rest) #dpill{bottom:92px}
 .toast{z-index:50}
 #tmr.ready .tfg{stroke:#E8A317}
 #tmr.ready .tnum{color:#C98A00}
+.setbtns{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 2px}
 #rest{position:fixed;left:12px;right:12px;bottom:14px;z-index:40;max-width:420px;margin:0 auto;background:var(--deep);color:#fff;border-radius:16px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 6px 20px rgba(0,0,0,.3)}
 #rest .rinfo{display:flex;align-items:baseline;gap:8px}
 #rest .rl{font-weight:600;opacity:.85}
@@ -247,7 +248,7 @@ body:has(#rest) #dpill{bottom:92px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 15, 2026, 5:46 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 15, 2026, 6:02 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1348,6 +1349,7 @@ function exCard(w,e,i,block){
     ${noteHtml(e.id)}
     ${isCable(ex)&&showW?'<p class="note">Log the number of plates on the stack. One plate is about 7 lb.</p>':''}
     <div class="sets ${showW?'':'nw'}">${showW?'<span></span><span class="hd">Weight ('+wu(ex)+')</span>':'<span></span>'}<span class="hd">${timed?'Seconds':'Reps'}</span><span></span>${rows}</div>
+    <div class="setbtns"><button class="btn small" data-act="addset" data-b="${block}" data-i="${i}">+ Add a set</button>${e.sets>1?`<button class="btn small" data-act="rmset" data-b="${block}" data-i="${i}">− Remove a set</button>`:''}</div>
     ${kneeHtml(ex,wid)}
     <div class="ex-actions">
       ${timed?`<button class="btn small teal" data-act="timer" data-secs="${e.secs}">Start ${e.secs} sec timer</button>`:''}
@@ -1728,8 +1730,8 @@ function updateDone(user){
   cards.forEach(c=>{if(c.classList.contains('skipped')){c.classList.remove('complete');return} const was=c.classList.contains('complete'); const needw=c.dataset.needw==='1'; const ins=[...c.querySelectorAll('input[data-set]')].filter(x=>needw||/\|l?r$/.test(x.dataset.set)); const ok=ins.length>0&&ins.every(x=>x.value.trim()!==''); c.classList.toggle('complete',ok); if(ok) done++; if(user&&ok&&!was) haptic('success')});
   const warmLeft=[...document.querySelectorAll('li[data-warm]')].some(l=>!l.classList.contains('complete')); const anyLogged=cards.some(c=>c.classList.contains('complete')||[...c.querySelectorAll('input[data-set]')].some(x=>x.value.trim()!==''&&!x.classList.contains('pre')));
   const cur=(warmLeft&&!anyLogged)?null:cards.find(c=>!c.classList.contains('complete')&&!c.classList.contains('skipped')); cards.forEach(c=>c.classList.toggle('current',c===cur)); cards.forEach(c=>c.classList.toggle('started',c===cur&&[...c.querySelectorAll('input[data-set]')].some(x=>x.value.trim()!==''&&!x.classList.contains('pre'))));
-  const wl=[...document.querySelectorAll('li[data-warm]')]; wl.forEach(l=>{if(l.classList.contains('complete')) done++});
-  const total=cards.filter(c=>!c.classList.contains('skipped')).length+wl.length; const p=document.getElementById('dprog');
+  const total=cards.filter(c=>!c.classList.contains('skipped')).length; // whole exercises only (strength + abs); warm-ups and stretches don't count
+  const p=document.getElementById('dprog');
   if(p) p.textContent=total?(done===total?'All done. Tap Finish workout below.':'Short on time? Tap Finish workout and keep what you logged.'):'';
   const pl=document.getElementById('dpill');
   if(pl){
@@ -1738,7 +1740,7 @@ function updateDone(user){
     pl.classList.toggle('all',done===total);
     clearTimeout(updateDone.pt);
     if(prev!==null&&done>prev){
-      pl.textContent=done===total?'All '+total+' done!':done+' of '+total+' done';
+      pl.textContent=done===total?'All '+total+' exercises done!':done+' of '+total+' exercises done';
       pl.classList.add('pop');
       updateDone.pt=setTimeout(()=>{pl.classList.remove('pop');pl.textContent=done+' / '+total},2200);
     } else if(!pl.classList.contains('pop')||prev===null){ pl.classList.remove('pop'); pl.textContent=done+' / '+total }
@@ -1833,7 +1835,7 @@ document.addEventListener('click',ev=>{
     if(!o.same.length&&!o.related.length) return toast('No other option fits your gear');
     U.swap={b:b.dataset.b,i:+b.dataset.i}; render(true);
   }
-  else if(a==='testsound'){haptic('success');unlockAudio();ding(880,250,0.4);setTimeout(()=>ding(1175,500,0.4),300);setTimeout(()=>ding(1320,700,0.4),700);toast('Test sound played')}
+  else if(a==='testsound'){haptic('success');unlockAudio();ding(880,250,0.4);setTimeout(()=>ding(1175,500,0.4),300);setTimeout(()=>ding(1320,700,0.4),700);setTimeout(()=>toast('Mode: '+(S.sound||'mix')+' · Method: '+(S.engine==='player'?'audio player':'standard')+' · Audio: '+(S.engine==='player'?'player':(audioCtx?audioCtx.state:'not started'))),900)}
   else if(a==='warmdone'){const nowOn=!b.classList.contains('on'); haptic(nowOn?'done':'tick'); setWarm(b.dataset.id,nowOn)}
   else if(a==='swimday'){S.swim=S.swim||{}; const k=b.dataset.d; if(S.swim[k]) delete S.swim[k]; else S.swim[k]=1; save(); render(true)}
   else if(a==='calnav'){U.cal=Math.min(0,U.cal+(+b.dataset.d));render(true)}
@@ -1858,6 +1860,15 @@ document.addEventListener('click',ev=>{
     if(U.edit){const si=$('#adj-sets'); if(si) U.edit.sets=+si.value||U.edit.sets; U.edit.mode=b.dataset.m; render(true)}
   }
   else if(a==='canceladj'){U.edit=null;render(true)}
+  else if(a==='addset'||a==='rmset'){
+    const w=getWorkout(U.wk,U.day); const list=b.dataset.b==='abs'?w.abs:w.main; const e=list[+b.dataset.i]; if(!e) return;
+    const peers=e.grp?list.filter(x=>x.grp===e.grp&&!x.fin):[e];  // supersets and circuits keep their moves in step
+    const nn=Math.min(8,Math.max(1,e.sets+(a==='addset'?1:-1)));
+    if(nn===e.sets) return toast(a==='addset'?'8 sets is the most':'Keep at least one set');
+    const se=S.sessions[w.id];
+    peers.forEach(x=>{x.sets=nn; if(se&&se.sets&&se.sets[x.id]&&se.sets[x.id].length>nn) se.sets[x.id].length=nn});
+    w.min=estimate(w); save(); render(true); toast(a==='addset'?'Added a set':'Removed a set');
+  }
   else if(a==='applyadj'){
     const w=getWorkout(U.wk,U.day); const ed=U.edit; if(!ed) return;
     const list=ed.b==='abs'?w.abs:w.main; const e=list[ed.i];
@@ -1908,7 +1919,7 @@ document.addEventListener('click',ev=>{
 });
 let audioCtx=null, audioSessTimer=null, playerUnlocked=false;
 const PCACHE={};
-const DING_SET=[[660,160],[1320,700],[1175,500],[880,250],[1320,500],[880,350]];
+const DING_SET=[[660,160],[1320,700],[1175,500],[880,250],[1320,500],[880,350],[523,170],[1175,400],[1320,450],[1175,700]]; // every (pitch, length) the app plays: the audio-player method can only play sounds it prepared at the first tap
 function wavUri(f,ms){
   const sr=22050, n=Math.floor(sr*ms/1000), buf=new ArrayBuffer(44+n*2), v=new DataView(buf);
   const w=(o,t)=>{for(let i=0;i<t.length;i++)v.setUint8(o+i,t.charCodeAt(i))};
@@ -1993,8 +2004,15 @@ function beep(){
   haptic('success');
 }
 let TM=null;
+function tmCancel(){ if(TM&&TM.nodes){ TM.nodes.forEach(o=>{try{o.stop()}catch(e){}}); TM.nodes=[] } }
+function tmPlan(){ // pre-schedule the finish chime on the audio clock, so it plays even with no tap at that moment (same trick as the rest timer)
+  if(!TM) return; tmCancel(); if(TM.phase!=='run'||TM.paused) return;
+  const left=Math.max(0,(TM.end-Date.now())/1000);
+  TM.nodes=[schedDing(880,350,0.3,left),schedDing(880,350,0.3,left+0.45),schedDing(1175,700,0.3,left+0.9)].filter(Boolean);
+  TM.pre=TM.nodes.length>=3; TM.tgt=audioCtx?audioCtx.currentTime+left:0;
+}
 function closeTimer(){
-  if(!TM) return; clearInterval(TM.t); try{TM.wl&&TM.wl.release()}catch(e){}
+  tmCancel(); if(!TM) return; clearInterval(TM.t); try{TM.wl&&TM.wl.release()}catch(e){}
   const el=document.getElementById('tmr'); if(el) el.remove(); TM=null;
 }
 function runTimer(btn){
@@ -2020,13 +2038,13 @@ function runTimer(btn){
     if(TM.phase==='ready'){
       if(left>0){ if(left!==TM.last){TM.last=left;ding(660,160,0.3)} paint(left,READY); return }
       TM.phase='run'; TM.end=Date.now()+total*1000; TM.left=total; TM.dinged=false;
-      el.classList.remove('ready'); sub.textContent='seconds left'; paint(total,total); ding(1320,700,0.4);
+      el.classList.remove('ready'); sub.textContent='seconds left'; paint(total,total); ding(1320,700,0.4); tmPlan();
       haptic('go');
       return;
     }
     paint(left,total);
     if(left<=10&&left>0&&!TM.dinged&&total>10){TM.dinged=true;ding(1175,500,0.35)}
-    if(left<=0){TM.done=true;clearInterval(TM.t);num.textContent='Done';fg.style.strokeDashoffset=String(C2);el.classList.remove('low');el.classList.add('fin');sub.textContent='Nice work';pb.textContent='Again';beep();
+    if(left<=0){TM.done=true;clearInterval(TM.t);num.textContent='Done';fg.style.strokeDashoffset=String(C2);el.classList.remove('low');el.classList.add('fin');sub.textContent='Nice work';pb.textContent='Again';{const ok=!!(TM.pre&&audioCtx&&audioCtx.state==='running'&&audioCtx.currentTime>=TM.tgt-0.3); if(ok) haptic('success'); else {tmCancel(); beep()}}
       if(btn.dataset.warm) setWarm(btn.dataset.warm,true);
       else if(btn.dataset.cool) setCool(btn.dataset.cool,true);
       else { const tm=TM; setTimeout(()=>{ // timed exercise finished: log the next open set (this also starts the rest)
@@ -2035,8 +2053,8 @@ function runTimer(btn){
   };
   pb.onclick=()=>{
     if(TM.done){closeTimer();runTimer(btn);return}
-    if(TM.paused){TM.paused=false;TM.end=Date.now()+TM.left*1000;pb.textContent='Pause';sub.textContent=TM.phase==='ready'?'Get ready':'seconds left'}
-    else{TM.paused=true;pb.textContent='Resume';sub.textContent='paused'}
+    if(TM.paused){TM.paused=false;TM.end=Date.now()+TM.left*1000;pb.textContent='Pause';sub.textContent=TM.phase==='ready'?'Get ready':'seconds left';tmPlan()}
+    else{TM.paused=true;tmCancel();pb.textContent='Resume';sub.textContent='paused'}
   };
   el.querySelector('#tclose').onclick=closeTimer;
   tick(); TM.t=setInterval(tick,200);
