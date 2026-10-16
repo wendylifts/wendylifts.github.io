@@ -260,7 +260,7 @@ body:has(#rest) #dpill{bottom:92px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 16, 2026, 11:53 AM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 16, 2026, 11:59 AM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1632,7 +1632,8 @@ function swimCard(){
     const lab=fmtShort(mon)+' to '+(e.getMonth()===mon.getMonth()?e.getDate():fmtShort(e));
     wrows+=`<tr${s.sw?'':' class="dim"'}><td>${lab}</td><td>${s.sw||'-'}</td><td>${s.t?fmtYd(s.t):'-'}</td><td>${s.t?miOf(s.t):'-'}</td></tr>`; mon=addDays(mon,7) }
   const byM={}; Object.keys(sw).forEach(k=>{const m=k.slice(0,7); byM[m]=byM[m]||{t:0,n:0}; byM[m].t+=ydOf(k); byM[m].n++});
-  const mrows=Object.keys(byM).sort().reverse().slice(0,12).map(m=>{const [yy,mm]=m.split('-').map(Number); return `<tr><td>${MON[mm-1]} ${yy}</td><td>${byM[m].n}</td><td>${byM[m].t?fmtYd(byM[m].t):'-'}</td><td>${byM[m].t?miOf(byM[m].t):'-'}</td></tr>`}).join('');
+  const years=Object.keys(sw).map(k=>+k.slice(0,4)), minY=Math.min(y0,...years), selY=Math.max(minY,Math.min(y0,U.swy||y0));
+  const mrows=Object.keys(byM).filter(m=>+m.slice(0,4)===selY).sort().reverse().map(m=>{const [yy,mm]=m.split('-').map(Number); return `<tr><td>${MON[mm-1]} ${yy}</td><td>${byM[m].n}</td><td>${byM[m].t?fmtYd(byM[m].t):'-'}</td><td>${byM[m].t?miOf(byM[m].t):'-'}</td></tr>`}).join('')||'<tr class="dim"><td colspan="4">No swims logged in '+selY+'</td></tr>';
   const byY={}; Object.keys(sw).forEach(k=>{const yy=k.slice(0,4); byY[yy]=byY[yy]||{t:0,n:0}; byY[yy].t+=ydOf(k); byY[yy].n++});
   const yrows=Object.keys(byY).sort().reverse().map(yy=>`<tr><td>${yy}</td><td>${byY[yy].n}</td><td>${byY[yy].t?fmtYd(byY[yy].t):'-'}</td><td>${byY[yy].t?miOf(byY[yy].t):'-'}</td></tr>`).join('');
   const label=dm.toLocaleDateString(undefined,{month:'long',year:'numeric'});
@@ -1643,10 +1644,13 @@ function swimCard(){
     <div class="stat"><b>${miOf(all)}</b><span>miles all time</span></div>
     <div class="stat"><b>${miOf(yrT)}</b><span>miles in ${y0}</span></div></div>
   <div class="card"><h3>Swim yardage</h3>
-    <p class="note" style="margin-top:0">Weeks run Monday to Sunday. The month shown follows the calendar above.</p>
-    <table class="ydtbl"><thead><tr><th>Week in ${esc(label)}</th><th>Swims</th><th>Yards</th><th>Miles</th></tr></thead><tbody>${wrows}</tbody></table>
-    <table class="ydtbl" style="margin-top:14px"><thead><tr><th>Year</th><th>Swims</th><th>Yards</th><th>Miles</th></tr></thead><tbody>${yrows}</tbody></table>
-    <table class="ydtbl" style="margin-top:14px"><thead><tr><th>Month</th><th>Swims</th><th>Yards</th><th>Miles</th></tr></thead><tbody>${mrows}</tbody></table></div>`;
+    <p class="note" style="margin-top:0">Weeks run Monday to Sunday. Use the arrows to look back at other months and years.</p>
+    <div class="calhead"><button class="btn small" data-act="calnav" data-d="-1" aria-label="Previous month">←</button><h3 style="font-size:16px">Weeks in ${esc(label)}</h3><button class="btn small" data-act="calnav" data-d="1" aria-label="Next month" ${U.cal>=0?'disabled':''}>→</button></div>
+    <table class="ydtbl"><thead><tr><th>Week</th><th>Swims</th><th>Yards</th><th>Miles</th></tr></thead><tbody>${wrows}</tbody></table>
+    <div class="calhead" style="margin-top:16px"><button class="btn small" data-act="swyear" data-d="-1" aria-label="Previous year" ${selY<=minY?'disabled':''}>←</button><h3 style="font-size:16px">Months in ${selY}</h3><button class="btn small" data-act="swyear" data-d="1" aria-label="Next year" ${selY>=y0?'disabled':''}>→</button></div>
+    <table class="ydtbl"><thead><tr><th>Month</th><th>Swims</th><th>Yards</th><th>Miles</th></tr></thead><tbody>${mrows}</tbody></table>
+    <h3 style="font-size:16px;margin:16px 0 8px">All years</h3>
+    <table class="ydtbl"><thead><tr><th>Year</th><th>Swims</th><th>Yards</th><th>Miles</th></tr></thead><tbody>${yrows}</tbody></table></div>`;
 }
 function renderProgress(){
   const sessions=Object.values(S.sessions).filter(s=>s.done);
@@ -1927,6 +1931,7 @@ document.addEventListener('click',ev=>{
   else if(a==='warmdone'){const nowOn=!b.classList.contains('on'); haptic(nowOn?'done':'tick'); setWarm(b.dataset.id,nowOn)}
   else if(a==='swimday'){S.swim=S.swim||{}; const k=b.dataset.d, was=!!S.swim[k]; if(!was){S.swim[k]=1; save(); render(true)} openSwimSheet(k,!was)}
   else if(a==='calnav'){U.cal=Math.min(0,U.cal+(+b.dataset.d));render(true)}
+  else if(a==='swyear'){U.swy=(U.swy||new Date().getFullYear())+(+b.dataset.d);render(true)}
   else if(a==='closesheet'){U.swap=null;render(true)}
   else if(a==='setdone'){
     haptic(b.classList.contains('on')?'tick':'done');
