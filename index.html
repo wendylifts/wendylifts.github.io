@@ -163,7 +163,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 .cd{position:relative}
 .cd.today{box-shadow:0 0 0 2px var(--buoy)}
 .cd.sw:not(.on):not(.part){border:2px solid #2563EB}
-.cd.sw::after{content:"";position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:11px;height:11px;border-radius:50%;background:#1D4ED8;box-shadow:0 0 0 2px #fff}
+.cd.sw::after{content:"";position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:20px;height:7px;border-radius:50%;background:#1D4ED8;box-shadow:0 0 0 1.5px #fff}
 .swimbar{margin:12px 0}
 .swimbar h3{margin:0 0 2px;font-size:16px}
 .swimbar .swgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:8px}
@@ -181,7 +181,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 .swchips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
 .swrow{display:flex;gap:8px}.swrow .btn{flex:1;padding:11px}
 .swrm{margin-top:12px;border-color:var(--buoy);color:var(--buoy);background:transparent}
-.ydtbl td:last-child,.ydtbl th:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.ydtbl td:not(:first-child),.ydtbl th:not(:first-child){text-align:right;font-variant-numeric:tabular-nums}
 .ydtbl .dim{color:var(--muted)}
 @media (prefers-color-scheme:dark){.cd.sw:not(.on):not(.part){border-color:#60A5FA}.cd.sw::after{background:#60A5FA;box-shadow:0 0 0 1.5px #08171F}.swd.on{background:#2563EB;border-color:#3B82F6}}
 .btn:disabled{opacity:.4;cursor:default}
@@ -260,7 +260,7 @@ body:has(#rest) #dpill{bottom:92px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 16, 2026, 11:47 AM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 16, 2026, 11:53 AM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1630,11 +1630,11 @@ function swimCard(){
   let wrows='', mon=mondayOf(dm);
   while(mon<=last){ const e=addDays(mon,6), s=ydSum(mon,7);
     const lab=fmtShort(mon)+' to '+(e.getMonth()===mon.getMonth()?e.getDate():fmtShort(e));
-    wrows+=`<tr${s.sw?'':' class="dim"'}><td>${lab}</td><td>${s.sw?s.sw+(s.sw===1?' swim':' swims'):'-'}</td><td>${s.t?fmtYd(s.t)+' yd':(s.sw?'no yards':'-')}</td></tr>`; mon=addDays(mon,7) }
+    wrows+=`<tr${s.sw?'':' class="dim"'}><td>${lab}</td><td>${s.sw||'-'}</td><td>${s.t?fmtYd(s.t):'-'}</td><td>${s.t?miOf(s.t):'-'}</td></tr>`; mon=addDays(mon,7) }
   const byM={}; Object.keys(sw).forEach(k=>{const m=k.slice(0,7); byM[m]=byM[m]||{t:0,n:0}; byM[m].t+=ydOf(k); byM[m].n++});
-  const mrows=Object.keys(byM).sort().reverse().slice(0,12).map(m=>{const [yy,mm]=m.split('-').map(Number); return `<tr><td>${MON[mm-1]} ${yy}</td><td>${byM[m].n+(byM[m].n===1?' swim':' swims')}</td><td>${byM[m].t?fmtYd(byM[m].t)+' yd':'no yards'}</td></tr>`}).join('');
+  const mrows=Object.keys(byM).sort().reverse().slice(0,12).map(m=>{const [yy,mm]=m.split('-').map(Number); return `<tr><td>${MON[mm-1]} ${yy}</td><td>${byM[m].n}</td><td>${byM[m].t?fmtYd(byM[m].t):'-'}</td><td>${byM[m].t?miOf(byM[m].t):'-'}</td></tr>`}).join('');
   const byY={}; Object.keys(sw).forEach(k=>{const yy=k.slice(0,4); byY[yy]=byY[yy]||{t:0,n:0}; byY[yy].t+=ydOf(k); byY[yy].n++});
-  const yrows=Object.keys(byY).sort().reverse().map(yy=>`<tr><td>${yy}</td><td>${byY[yy].n+(byY[yy].n===1?' swim':' swims')}</td><td>${byY[yy].t?fmtYd(byY[yy].t):'-'}</td><td>${miOf(byY[yy].t)}</td></tr>`).join('');
+  const yrows=Object.keys(byY).sort().reverse().map(yy=>`<tr><td>${yy}</td><td>${byY[yy].n}</td><td>${byY[yy].t?fmtYd(byY[yy].t):'-'}</td><td>${byY[yy].t?miOf(byY[yy].t):'-'}</td></tr>`).join('');
   const label=dm.toLocaleDateString(undefined,{month:'long',year:'numeric'});
   return `<div class="stats" style="margin-top:12px">
     <div class="stat"><b>${fmtYd(wk.t)}</b><span>yards this week</span></div>
@@ -1644,9 +1644,9 @@ function swimCard(){
     <div class="stat"><b>${miOf(yrT)}</b><span>miles in ${y0}</span></div></div>
   <div class="card"><h3>Swim yardage</h3>
     <p class="note" style="margin-top:0">Weeks run Monday to Sunday. The month shown follows the calendar above.</p>
-    <table class="ydtbl"><thead><tr><th>Week in ${esc(label)}</th><th>Swims</th><th>Yards</th></tr></thead><tbody>${wrows}</tbody></table>
+    <table class="ydtbl"><thead><tr><th>Week in ${esc(label)}</th><th>Swims</th><th>Yards</th><th>Miles</th></tr></thead><tbody>${wrows}</tbody></table>
     <table class="ydtbl" style="margin-top:14px"><thead><tr><th>Year</th><th>Swims</th><th>Yards</th><th>Miles</th></tr></thead><tbody>${yrows}</tbody></table>
-    <table class="ydtbl" style="margin-top:14px"><thead><tr><th>Month</th><th>Swims</th><th>Yards</th></tr></thead><tbody>${mrows}</tbody></table></div>`;
+    <table class="ydtbl" style="margin-top:14px"><thead><tr><th>Month</th><th>Swims</th><th>Yards</th><th>Miles</th></tr></thead><tbody>${mrows}</tbody></table></div>`;
 }
 function renderProgress(){
   const sessions=Object.values(S.sessions).filter(s=>s.done);
