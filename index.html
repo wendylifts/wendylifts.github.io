@@ -173,6 +173,16 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 .swd.on{background:#1D4ED8;border-color:#1D4ED8;color:#fff}
 .swd.on .tk{color:#fff}
 .swd.today{box-shadow:0 0 0 2px var(--buoy)}
+.swd .tk.yd{font-size:11px;font-weight:700;letter-spacing:-.2px}
+#swsheet{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.55);display:flex;align-items:flex-start;justify-content:center;padding:9vh 14px 14px}
+.swbox{background:var(--surface);color:var(--ink);width:min(420px,100%);border-radius:18px;padding:18px 16px;box-shadow:0 12px 40px rgba(0,0,0,.45);border:1.5px solid var(--line)}
+.swbox h3{margin:0 0 2px;font-size:20px}
+.swbox input{width:100%;box-sizing:border-box;font-size:22px;font-weight:700;text-align:center;padding:10px;border-radius:12px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);margin-top:10px}
+.swchips{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.swrow{display:flex;gap:8px}.swrow .btn{flex:1;padding:11px}
+.swrm{margin-top:12px;border-color:var(--buoy);color:var(--buoy);background:transparent}
+.ydtbl td:last-child,.ydtbl th:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.ydtbl .dim{color:var(--muted)}
 @media (prefers-color-scheme:dark){.cd.sw:not(.on):not(.part){border-color:#60A5FA}.cd.sw::after{background:#60A5FA;box-shadow:0 0 0 1.5px #08171F}.swd.on{background:#2563EB;border-color:#3B82F6}}
 .btn:disabled{opacity:.4;cursor:default}
 .btn.favon{border-color:var(--buoy);color:var(--buoy);font-weight:600}
@@ -250,7 +260,7 @@ body:has(#rest) #dpill{bottom:92px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 16, 2026, 4:56 AM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 16, 2026, 9:50 AM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1394,12 +1404,37 @@ function weekBalance(wk){
   return {pull,push};
 }
 
+const fmtYd=n=>Number(n).toLocaleString('en-US');
+const cmpYd=n=>n>=10000?Math.round(n/1000)+'k':n>=1000?(n/1000).toFixed(1).replace('.0','')+'k':String(n);
+const ydOf=k=>+((S.swimYds||{})[k])||0;
+function ydSum(start,days){let t=0,sw=0,noy=0; for(let i=0;i<days;i++){const k=iso(addDays(start,i)); if((S.swim||{})[k]){sw++; const y=ydOf(k); t+=y; if(!y) noy++}} return {t,sw,noy}}
+function closeSwimSheet(){const e=document.getElementById('swsheet'); if(e) e.remove()}
+function openSwimSheet(k,isNew){ // asks how many yards you swam that day
+  closeSwimSheet();
+  const d=parse(k), cur=ydOf(k), label=DOWL[d.getDay()]+', '+fmtShort(d);
+  const el=document.createElement('div'); el.id='swsheet'; el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true'); el.setAttribute('aria-label','Yards swum');
+  el.innerHTML=`<div class="swbox"><h3>How many yards did you swim?</h3><p class="note" style="margin:0">${esc(label)}</p>
+    <input id="swy" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="e.g. 2500" value="${cur||''}" aria-label="Yards swum">
+    <div class="swchips">${[1000,1500,2000,2500,3000,3500,4000].map(n=>`<button class="btn small" data-y="${n}">${fmtYd(n)}</button>`).join('')}</div>
+    <div class="swrow"><button class="btn teal" id="swsave">Save</button><button class="btn" id="swskip">${isNew?'Skip, no yardage':'Cancel'}</button></div>
+    ${isNew?'':'<button class="btn small swrm" id="swrm">Remove this swim</button>'}</div>`;
+  document.body.appendChild(el);
+  const inp=el.querySelector('#swy'); try{inp.focus();inp.select()}catch(e){}
+  el.addEventListener('click',ev=>{ if(ev.target===el) closeSwimSheet() });
+  el.querySelectorAll('[data-y]').forEach(c=>c.onclick=()=>{inp.value=c.dataset.y});
+  el.querySelector('#swskip').onclick=closeSwimSheet;
+  const doSave=()=>{ const v=Math.min(100000,parseInt(String(inp.value).replace(/[^0-9]/g,''),10)||0); S.swimYds=S.swimYds||{}; if(v>0) S.swimYds[k]=v; else delete S.swimYds[k]; save(); closeSwimSheet(); render(true); toast(v>0?'Saved '+fmtYd(v)+' yards':'Swim saved without yardage') };
+  el.querySelector('#swsave').onclick=doSave;
+  inp.addEventListener('keydown',ev=>{ if(ev.key==='Enter') doSave() });
+  const rm=el.querySelector('#swrm'); if(rm) rm.onclick=()=>{ delete S.swim[k]; if(S.swimYds) delete S.swimYds[k]; save(); closeSwimSheet(); render(true); toast('Swim removed') };
+}
+
 function swimBar(){
   const sun=parse(U.wk), today=iso(new Date()), sw=S.swim||{}; const names=['Mon','Tue','Wed','Thu','Fri','Sat','Sun']; // same Monday-to-Sunday week as the workouts
-  const btns=names.map((nm,i)=>{const d=addDays(sun,i), k=iso(d), on=!!sw[k];
-    return `<button class="swd ${on?'on':''} ${k===today?'today':''}" data-act="swimday" data-d="${k}" aria-pressed="${on}" aria-label="${nm} ${fmtShort(d)}: swam"><span>${nm}</span><b>${d.getDate()}</b><span class="tk" aria-hidden="true">✓</span></button>`}).join('');
-  const cnt=names.filter((_,i)=>sw[iso(addDays(sun,i))]).length;
-  return `<div class="swimbar card"><h3>Swims this week</h3><span class="note">Tap the days you swam. ${cnt?cnt+(cnt===1?' swim day':' swim days')+' so far.':'They show on your Progress calendar.'}</span><div class="swgrid">${btns}</div></div>`;
+  const btns=names.map((nm,i)=>{const d=addDays(sun,i), k=iso(d), on=!!sw[k], y=ydOf(k);
+    return `<button class="swd ${on?'on':''} ${k===today?'today':''}" data-act="swimday" data-d="${k}" aria-pressed="${on}" aria-label="${nm} ${fmtShort(d)}: swam${y?', '+fmtYd(y)+' yards':''}"><span>${nm}</span><b>${d.getDate()}</b><span class="tk ${on&&y?'yd':''}" aria-hidden="true">${on&&y?cmpYd(y):'✓'}</span></button>`}).join('');
+  const W=ydSum(sun,7), cnt=W.sw;
+  return `<div class="swimbar card"><h3>Swims this week</h3><span class="note">Tap a day you swam, then enter your yards. ${cnt?cnt+(cnt===1?' swim day':' swim days')+(W.t?', '+fmtYd(W.t)+' yards':'')+' so far.':'They show on your Progress calendar.'}</span><div class="swgrid">${btns}</div></div>`;
 }
 function hasData(){
   return Object.values(S.sessions||{}).some(x=>x.done||Object.values(x.sets||{}).some(a=>a.some(r=>r&&((r.r!==''&&r.r!=null)||(r.lr!==''&&r.lr!=null)))))||Object.keys(S.swim||{}).length>0||Object.keys(S.notes||{}).length>0;
@@ -1574,16 +1609,38 @@ function calendarCard(){
   const y=m0.getFullYear(), mo=m0.getMonth(); const dim=new Date(y,mo+1,0).getDate(); const lead=m0.getDay();
   const today=iso(now); let cells='';
   for(let i=0;i<lead;i++) cells+='<span class="cd"></span>';
-  let n=0, ns=0;
+  let n=0, ns=0, myd=0;
   for(let d=1;d<=dim;d++){
-    const k=y+'-'+pad(mo+1)+'-'+pad(d); const st=days[k]; if(st==='done') n++; const sw=!!swim[k]; if(sw) ns++;
+    const k=y+'-'+pad(mo+1)+'-'+pad(d); const st=days[k]; if(st==='done') n++; const sw=!!swim[k]; if(sw){ns++; myd+=ydOf(k)}
     cells+=`<span class="cd ${st==='done'?'on':st==='part'?'part':''} ${sw?'sw':''} ${k===today?'today':''}" ${(st||sw)?`aria-label="${k}: ${st?'lifted':''}${st&&sw?' and ':''}${sw?'swam':''}"`:''}>${d}</span>`;
   }
   const label=m0.toLocaleDateString(undefined,{month:'long',year:'numeric'});
   return `<div class="card cal"><div class="calhead"><button class="btn small" data-act="calnav" data-d="-1" aria-label="Previous month">←</button><h3>${label}</h3>
     <button class="btn small" data-act="calnav" data-d="1" aria-label="Next month" ${U.cal>=0?'disabled':''}>→</button></div>
     <div class="calgrid">${['S','M','T','W','T','F','S'].map(x=>`<span class="cw">${x}</span>`).join('')}${cells}</div>
-    <p class="note">${n} ${n===1?'day':'days'} lifted and ${ns} ${ns===1?'day':'days'} swum this month.</p><p class="note">Blue dot = swam. Blue ring with a dot = swam only. Teal fill = finished lift. Teal fill with a dot = swam and lifted. Teal outline = sets logged but not finished.</p></div>`;
+    <p class="note">${n} ${n===1?'day':'days'} lifted and ${ns} ${ns===1?'day':'days'} swum this month${myd?' ('+fmtYd(myd)+' yards)':''}.</p><p class="note">Blue dot = swam. Blue ring with a dot = swam only. Teal fill = finished lift. Teal fill with a dot = swam and lifted. Teal outline = sets logged but not finished.</p></div>`;
+}
+function swimCard(){
+  const sw=S.swim||{}; if(!Object.keys(sw).length) return '';
+  const now=new Date(), y0=now.getFullYear(), m0n=now.getMonth();
+  const wk=ydSum(mondayOf(now),7), mo=ydSum(new Date(y0,m0n,1),new Date(y0,m0n+1,0).getDate());
+  const all=Object.keys(sw).reduce((a,k)=>a+ydOf(k),0);
+  const dm=new Date(y0,m0n+U.cal,1), dy=dm.getFullYear(), dmo=dm.getMonth(), last=new Date(dy,dmo+1,0);
+  let wrows='', mon=mondayOf(dm);
+  while(mon<=last){ const e=addDays(mon,6), s=ydSum(mon,7);
+    const lab=fmtShort(mon)+' to '+(e.getMonth()===mon.getMonth()?e.getDate():fmtShort(e));
+    wrows+=`<tr${s.sw?'':' class="dim"'}><td>${lab}</td><td>${s.sw?s.sw+(s.sw===1?' swim':' swims'):'-'}</td><td>${s.t?fmtYd(s.t)+' yd':(s.sw?'no yards':'-')}</td></tr>`; mon=addDays(mon,7) }
+  const byM={}; Object.keys(sw).forEach(k=>{const m=k.slice(0,7); byM[m]=byM[m]||{t:0,n:0}; byM[m].t+=ydOf(k); byM[m].n++});
+  const mrows=Object.keys(byM).sort().reverse().slice(0,12).map(m=>{const [yy,mm]=m.split('-').map(Number); return `<tr><td>${MON[mm-1]} ${yy}</td><td>${byM[m].n+(byM[m].n===1?' swim':' swims')}</td><td>${byM[m].t?fmtYd(byM[m].t)+' yd':'no yards'}</td></tr>`}).join('');
+  const label=dm.toLocaleDateString(undefined,{month:'long',year:'numeric'});
+  return `<div class="stats" style="margin-top:12px">
+    <div class="stat"><b>${fmtYd(wk.t)}</b><span>yards this week</span></div>
+    <div class="stat"><b>${fmtYd(mo.t)}</b><span>yards this month</span></div>
+    <div class="stat"><b>${fmtYd(all)}</b><span>yards all time</span></div></div>
+  <div class="card"><h3>Swim yardage</h3>
+    <p class="note" style="margin-top:0">Weeks run Monday to Sunday. The month shown follows the calendar above.</p>
+    <table class="ydtbl"><thead><tr><th>Week in ${esc(label)}</th><th>Swims</th><th>Yards</th></tr></thead><tbody>${wrows}</tbody></table>
+    <table class="ydtbl" style="margin-top:14px"><thead><tr><th>Month</th><th>Swims</th><th>Yards</th></tr></thead><tbody>${mrows}</tbody></table></div>`;
 }
 function renderProgress(){
   const sessions=Object.values(S.sessions).filter(s=>s.done);
@@ -1618,6 +1675,7 @@ function renderProgress(){
   }
   return `<h2>Progress</h2>
   ${calendarCard()}
+  ${swimCard()}
   <div class="stats" style="margin-top:12px">
     <div class="stat"><b>${doneIds.length}</b><span>workouts finished</span></div>
     <div class="stat"><b>${weeks.size}</b><span>weeks trained</span></div>
@@ -1861,7 +1919,7 @@ document.addEventListener('click',ev=>{
   }
   else if(a==='testsound'){haptic('success');unlockAudio();chime([[880,0,250,0.4],[1175,0.3,500,0.4],[1320,0.7,700,0.4]]);setTimeout(()=>toast('Mode: '+(S.sound||'mix')+' · Method: '+(S.engine==='player'?'audio player':'standard')+' · Audio: '+(S.engine==='player'?(TRK&&TRK.failed?'blocked':'playing'):(audioCtx?audioCtx.state:'not started'))),900)}
   else if(a==='warmdone'){const nowOn=!b.classList.contains('on'); haptic(nowOn?'done':'tick'); setWarm(b.dataset.id,nowOn)}
-  else if(a==='swimday'){S.swim=S.swim||{}; const k=b.dataset.d; if(S.swim[k]) delete S.swim[k]; else S.swim[k]=1; save(); render(true)}
+  else if(a==='swimday'){S.swim=S.swim||{}; const k=b.dataset.d, was=!!S.swim[k]; if(!was){S.swim[k]=1; save(); render(true)} openSwimSheet(k,!was)}
   else if(a==='calnav'){U.cal=Math.min(0,U.cal+(+b.dataset.d));render(true)}
   else if(a==='closesheet'){U.swap=null;render(true)}
   else if(a==='setdone'){
