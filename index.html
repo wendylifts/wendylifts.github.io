@@ -228,6 +228,7 @@ body:has(#rest) #dpill{bottom:92px}
 #tmr.ready .tnum{color:#C98A00}
 .setbtns{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 2px}
 .setbtns .btn{border-color:var(--buoy);color:var(--buoy);background:rgba(232,71,43,.10);background:color-mix(in srgb,var(--buoy) 12%,var(--surface))}
+.setbtns .btn[data-act=addset]{border-color:var(--ok);color:var(--ok);background:rgba(31,138,91,.12);background:color-mix(in srgb,var(--ok) 14%,var(--surface))}
 #rest{position:fixed;left:12px;right:12px;bottom:14px;z-index:40;max-width:420px;margin:0 auto;background:var(--deep);color:#fff;border-radius:16px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 6px 20px rgba(0,0,0,.3)}
 #rest .rinfo{display:flex;align-items:baseline;gap:8px}
 #rest .rl{font-weight:600;opacity:.85}
@@ -249,7 +250,7 @@ body:has(#rest) #dpill{bottom:92px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 15, 2026, 7:47 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 15, 2026, 8:08 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1614,12 +1615,12 @@ function renderSettings(){
   <div class="card" style="margin-top:12px"><h3>Workout days</h3>
     <div class="row">${[0,1,2,3].map(n=>`<select data-day="${n}" aria-label="Day ${n+1}">${dayOpts(n)}</select>`).join('')}</div>
     <div class="row"><label for="sound">Timer sounds</label>
-      <select id="sound"><option value="mix" ${(S.sound||'mix')==='mix'?'selected':''}>Mix with my audio (won't pause an audiobook)</option>
+      <select id="sound"><option value="mix" ${(S.sound||'mix')==='mix'?'selected':''}>✓ Mix with my audio (won't pause an audiobook)</option>
       <option value="loud" ${S.sound==='loud'?'selected':''}>Loud: play over everything (may pause audio)</option>
       <option value="off" ${S.sound==='off'?'selected':''}>Off: haptics and visuals only</option></select></div>
     <div class="row"><label for="engine">Sound method</label>
-      <select id="engine"><option value="web" ${S.engine!=='player'?'selected':''}>Standard (try this first)</option>
-      <option value="player" ${S.engine==='player'?'selected':''}>Audio player (if standard is silent)</option></select>
+      <select id="engine"><option value="web" ${S.engine!=='player'?'selected':''}>✓ Standard (tested: works, recommended)</option>
+      <option value="player" ${S.engine==='player'?'selected':''}>Audio player (backup if Standard is silent)</option></select>
       <button class="btn small teal" data-act="testsound">Test sound</button></div>
     <label class="chk" style="margin:4px 0"><input type="checkbox" id="haptics" ${S.haptics!==false?'checked':''}>Haptic taps (when your phone allows it)</label>
     <label class="chk" style="margin:4px 0"><input type="checkbox" id="autorest" ${S.autoRest!==false?'checked':''}>Start a rest timer when I tap a set's ✓</label>
@@ -1727,6 +1728,7 @@ function setCool(id,on){
   if(li){li.classList.toggle('complete',!!on); const b=li.querySelector('.wck'); if(b){b.classList.toggle('on',!!on); b.setAttribute('aria-pressed',String(!!on))}}
 }
 function updateDone(user){
+  if(U.tab!=='day'){const pl0=document.getElementById('dpill'); if(pl0){pl0.hidden=true;delete pl0.dataset.n;pl0.classList.remove('pop')}} // leaving a workout page: hide the counter
   const cards=[...document.querySelectorAll('article.ex[data-card]')]; if(!cards.length&&!document.querySelector('li[data-warm]')) return;
   let done=0;
   cards.forEach(c=>{if(c.classList.contains('skipped')){c.classList.remove('complete');return} const was=c.classList.contains('complete'); const needw=c.dataset.needw==='1'; const ins=[...c.querySelectorAll('input[data-set]')].filter(x=>needw||/\|l?r$/.test(x.dataset.set)); const ok=ins.length>0&&ins.every(x=>x.value.trim()!==''); c.classList.toggle('complete',ok); if(ok) done++; if(user&&ok&&!was) haptic('success')});
@@ -1938,7 +1940,7 @@ function trackStop(){ if(TRK){ try{TE&&TE.pause()}catch(e){} try{URL.revokeObjec
 function trackPlay(events,total){ // returns true if the sound was handed to the phone
   trackStop(); if(S.sound==='off') return false;
   try{
-    setSess(S.sound==='loud'?'playback':'auto');
+    setSess(S.sound==='loud'?'playback':'ambient');
     if(!TE){ TE=new Audio(); TE.setAttribute('playsinline',''); TE.preload='auto' } // one player, reused: once a tap has started it, later tracks may start without a tap
     const url=URL.createObjectURL(trackWav(events,total)); TRK={url,failed:false}; const me=TRK;
     TE.src=url; const p=TE.play(); if(p&&p.catch) p.catch(()=>{me.failed=true});
@@ -1948,7 +1950,7 @@ function trackPlay(events,total){ // returns true if the sound was handed to the
 function setSess(t){ try{ if(navigator.audioSession&&navigator.audioSession.type!==t) navigator.audioSession.type=t }catch(e){} }
 function unlockAudio(){
   if(S.sound==='off') return;
-  if(S.engine==='player'){ if(!(TRK&&TE&&!TE.paused)) setSess(S.sound==='loud'?'playback':'auto'); return }
+  if(S.engine==='player'){ if(!(TRK&&TE&&!TE.paused)) setSess(S.sound==='loud'?'playback':'ambient'); return }
   try{
     const C=window.AudioContext||window.webkitAudioContext; if(!C) return;
     if(audioCtx&&audioCtx.state==='running') return;   // already awake: leave the phone's audio alone
