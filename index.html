@@ -264,7 +264,7 @@ body:has(#rest) #dpill{bottom:92px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 16, 2026, 12:06 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 16, 2026, 12:10 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1662,21 +1662,17 @@ function swimCard(){
   const years=Object.keys(sw).map(k=>+k.slice(0,4)), minY=Math.min(y0,...years), selY=Math.max(minY,Math.min(y0,U.swy||y0));
   const mrows=Object.keys(byM).filter(m=>+m.slice(0,4)===selY).sort().reverse().map(m=>{const [yy,mm]=m.split('-').map(Number); return `<tr><td>${MON[mm-1]} ${yy}</td><td>${byM[m].n}</td><td>${byM[m].t?fmtYd(byM[m].t):'-'}</td><td>${byM[m].t?miOf(byM[m].t):'-'}</td></tr>`}).join('')||'<tr class="dim"><td colspan="4">No swims logged in '+selY+'</td></tr>';
   const byY={}; Object.keys(sw).forEach(k=>{const yy=k.slice(0,4); byY[yy]=byY[yy]||{t:0,n:0}; byY[yy].t+=ydOf(k); byY[yy].n++});
-  const yrows=Object.keys(byY).sort().reverse().map(yy=>`<tr><td>${yy}</td><td>${byY[yy].n}</td><td>${byY[yy].t?fmtYd(byY[yy].t):'-'}</td><td>${byY[yy].t?miOf(byY[yy].t):'-'}</td></tr>`).join('');
+  const nAll=Object.keys(sw).length;
+  const yrows=Object.keys(byY).sort().reverse().map(yy=>`<tr><td>${yy}</td><td>${byY[yy].n}</td><td>${byY[yy].t?fmtYd(byY[yy].t):'-'}</td><td>${byY[yy].t?miOf(byY[yy].t):'-'}</td></tr>`).join('')
+    +(Object.keys(byY).length>1?`<tr><td><b>All time</b></td><td><b>${nAll}</b></td><td><b>${fmtYd(all)}</b></td><td><b>${miOf(all)}</b></td></tr>`:'');
   const label=dm.toLocaleDateString(undefined,{month:'long',year:'numeric'});
-  return `<div class="stats" style="margin-top:12px">
-    <div class="stat"><b>${fmtYd(wk.t)}</b><span>yards this week</span></div>
-    <div class="stat"><b>${fmtYd(mo.t)}</b><span>yards this month</span></div>
-    <div class="stat"><b>${fmtYd(all)}</b><span>yards all time</span></div>
-    <div class="stat"><b>${miOf(all)}</b><span>miles all time</span></div>
-    <div class="stat"><b>${miOf(yrT)}</b><span>miles in ${y0}</span></div></div>
-  <div class="card"><h3>Swim yardage</h3>
+  return `<div class="card" style="margin-top:12px"><h3>Swim yardage</h3>
     <p class="note" style="margin-top:0">Weeks run Monday to Sunday. Use the arrows to look back at other months and years.</p>
     <div class="calhead"><button class="btn small" data-act="calnav" data-d="-1" aria-label="Previous month">←</button><h3 style="font-size:16px">Weeks in ${esc(label)}</h3><button class="btn small" data-act="calnav" data-d="1" aria-label="Next month" ${U.cal>=0?'disabled':''}>→</button></div>
     <table class="ydtbl"><thead><tr><th>Week</th><th>Swims</th><th>Yards</th><th>Miles</th></tr></thead><tbody>${wrows}</tbody></table>
     <div class="calhead" style="margin-top:16px"><button class="btn small" data-act="swyear" data-d="-1" aria-label="Previous year" ${selY<=minY?'disabled':''}>←</button><h3 style="font-size:16px">Months in ${selY}</h3><button class="btn small" data-act="swyear" data-d="1" aria-label="Next year" ${selY>=y0?'disabled':''}>→</button></div>
     <table class="ydtbl"><thead><tr><th>Month</th><th>Swims</th><th>Yards</th><th>Miles</th></tr></thead><tbody>${mrows}</tbody></table>
-    <h3 style="font-size:16px;margin:16px 0 8px">All years</h3>
+    <h3 style="font-size:16px;margin:16px 0 8px">By year</h3>
     <table class="ydtbl"><thead><tr><th>Year</th><th>Swims</th><th>Yards</th><th>Miles</th></tr></thead><tbody>${yrows}</tbody></table></div>`;
 }
 function renderProgress(){
