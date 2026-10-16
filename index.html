@@ -183,6 +183,10 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 .swrm{margin-top:12px;border-color:var(--buoy);color:var(--buoy);background:transparent}
 .ydtbl td:not(:first-child),.ydtbl th:not(:first-child){text-align:right;font-variant-numeric:tabular-nums}
 .ydtbl .dim{color:var(--muted)}
+.gbar{position:relative;height:14px;border-radius:7px;background:var(--soft);border:1.5px solid var(--line);margin:10px 0 8px;overflow:visible}
+.gbar i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;background:var(--lane)}
+.gbar u{position:absolute;top:-5px;bottom:-5px;width:3px;margin-left:-1.5px;background:var(--buoy);border-radius:2px;text-decoration:none}
+.gstat{font-weight:800;font-size:18px;margin:6px 0}.gstat.ok{color:var(--ok)}.gstat.bad{color:var(--buoy)}
 @media (prefers-color-scheme:dark){.cd.sw:not(.on):not(.part){border-color:#60A5FA}.cd.sw::after{background:#60A5FA;box-shadow:0 0 0 1.5px #08171F}.swd.on{background:#2563EB;border-color:#3B82F6}}
 .btn:disabled{opacity:.4;cursor:default}
 .btn.favon{border-color:var(--buoy);color:var(--buoy);font-weight:600}
@@ -260,7 +264,7 @@ body:has(#rest) #dpill{bottom:92px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 16, 2026, 11:59 AM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 16, 2026, 12:06 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1621,6 +1625,29 @@ function calendarCard(){
     <div class="calgrid">${['S','M','T','W','T','F','S'].map(x=>`<span class="cw">${x}</span>`).join('')}${cells}</div>
     <p class="note">${n} ${n===1?'day':'days'} lifted and ${ns} ${ns===1?'day':'days'} swum this month${myd?' ('+fmtYd(myd)+' yards)':''}.</p><p class="note">Blue dot = swam. Blue ring with a dot = swam only. Teal fill = finished lift. Teal fill with a dot = swam and lifted. Teal outline = sets logged but not finished.</p></div>`;
 }
+function goalCard(){ // yearly swim goal: starts in 2027, shows whether you are ahead of or behind the pace
+  const now=new Date(), yr=now.getFullYear(), goalMi=S.swimGoal===undefined?500:(+S.swimGoal||0);
+  if(!goalMi||yr<2027) return '';
+  const goalYd=goalMi*1760, jan1=new Date(yr,0,1), today0=new Date(yr,now.getMonth(),now.getDate());
+  const dayN=Math.round((today0-jan1)/864e5)+1, daysIn=((yr%4===0&&yr%100!==0)||yr%400===0)?366:365;
+  let done=0, noy=0; Object.keys(S.swim||{}).forEach(k=>{ if(k.slice(0,4)===String(yr)){ const y=ydOf(k); done+=y; if(!y) noy++ } });
+  const expect=goalYd*dayN/daysIn, diff=done-expect, pct=Math.min(100,done/goalYd*100), exPct=Math.min(100,expect/goalYd*100);
+  const leftYd=Math.max(0,goalYd-done), daysLeft=daysIn-dayN+1, wkLeft=Math.max(1,Math.round(daysLeft/7)), perWk=leftYd/Math.max(daysLeft/7,1/7);
+  let status,cls;
+  if(done>=goalYd){status='Goal reached! '+miOf(done)+' miles';cls='ok'}
+  else if(Math.abs(diff)<=880){status='On track';cls='ok'}
+  else if(diff>0){status='Ahead by '+miOf(diff)+' miles ('+fmtYd(Math.round(diff))+' yards)';cls='ok'}
+  else {status='Behind by '+miOf(-diff)+' miles ('+fmtYd(Math.round(-diff))+' yards)';cls='bad'}
+  const proj=dayN>=14&&done>0?done/dayN*daysIn:0;
+  return `<div class="card goal" style="margin-top:12px"><h3>${yr} goal: ${fmtYd(goalMi)} miles</h3>
+    <div class="gbar" role="img" aria-label="${miOf(done)} of ${goalMi} miles"><i style="width:${pct.toFixed(1)}%"></i><u style="left:${exPct.toFixed(1)}%" title="Where you would be on pace"></u></div>
+    <p style="margin:0"><b>${miOf(done)} of ${fmtYd(goalMi)} miles</b> (${fmtYd(done)} yards, ${pct<1&&done>0?'under 1':Math.round(pct)}%)</p>
+    <p class="gstat ${cls}">${status}</p>
+    <p class="note" style="margin:2px 0">The orange mark on the bar is where you'd be today to stay on pace: ${miOf(expect)} miles.</p>
+    ${done<goalYd?`<p class="note" style="margin:2px 0">To finish the year at ${fmtYd(goalMi)} miles: about ${fmtYd(Math.round(perWk))} yards (${miOf(perWk)} miles) a week for the ${wkLeft} ${wkLeft===1?'week':'weeks'} left.</p>`:''}
+    ${proj&&done<goalYd?`<p class="note" style="margin:2px 0">At your pace so far you'd finish around ${miOf(proj)} miles.</p>`:''}
+    ${noy?`<p class="note" style="margin:2px 0">${noy} ${noy===1?'swim has':'swims have'} no yards entered, so ${noy===1?'it isn\'t':'they aren\'t'} counted. Tap the day on the Workout tab to add yards.</p>`:''}</div>`;
+}
 function swimCard(){
   const sw=S.swim||{}; if(!Object.keys(sw).length) return '';
   const now=new Date(), y0=now.getFullYear(), m0n=now.getMonth();
@@ -1685,6 +1712,7 @@ function renderProgress(){
   }
   return `<h2>Progress</h2>
   ${calendarCard()}
+  ${goalCard()}
   ${swimCard()}
   <div class="stats" style="margin-top:12px">
     <div class="stat"><b>${doneIds.length}</b><span>workouts finished</span></div>
@@ -1712,6 +1740,8 @@ function renderSettings(){
       <button class="btn small teal" data-act="testsound">Test sound</button></div>
     <label class="chk" style="margin:4px 0"><input type="checkbox" id="haptics" ${S.haptics!==false?'checked':''}>Haptic taps (when your phone allows it)</label>
     <label class="chk" style="margin:4px 0"><input type="checkbox" id="autorest" ${S.autoRest!==false?'checked':''}>Start a rest timer when I tap a set's ✓</label>
+    <div class="row"><label for="swgoal">Yearly swim goal (miles)</label><input id="swgoal" type="number" min="0" max="5000" step="10" inputmode="numeric" value="${S.swimGoal===undefined?500:S.swimGoal}" style="width:90px"></div>
+    <p class="note" style="margin:0 0 6px">Starting in 2027, Progress shows whether you are ahead of or behind the pace for this goal. Set 0 to hide it.</p>
     <div class="row"><label for="tgt">Target length (minutes)</label><input id="tgt" type="number" min="25" max="90" step="5" value="${S.target}" style="width:90px"></div>
     <div class="row"><label for="knee">Knee comfort</label>
       <select id="knee"><option value="0" ${S.knee===0?'selected':''}>Strict: hip-dominant and cable moves only</option>
@@ -2233,6 +2263,7 @@ document.addEventListener('change',ev=>{
     const w=getWorkout(U.wk,U.day); const se=sess(w.id); se.date=t.value; se.dateEdited=1; if(se.done) se.done=t.value; if(w.extra) w.date=t.value;
     save(); toast('Date updated'); render(true);
   }
+  else if(t.id==='swgoal'){S.swimGoal=Math.max(0,Math.min(5000,Math.round(+t.value||0)));save()}
   else if(t.id==='tgt'){S.target=Math.min(90,Math.max(25,+t.value||45));save()}
   else if(t.dataset.day!==undefined){
     const vals=[...document.querySelectorAll('[data-day]')].map(s=>+s.value);
