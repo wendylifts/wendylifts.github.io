@@ -250,7 +250,7 @@ body:has(#rest) #dpill{bottom:92px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 15, 2026, 8:25 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 16, 2026, 4:56 AM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -994,6 +994,24 @@ function applyPhase(e,ex,phi,idx){
   }
 }
 
+// Same-move families, so two versions of one exercise (say push-up and inchworm to push-up) never land on the same day.
+const FAMS=[[/rear-delt row|rear delt fly|rear lateral raise/,'reardelt'],[/push-?up|inchworm/,'pushup'],[/dead bug/,'deadbug'],[/bird dog/,'birddog'],[/mountain climber/,'mtnclimb'],
+  [/crunch|sit-up/,'crunch'],[/russian twist|torso twist/,'twist'],[/woodchop|trunk rotation/,'chop'],[/pallof/,'pallof'],[/hamstring curl|leg curl/,'hamcurl'],[/wrist curl/,'wristcurl'],[/hammer curl/,'hammer'],[/reverse curl/,'revcurl'],[/curl/,'curl'],
+  [/pulldown|pull-up|chin-up/,'vpull'],[/romanian|deadlift|rdl/,'deadlift'],[/split squat|single-leg bench squat|bulgarian/,'splitsquat'],[/squat/,'squat'],[/bridge|hip thrust/,'bridge'],
+  [/\brow\b/,'row'],[/\bplank\b/,'plank'],[/(bench|chest|floor|incline).*press/,'chestpress'],[/(shoulder|arnold|atlas|overhead) press|standing single-arm cable press/,'ohp'],
+  [/\bfly\b/,'fly'],[/lateral raise/,'latraise'],[/front raise/,'frontraise'],[/calf raise/,'calf'],[/triceps|skull crusher|bench dip/,'tri'],
+  [/glute kickback|bent-leg kickback|straight-leg kickback/,'glutekick'],[/shrug/,'shrug'],[/carry/,'carry'],[/lunge/,'lunge'],[/back extension/,'backext'],
+  [/^(?!.*side).*(leg raise|knee raise|tuck)/,'legraise']];
+const famOf=x=>{const n=(x.n||'').toLowerCase(); for(const [re,k] of FAMS) if(re.test(n)) return k; return 'id:'+x.id};
+let FAMMAP=new Map(), WKUSED=new Set();
+const famPrep=()=>{FAMMAP=new Map(lib().map(x=>[x.id,famOf(x)]))};
+const famClash=(x,used)=>{const f=FAMMAP.get(x.id)||famOf(x); if(f.indexOf('id:')===0) return false; for(const id of used) if(FAMMAP.get(id)===f) return true; return false};
+function cands(all,ok,used){ // best choices first: not already used this week and no same-day version; a repeat from earlier in the week is allowed only if nothing else is left
+  const base=all.filter(x=>ok(x)&&!used.has(x.id));
+  let c=base.filter(x=>!WKUSED.has(x.id)&&!famClash(x,used)); if(c.length) return c;
+  return base.filter(x=>!famClash(x,used)); // never two versions of one move in a day: if only versions are left, that slot is skipped (the workout fills the time with another move)
+}
+
 function build(rng,focus,phi,hist,seedTag){
   const all=lib().filter(available);
   const recent={}; hist.slice(-6).forEach(w=>[...w.main,...w.abs].forEach(e=>recent[e.id]=(recent[e.id]||0)+1));
@@ -1002,7 +1020,7 @@ function build(rng,focus,phi,hist,seedTag){
   const used=new Set();
   const wf=x=>(1/(1+(recent[x.id]||0)*0.8))*(prevIds.has(x.id)?0.3:1)*(S.fav&&S.fav.includes(x.id)?2.5:(x.r?0.25:1));
   const pick=(pats,f)=>{
-    const c=all.filter(x=>!used.has(x.id)&&x.pat.some(p=>pats.includes(p))&&(!f||x.f.includes(f)));
+    const c=cands(all,x=>x.pat.some(p=>pats.includes(p))&&(!f||x.f.includes(f)),used);
     const x=weightedPick(c,wf,rng); if(x) used.add(x.id); return x;
   };
   // warm-up: mobility, activation, light cardio
@@ -1010,7 +1028,7 @@ function build(rng,focus,phi,hist,seedTag){
   // strength
   const main=[];
   TPL[focus].forEach((slot,i)=>{
-    const x=pick(slot.p,slot.f); if(!x) return;
+    const x=pick(slot.p,slot.f)||(slot.fin?null:pick(EXTRA[focus]||[])); if(!x) return; // if every option for a slot is a version of a move already in the day, use another move for the same muscle area instead
     const e=mk(x); e.slot=slot.p.join('/')+(slot.f?':'+slot.f:''); if(slot.fin){e.fin=1}
     applyPhase(e,x,phi,i); main.push(e);
   });
@@ -1027,7 +1045,7 @@ function build(rng,focus,phi,hist,seedTag){
   // abs: anti-extension/rotation first, then two different patterns
   const abs=[]; const usedPats=new Set();
   const addAbs=pats=>{
-    const c=all.filter(x=>!used.has(x.id)&&x.pat.some(p=>pats.includes(p)&&!usedPats.has(p)));
+    const c=cands(all,x=>x.pat.some(p=>pats.includes(p)&&!usedPats.has(p)),used);
     const x=weightedPick(c,wf,rng); if(!x) return;
     used.add(x.id); usedPats.add(x.pat.find(p=>pats.includes(p))); abs.push(mk(x));
   };
@@ -1073,7 +1091,7 @@ function fit(w,rng,all,used,focus,phi,wf){
         else upCand.sets++;
         continue}
       if(!added&&w.format!=='circuit'){
-        const x=weightedPick(all.filter(y=>!used.has(y.id)&&y.pat.some(p=>EXTRA[focus].includes(p))),wf,rng);
+        const x=weightedPick(cands(all,y=>y.pat.some(p=>EXTRA[focus].includes(p)),used),wf,rng);
         if(x){used.add(x.id);const e=mk(x);e.sets=Math.min(x.sets,3);e.slot=x.pat[0];
           const fi=w.main.findIndex(z=>z.fin); if(fi>=0) w.main.splice(fi,0,e); else w.main.push(e);
           added=true;continue}
@@ -1095,7 +1113,8 @@ function maxSim(w,hist){
   return exact?1:m;
 }
 
-function genWorkout(wk,di,focus,phi,regen,hist){
+function genWorkout(wk,di,focus,phi,regen,hist,sib){
+  famPrep(); WKUSED=new Set((sib||[]).flatMap(x=>[...(x.warm||[]),...x.main,...x.abs].map(e=>e.id)));
   let best=null,last=null;
   for(let at=0;at<48;at++){
     const rng=mulberry(hash([wk,di,focus,regen,at].join('|')));
@@ -1119,7 +1138,7 @@ function genWeek(wk){
   const order=base.map((_,i)=>base[(i+rot)%4]);
   const workouts=[];
   const hist=Object.keys(S.weeks).filter(k=>k<wk).sort().flatMap(k=>S.weeks[k].workouts);
-  order.forEach((f,i)=>{workouts.push(genWorkout(wk,i,f,ph,S.regen[wk+'#'+i]||0,hist.concat(workouts)))});
+  order.forEach((f,i)=>{workouts.push(genWorkout(wk,i,f,ph,S.regen[wk+'#'+i]||0,hist.concat(workouts),workouts))});
   S.weeks[wk]={ph,order,workouts};
 }
 function ensureWeek(wk){
@@ -1139,7 +1158,7 @@ function regenDay(wk,di){
   const wkObj=S.weeks[wk]; const old=wkObj.workouts[di];
   const hist=Object.keys(S.weeks).filter(k=>k<wk).sort().flatMap(k=>S.weeks[k].workouts)
     .concat(wkObj.workouts.filter((_,i)=>i!==di));
-  const w=genWorkout(wk,di,old.focus,wkObj.ph,S.regen[id],hist);
+  const w=genWorkout(wk,di,old.focus,wkObj.ph,S.regen[id],hist,wkObj.workouts.filter((_,i)=>i!==di));
   if(old&&old.extra){w.extra=true;w.date=old.date}
   wkObj.workouts[di]=w; save();
 }
@@ -1153,8 +1172,9 @@ function regenWeek(wk){
 
 function altOptions(w,block,i){
   const list=block==='abs'?w.abs:w.main; const e=list[i]; const cur=exById(e.id);
-  const used=new Set([...w.main,...w.abs].map(x=>x.id));
-  const ok=x=>available(x)&&!used.has(x.id);
+  const used=new Set([...w.main,...w.abs].map(x=>x.id)); famPrep();
+  const others=new Set([...used]); others.delete(e.id); // the move being swapped out doesn't count against its own replacement
+  const ok=x=>available(x)&&!used.has(x.id)&&!famClash(x,others);
   let same,related=[];
   if(block==='abs'){
     const pt=cur.pat.find(p=>/^c/.test(p));
@@ -1801,7 +1821,7 @@ document.addEventListener('click',ev=>{
     ensureWeek(U.wk); const wkObj=S.weeks[U.wk]; const di=wkObj.workouts.length;
     const focus=(document.getElementById('xfocus')||{}).value||'full';
     const hist=Object.keys(S.weeks).filter(k=>k<U.wk).sort().flatMap(k=>S.weeks[k].workouts).concat(wkObj.workouts);
-    const w=genWorkout(U.wk,di,focus,wkObj.ph,S.regen[U.wk+'#'+di]||0,hist); w.extra=true; w.date=iso(new Date());
+    const w=genWorkout(U.wk,di,focus,wkObj.ph,S.regen[U.wk+'#'+di]||0,hist,wkObj.workouts); w.extra=true; w.date=iso(new Date());
     wkObj.workouts.push(w); save(); location.hash='#/day/'+U.wk+'/'+di; toast('Extra workout added');
   }
   else if(a==='rmextra'){
