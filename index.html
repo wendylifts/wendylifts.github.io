@@ -227,6 +227,7 @@ body:has(#rest) #dpill{bottom:92px}
 #tmr.ready .tfg{stroke:#E8A317}
 #tmr.ready .tnum{color:#C98A00}
 .setbtns{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 2px}
+.setbtns .btn{border-color:var(--buoy);color:var(--buoy);background:rgba(232,71,43,.10);background:color-mix(in srgb,var(--buoy) 12%,var(--surface))}
 #rest{position:fixed;left:12px;right:12px;bottom:14px;z-index:40;max-width:420px;margin:0 auto;background:var(--deep);color:#fff;border-radius:16px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 6px 20px rgba(0,0,0,.3)}
 #rest .rinfo{display:flex;align-items:baseline;gap:8px}
 #rest .rl{font-weight:600;opacity:.85}
@@ -248,7 +249,7 @@ body:has(#rest) #dpill{bottom:92px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 15, 2026, 6:02 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 15, 2026, 7:47 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1655,27 +1656,28 @@ function renderSettings(){
 }
 
 let RT=null;
-function stopRest(){ if(RT){cancelSched(); clearInterval(RT.t); RT=null} const r=document.getElementById('rest'); if(r) r.remove() }
+function stopRest(){ if(RT){cancelSched(); clearInterval(RT.t); if(RT.trk) trackStop(); RT=null} const r=document.getElementById('rest'); if(r) r.remove() }
 function startRest(secs,label){
   stopRest(); closeTimer();
   unlockAudio();
   const el=document.createElement('div'); el.id='rest'; el.setAttribute('role','status');
   el.innerHTML=`<div class="rinfo"><span class="rl">Rest</span><b class="rn">${secs}</b><span class="rs">sec</span></div><div class="rbtns"><button class="btn small" id="rplus">+15</button><button class="btn small teal" id="rskip">Skip</button></div>`;
   document.body.appendChild(el);
-  RT={end:Date.now()+secs*1000,t:null,dinged:false,done:false,nodes:[],pre:false};
+  RT={end:Date.now()+secs*1000,t:null,dinged:false,done:false,nodes:[],pre:false,trk:false};
   const plan=()=>{ cancelSched(); const left=Math.max(0,(RT.end-Date.now())/1000); const ns=[]; let wn=null; if(left>10&&secs>15){wn=schedDing(1175,400,0.3,left-10); ns.push(wn)} ns.push(schedDing(880,250,0.35,left),schedDing(1320,500,0.4,left+0.3),schedDing(1320,450,0.35,left+0.85)); RT.nodes=ns.filter(Boolean); RT.pre=RT.nodes.length>=3; RT.preWarn=!!wn; RT.tgt=audioCtx?audioCtx.currentTime+left:0; RT.tgtW=audioCtx?audioCtx.currentTime+left-10:0; };
   const played=t=>!!(audioCtx&&audioCtx.state==='running'&&audioCtx.currentTime>=t-0.3); // did the pre-scheduled sound really get its turn?
-  plan();
-  ding(523,170,0.3); // soft low note: the rest has started
+  const planTrack=first=>{ const left=Math.max(0,(RT.end-Date.now())/1000), ev=[]; if(first) ev.push([0,523,170,0.3]); if(left>10&&secs>15) ev.push([left-10,1175,400,0.3]); ev.push([left,880,250,0.35],[left+0.3,1320,500,0.4],[left+0.85,1320,450,0.35]); RT.trk=trackPlay(ev,left+1.6) };
+  if(S.engine==='player'&&S.sound!=='off') planTrack(true);
+  if(!RT.trk){ plan(); ding(523,170,0.3) } // soft low note: the rest has started
   const n=el.querySelector('.rn'), l=el.querySelector('.rl');
   const tick=()=>{ if(!RT) return;
     const left=Math.max(0,Math.ceil((RT.end-Date.now())/1000)); n.textContent=left;
     el.classList.toggle('low',left<=10&&left>0);
-    if(left<=10&&left>0&&!RT.dinged&&secs>15){RT.dinged=true;if(!(RT.preWarn&&played(RT.tgtW)))ding(1175,400,0.3)}
-    if(left<=0&&!RT.done){RT.done=true;clearInterval(RT.t);l.textContent='Go!';n.textContent='';el.classList.add('fin');if(!(RT.pre&&played(RT.tgt))){cancelSched();chime([[880,0,250,0.35],[1320,0.3,500,0.4],[1320,0.85,450,0.35]])}haptic('go'); setTimeout(()=>{if(RT&&RT.done)stopRest()},4000)}
+    if(left<=10&&left>0&&!RT.dinged&&secs>15){RT.dinged=true;if(!RT.trk&&!(RT.preWarn&&played(RT.tgtW)))ding(1175,400,0.3)}
+    if(left<=0&&!RT.done){RT.done=true;clearInterval(RT.t);l.textContent='Go!';n.textContent='';el.classList.add('fin');if(!RT.trk&&!(RT.pre&&played(RT.tgt))){cancelSched();chime([[880,0,250,0.35],[1320,0.3,500,0.4],[1320,0.85,450,0.35]])}haptic('go'); setTimeout(()=>{if(RT&&RT.done)stopRest()},4000)}
   };
   el.querySelector('#rskip').onclick=stopRest;
-  el.querySelector('#rplus').onclick=()=>{ if(!RT) return; if(RT.done){RT.done=false;RT.dinged=true;l.textContent='Rest';el.classList.remove('fin');RT.end=Date.now()+15000;RT.t=setInterval(tick,250)} else RT.end+=15000; plan(); tick() };
+  el.querySelector('#rplus').onclick=()=>{ if(!RT) return; if(RT.done){RT.done=false;RT.dinged=true;l.textContent='Rest';el.classList.remove('fin');RT.end=Date.now()+15000;RT.t=setInterval(tick,250)} else RT.end+=15000; if(RT.trk) planTrack(false); else plan(); tick() };
   tick(); RT.t=setInterval(tick,250);
 }
 function isGroupedBtn(b){ const d=b.dataset.set.split('|'); if(d[0]!=='main') return false; const w=getWorkout(U.wk,U.day); const e=w&&w.main[+d[1]]; return !!(e&&e.grp) }
@@ -1835,7 +1837,7 @@ document.addEventListener('click',ev=>{
     if(!o.same.length&&!o.related.length) return toast('No other option fits your gear');
     U.swap={b:b.dataset.b,i:+b.dataset.i}; render(true);
   }
-  else if(a==='testsound'){haptic('success');unlockAudio();ding(880,250,0.4);setTimeout(()=>ding(1175,500,0.4),300);setTimeout(()=>ding(1320,700,0.4),700);setTimeout(()=>toast('Mode: '+(S.sound||'mix')+' · Method: '+(S.engine==='player'?'audio player':'standard')+' · Audio: '+(S.engine==='player'?'player':(audioCtx?audioCtx.state:'not started'))),900)}
+  else if(a==='testsound'){haptic('success');unlockAudio();chime([[880,0,250,0.4],[1175,0.3,500,0.4],[1320,0.7,700,0.4]]);setTimeout(()=>toast('Mode: '+(S.sound||'mix')+' · Method: '+(S.engine==='player'?'audio player':'standard')+' · Audio: '+(S.engine==='player'?(TRK&&TRK.failed?'blocked':'playing'):(audioCtx?audioCtx.state:'not started'))),900)}
   else if(a==='warmdone'){const nowOn=!b.classList.contains('on'); haptic(nowOn?'done':'tick'); setWarm(b.dataset.id,nowOn)}
   else if(a==='swimday'){S.swim=S.swim||{}; const k=b.dataset.d; if(S.swim[k]) delete S.swim[k]; else S.swim[k]=1; save(); render(true)}
   else if(a==='calnav'){U.cal=Math.min(0,U.cal+(+b.dataset.d));render(true)}
@@ -1917,26 +1919,36 @@ document.addEventListener('click',ev=>{
   else if(a==='backupskip'){S.backup=Object.assign({},S.backup,{skipUntil:Date.now()+Math.max(1,bkDays())*864e5}); save(); render(true); toast('Skipped. I will remind you again in '+(bkDays()===7?'a week':bkDays()+' days')+'.')}
   else if(a==='reset'){if(confirm('Erase all workouts and logs on this device? Export a backup first if you want to keep them.')){S=DEFAULTS();save();location.hash='#/';route()}}
 });
-let audioCtx=null, audioSessTimer=null, playerUnlocked=false;
-const PCACHE={};
-const DING_SET=[[660,160],[1320,700],[1175,500],[880,250],[1320,500],[880,350],[523,170],[1175,400],[1320,450],[1175,700]]; // every (pitch, length) the app plays: the audio-player method can only play sounds it prepared at the first tap
-function wavUri(f,ms){
-  const sr=22050, n=Math.floor(sr*ms/1000), buf=new ArrayBuffer(44+n*2), v=new DataView(buf);
-  const w=(o,t)=>{for(let i=0;i<t.length;i++)v.setUint8(o+i,t.charCodeAt(i))};
+let audioCtx=null, audioSessTimer=null;
+// ONE-TRACK SOUND (audio-player method): each timer builds a single sound file with every beep baked in at the right second,
+// then plays it from your tap. Once it starts, the phone plays it by itself, so nothing depends on the page being awake, a screen
+// lock, or the browser allowing a sound at the exact moment a beep is due.
+let TE=null, TRK=null;
+function trackWav(events,total){ // events: [secondsFromStart, pitch, lengthMs, volume]
+  const sr=11025, n=Math.max(1,Math.ceil(sr*total)), data=new Float32Array(n);
+  const boost=S.sound==='loud'?3:2.4;
+  events.forEach(([at,f,ms,vol])=>{ const s0=Math.max(0,Math.floor(at*sr)), len=Math.floor(sr*ms/1000), amp=Math.min(1,(vol||0.3)*boost)*0.9;
+    for(let k=0;k<len&&s0+k<n;k++){ const t=k/sr, ph=(t*f)%1, tri=4*Math.abs(ph-0.5)-1, env=Math.min(1,k/100)*Math.exp(-3*t/(ms/1000)); data[s0+k]+=tri*env*amp } });
+  const buf=new ArrayBuffer(44+n*2), v=new DataView(buf), w=(o,t)=>{for(let k=0;k<t.length;k++)v.setUint8(o+k,t.charCodeAt(k))};
   w(0,'RIFF');v.setUint32(4,36+n*2,true);w(8,'WAVE');w(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sr,true);v.setUint32(28,sr*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,n*2,true);
-  for(let i=0;i<n;i++){const t=i/sr,ph=(t*f)%1,tri=4*Math.abs(ph-0.5)-1,env=Math.min(1,i/200)*Math.exp(-3*t/(ms/1000));v.setInt16(44+i*2,Math.round(tri*env*0.9*32767),true)}
-  let bin='';const u=new Uint8Array(buf);for(let i=0;i<u.length;i+=0x8000)bin+=String.fromCharCode.apply(null,u.subarray(i,i+0x8000));
-  return 'data:audio/wav;base64,'+btoa(bin);
+  for(let k=0;k<n;k++) v.setInt16(44+k*2,Math.round(Math.max(-1,Math.min(1,data[k]))*32767),true);
+  return new Blob([buf],{type:'audio/wav'});
 }
-function playerEl(f,ms){const k=f+'_'+ms; if(!PCACHE[k]){const a=new Audio(wavUri(f,ms)); a.preload='auto'; a.setAttribute('playsinline',''); PCACHE[k]=a} return PCACHE[k]}
+function trackStop(){ if(TRK){ try{TE&&TE.pause()}catch(e){} try{URL.revokeObjectURL(TRK.url)}catch(e){} TRK=null } }
+function trackPlay(events,total){ // returns true if the sound was handed to the phone
+  trackStop(); if(S.sound==='off') return false;
+  try{
+    setSess(S.sound==='loud'?'playback':'auto');
+    if(!TE){ TE=new Audio(); TE.setAttribute('playsinline',''); TE.preload='auto' } // one player, reused: once a tap has started it, later tracks may start without a tap
+    const url=URL.createObjectURL(trackWav(events,total)); TRK={url,failed:false}; const me=TRK;
+    TE.src=url; const p=TE.play(); if(p&&p.catch) p.catch(()=>{me.failed=true});
+    return true;
+  }catch(e){ return false }
+}
 function setSess(t){ try{ if(navigator.audioSession&&navigator.audioSession.type!==t) navigator.audioSession.type=t }catch(e){} }
 function unlockAudio(){
   if(S.sound==='off') return;
-  if(S.engine==='player'){
-    if(playerUnlocked) return; playerUnlocked=true;
-    DING_SET.forEach(([f,ms])=>{const a=playerEl(f,ms); a.muted=true; const p=a.play(); if(p&&p.then) p.then(()=>{a.pause();a.currentTime=0;a.muted=false}).catch(()=>{a.muted=false})});
-    return;
-  }
+  if(S.engine==='player'){ if(!(TRK&&TE&&!TE.paused)) setSess(S.sound==='loud'?'playback':'auto'); return }
   try{
     const C=window.AudioContext||window.webkitAudioContext; if(!C) return;
     if(audioCtx&&audioCtx.state==='running') return;   // already awake: leave the phone's audio alone
@@ -1964,7 +1976,7 @@ function haptic(kind){
 }
 function chime(notes){ // several notes as one sound: waits until the audio is awake, then plays them back to back so none is swallowed
   if(S.sound==='off') return;
-  if(S.engine==='player'){ notes.forEach(([f,at,ms,v])=>setTimeout(()=>ding(f,ms,v),at*1000)); return }
+  if(S.engine==='player'){ const tot=notes.reduce((m,[,at,ms])=>Math.max(m,at*1000+ms),0)/1000; trackPlay(notes.map(([f,at,ms,v])=>[at,f,ms,v]),tot+0.3); return }
   try{
     if(!audioCtx){ unlockAudio() }
     if(!audioCtx) return;
@@ -1980,7 +1992,7 @@ function chime(notes){ // several notes as one sound: waits until the audio is a
 }
 function ding(f,ms,vol){
   if(S.sound==='off') return;
-  if(S.engine==='player'){ try{ const a=playerEl(f,ms); a.currentTime=0; const p=a.play(); if(p&&p.catch) p.catch(()=>{}) }catch(e){} return }
+  if(S.engine==='player'){ trackPlay([[0,f,ms,vol]],ms/1000+0.2); return }
   try{ if(audioCtx){
     if(audioCtx.state!=='running') audioCtx.resume();
     if(S.sound==='loud'){ setSess('playback'); clearTimeout(audioSessTimer); audioSessTimer=setTimeout(()=>setSess('ambient'),ms+900) } // take over briefly, then give audio back
@@ -2004,13 +2016,28 @@ function beep(){
   haptic('success');
 }
 let TM=null;
-function tmCancel(){ if(TM&&TM.nodes){ TM.nodes.forEach(o=>{try{o.stop()}catch(e){}}); TM.nodes=[] } }
-function tmPlan(){ // pre-schedule the finish chime on the audio clock, so it plays even with no tap at that moment (same trick as the rest timer)
-  if(!TM) return; tmCancel(); if(TM.phase!=='run'||TM.paused) return;
-  const left=Math.max(0,(TM.end-Date.now())/1000);
-  TM.nodes=[schedDing(880,350,0.3,left),schedDing(880,350,0.3,left+0.45),schedDing(1175,700,0.3,left+0.9)].filter(Boolean);
-  TM.pre=TM.nodes.length>=3; TM.tgt=audioCtx?audioCtx.currentTime+left:0;
+function tmCancel(){ if(TM&&TM.nodes){ TM.nodes.forEach(o=>{try{o.stop()}catch(e){}}); TM.nodes=[] } trackStop() }
+function tmEvents(){ // every beep still to come, in seconds from right now
+  const left=Math.max(0,(TM.end-Date.now())/1000), ev=[];
+  if(TM.phase==='ready'){
+    for(let m=Math.floor(left+0.15);m>=1;m--) ev.push([Math.max(0,left-m),660,160,0.3]);
+    ev.push([left,1320,700,0.4]);
+    const total=TM.total; if(total>10) ev.push([left+total-10,1175,500,0.35]);
+    ev.push([left+total,880,350,0.3],[left+total+0.45,880,350,0.3],[left+total+0.9,1175,700,0.3]);
+  } else {
+    if(!TM.dinged&&TM.total>10&&left>10) ev.push([left-10,1175,500,0.35]);
+    ev.push([left,880,350,0.3],[left+0.45,880,350,0.3],[left+0.9,1175,700,0.3]);
+  }
+  return ev;
 }
+function tmPlan(){ // lay out ALL of the timer's beeps ahead of time (ready ticks, start, 10-second warning, finish) so none depends on a live tap
+  if(!TM) return; tmCancel(); TM.pre=false; TM.trk=false; if(TM.paused||TM.done||S.sound==='off') return;
+  const ev=tmEvents(), end=ev.reduce((m,e)=>Math.max(m,e[0]+e[2]/1000),0)+0.3;
+  if(S.engine==='player'){ TM.pre=trackPlay(ev,end); TM.trk=TM.pre; return }
+  TM.nodes=ev.map(([at,f,ms,v])=>schedDing(f,ms,v,at)).filter(Boolean); TM.pre=ev.length>0&&TM.nodes.length===ev.length;
+  TM.tgt=audioCtx?audioCtx.currentTime+(ev.length?ev[ev.length-3][0]:0):0;
+}
+function tmLive(){ return !(TM&&TM.pre&&(TM.trk?!(TRK&&TRK.failed):(audioCtx&&audioCtx.state==='running'))) } // true = nothing is pre-arranged, so beep live
 function closeTimer(){
   tmCancel(); if(!TM) return; clearInterval(TM.t); try{TM.wl&&TM.wl.release()}catch(e){}
   const el=document.getElementById('tmr'); if(el) el.remove(); TM=null;
@@ -2028,7 +2055,7 @@ function runTimer(btn){
     <p class="tsub">Get ready</p>
     <div class="trow"><button class="btn teal" id="tpause">Pause</button><button class="btn" id="tclose">Close</button></div></div>`;
   document.body.appendChild(el);
-  TM={phase:'ready',end:Date.now()+READY*1000,left:READY,last:READY+1,paused:false,dinged:false,done:false,t:null,wl:null};
+  TM={phase:'ready',end:Date.now()+READY*1000,left:READY,last:READY+1,total,paused:false,dinged:false,done:false,t:null,wl:null,pre:false,trk:false,nodes:[]};
   try{ if(navigator.wakeLock) navigator.wakeLock.request('screen').then(w=>{TM?TM.wl=w:w.release()}).catch(()=>{}) }catch(e){}
   const num=el.querySelector('.tnum'), fg=el.querySelector('.tfg'), sub=el.querySelector('.tsub'), pb=el.querySelector('#tpause');
   const paint=(left,max)=>{ num.textContent=left; fg.style.strokeDashoffset=String(C2*(1-left/max)); el.classList.toggle('low',TM.phase==='run'&&left<=10&&left>0) };
@@ -2036,15 +2063,15 @@ function runTimer(btn){
     if(!TM||TM.paused||TM.done) return;
     const left=Math.max(0,Math.ceil((TM.end-Date.now())/1000)); TM.left=left;
     if(TM.phase==='ready'){
-      if(left>0){ if(left!==TM.last){TM.last=left;ding(660,160,0.3)} paint(left,READY); return }
+      if(left>0){ if(left!==TM.last){TM.last=left;if(tmLive())ding(660,160,0.3)} paint(left,READY); return }
       TM.phase='run'; TM.end=Date.now()+total*1000; TM.left=total; TM.dinged=false;
-      el.classList.remove('ready'); sub.textContent='seconds left'; paint(total,total); ding(1320,700,0.4); tmPlan();
+      el.classList.remove('ready'); sub.textContent='seconds left'; paint(total,total); if(tmLive())ding(1320,700,0.4);
       haptic('go');
       return;
     }
     paint(left,total);
-    if(left<=10&&left>0&&!TM.dinged&&total>10){TM.dinged=true;ding(1175,500,0.35)}
-    if(left<=0){TM.done=true;clearInterval(TM.t);num.textContent='Done';fg.style.strokeDashoffset=String(C2);el.classList.remove('low');el.classList.add('fin');sub.textContent='Nice work';pb.textContent='Again';{const ok=!!(TM.pre&&audioCtx&&audioCtx.state==='running'&&audioCtx.currentTime>=TM.tgt-0.3); if(ok) haptic('success'); else {tmCancel(); beep()}}
+    if(left<=10&&left>0&&!TM.dinged&&total>10){TM.dinged=true;if(tmLive())ding(1175,500,0.35)}
+    if(left<=0){TM.done=true;clearInterval(TM.t);num.textContent='Done';fg.style.strokeDashoffset=String(C2);el.classList.remove('low');el.classList.add('fin');sub.textContent='Nice work';pb.textContent='Again';{if(!tmLive()) haptic('success'); else {tmCancel(); beep()}}
       if(btn.dataset.warm) setWarm(btn.dataset.warm,true);
       else if(btn.dataset.cool) setCool(btn.dataset.cool,true);
       else { const tm=TM; setTimeout(()=>{ // timed exercise finished: log the next open set (this also starts the rest)
@@ -2057,7 +2084,7 @@ function runTimer(btn){
     else{TM.paused=true;tmCancel();pb.textContent='Resume';sub.textContent='paused'}
   };
   el.querySelector('#tclose').onclick=closeTimer;
-  tick(); TM.t=setInterval(tick,200);
+  tmPlan(); tick(); TM.t=setInterval(tick,200);
 }
 document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&U.swap){U.swap=null;render(true)}});
 function storeSet(t){
@@ -2105,8 +2132,8 @@ document.addEventListener('change',ev=>{
   if(t.id==='exsel'){U.sel=t.value;render(true)}
   else if(t.dataset.gear){S.gear[t.dataset.gear]=t.checked;save()}
   else if(t.id==='knee'){S.knee=+t.value;save()}
-  else if(t.id==='sound'){S.sound=t.value;save();unlockAudio();ding(1175,500,0.4);setTimeout(()=>ding(1320,500,0.4),350)}
-  else if(t.id==='engine'){S.engine=t.value;save();playerUnlocked=false;unlockAudio();ding(1175,500,0.4);setTimeout(()=>ding(1320,500,0.4),350)}
+  else if(t.id==='sound'){S.sound=t.value;save();unlockAudio();chime([[1175,0,500,0.4],[1320,0.35,500,0.4]])}
+  else if(t.id==='engine'){S.engine=t.value;save();trackStop();unlockAudio();chime([[1175,0,500,0.4],[1320,0.35,500,0.4]])}
   else if(t.id==='haptics'){S.haptics=t.checked;save(); if(t.checked) haptic('done')}
   else if(t.id==='bkdays'){S.backupDays=+t.value; save(); toast(S.backupDays?'Backup reminder updated':'Backup reminder turned off')}
   else if(t.id==='autorest'){S.autoRest=t.checked;save(); if(!t.checked) stopRest()}
