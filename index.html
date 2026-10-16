@@ -260,7 +260,7 @@ body:has(#rest) #dpill{bottom:92px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 16, 2026, 9:50 AM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 16, 2026, 11:47 AM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1406,6 +1406,7 @@ function weekBalance(wk){
 
 const fmtYd=n=>Number(n).toLocaleString('en-US');
 const cmpYd=n=>n>=10000?Math.round(n/1000)+'k':n>=1000?(n/1000).toFixed(1).replace('.0','')+'k':String(n);
+const miOf=y=>{const m=y/1760; return (m>=100?m.toFixed(0):m.toFixed(1)).replace(/\.0$/,'')}; // 1 mile = 1,760 yards
 const ydOf=k=>+((S.swimYds||{})[k])||0;
 function ydSum(start,days){let t=0,sw=0,noy=0; for(let i=0;i<days;i++){const k=iso(addDays(start,i)); if((S.swim||{})[k]){sw++; const y=ydOf(k); t+=y; if(!y) noy++}} return {t,sw,noy}}
 function closeSwimSheet(){const e=document.getElementById('swsheet'); if(e) e.remove()}
@@ -1624,7 +1625,7 @@ function swimCard(){
   const sw=S.swim||{}; if(!Object.keys(sw).length) return '';
   const now=new Date(), y0=now.getFullYear(), m0n=now.getMonth();
   const wk=ydSum(mondayOf(now),7), mo=ydSum(new Date(y0,m0n,1),new Date(y0,m0n+1,0).getDate());
-  const all=Object.keys(sw).reduce((a,k)=>a+ydOf(k),0);
+  const all=Object.keys(sw).reduce((a,k)=>a+ydOf(k),0), yrT=Object.keys(sw).filter(k=>k.slice(0,4)==String(y0)).reduce((a,k)=>a+ydOf(k),0);
   const dm=new Date(y0,m0n+U.cal,1), dy=dm.getFullYear(), dmo=dm.getMonth(), last=new Date(dy,dmo+1,0);
   let wrows='', mon=mondayOf(dm);
   while(mon<=last){ const e=addDays(mon,6), s=ydSum(mon,7);
@@ -1632,14 +1633,19 @@ function swimCard(){
     wrows+=`<tr${s.sw?'':' class="dim"'}><td>${lab}</td><td>${s.sw?s.sw+(s.sw===1?' swim':' swims'):'-'}</td><td>${s.t?fmtYd(s.t)+' yd':(s.sw?'no yards':'-')}</td></tr>`; mon=addDays(mon,7) }
   const byM={}; Object.keys(sw).forEach(k=>{const m=k.slice(0,7); byM[m]=byM[m]||{t:0,n:0}; byM[m].t+=ydOf(k); byM[m].n++});
   const mrows=Object.keys(byM).sort().reverse().slice(0,12).map(m=>{const [yy,mm]=m.split('-').map(Number); return `<tr><td>${MON[mm-1]} ${yy}</td><td>${byM[m].n+(byM[m].n===1?' swim':' swims')}</td><td>${byM[m].t?fmtYd(byM[m].t)+' yd':'no yards'}</td></tr>`}).join('');
+  const byY={}; Object.keys(sw).forEach(k=>{const yy=k.slice(0,4); byY[yy]=byY[yy]||{t:0,n:0}; byY[yy].t+=ydOf(k); byY[yy].n++});
+  const yrows=Object.keys(byY).sort().reverse().map(yy=>`<tr><td>${yy}</td><td>${byY[yy].n+(byY[yy].n===1?' swim':' swims')}</td><td>${byY[yy].t?fmtYd(byY[yy].t):'-'}</td><td>${miOf(byY[yy].t)}</td></tr>`).join('');
   const label=dm.toLocaleDateString(undefined,{month:'long',year:'numeric'});
   return `<div class="stats" style="margin-top:12px">
     <div class="stat"><b>${fmtYd(wk.t)}</b><span>yards this week</span></div>
     <div class="stat"><b>${fmtYd(mo.t)}</b><span>yards this month</span></div>
-    <div class="stat"><b>${fmtYd(all)}</b><span>yards all time</span></div></div>
+    <div class="stat"><b>${fmtYd(all)}</b><span>yards all time</span></div>
+    <div class="stat"><b>${miOf(all)}</b><span>miles all time</span></div>
+    <div class="stat"><b>${miOf(yrT)}</b><span>miles in ${y0}</span></div></div>
   <div class="card"><h3>Swim yardage</h3>
     <p class="note" style="margin-top:0">Weeks run Monday to Sunday. The month shown follows the calendar above.</p>
     <table class="ydtbl"><thead><tr><th>Week in ${esc(label)}</th><th>Swims</th><th>Yards</th></tr></thead><tbody>${wrows}</tbody></table>
+    <table class="ydtbl" style="margin-top:14px"><thead><tr><th>Year</th><th>Swims</th><th>Yards</th><th>Miles</th></tr></thead><tbody>${yrows}</tbody></table>
     <table class="ydtbl" style="margin-top:14px"><thead><tr><th>Month</th><th>Swims</th><th>Yards</th></tr></thead><tbody>${mrows}</tbody></table></div>`;
 }
 function renderProgress(){
