@@ -162,8 +162,9 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 .cd.part{border:2px solid var(--lane)}
 .cd{position:relative}
 .cd.today{box-shadow:0 0 0 2px var(--buoy)}
-.cd.sw::after{content:"";position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:7px;height:7px;border-radius:50%;background:#1D4ED8;box-shadow:0 0 0 1.5px #fff}
-.cd.sw:not(.on):not(.part){background:rgba(59,130,246,.18)}
+.cd.sw::after{content:"";position:absolute;top:-1px;right:-1px;width:12px;height:12px;border-radius:50%;background:#1D4ED8;box-shadow:0 0 0 2px #fff}
+.cd.sw:not(.on):not(.part){background:#2563EB;color:#fff;font-weight:700}
+.cd.sw:not(.on):not(.part)::after{display:none}
 .swimbar{margin:12px 0}
 .swimbar h3{margin:0 0 2px;font-size:16px}
 .swimbar .swgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:8px}
@@ -250,7 +251,7 @@ body:has(#rest) #dpill{bottom:92px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 15, 2026, 8:08 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 15, 2026, 8:15 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1563,7 +1564,7 @@ function calendarCard(){
   return `<div class="card cal"><div class="calhead"><button class="btn small" data-act="calnav" data-d="-1" aria-label="Previous month">←</button><h3>${label}</h3>
     <button class="btn small" data-act="calnav" data-d="1" aria-label="Next month" ${U.cal>=0?'disabled':''}>→</button></div>
     <div class="calgrid">${['S','M','T','W','T','F','S'].map(x=>`<span class="cw">${x}</span>`).join('')}${cells}</div>
-    <p class="note">${n} ${n===1?'day':'days'} lifted and ${ns} ${ns===1?'day':'days'} swum this month.</p><p class="note">Teal fill = finished lift. Outline = sets logged but not finished. Blue dot = swam. Fill with a blue dot = you did both.</p></div>`;
+    <p class="note">${n} ${n===1?'day':'days'} lifted and ${ns} ${ns===1?'day':'days'} swum this month.</p><p class="note">Solid blue = swam. Teal fill = finished lift. Outline = sets logged but not finished. A blue badge on a day means you swam that day too.</p></div>`;
 }
 function renderProgress(){
   const sessions=Object.values(S.sessions).filter(s=>s.done);
