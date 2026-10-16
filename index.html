@@ -162,6 +162,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 .cd.part{border:2px solid var(--lane)}
 .cd{position:relative}
 .cd.today{box-shadow:0 0 0 2px var(--buoy)}
+.cd.sw:not(.on):not(.part){border:2px solid #2563EB}
 .cd.sw::after{content:"";position:absolute;bottom:3px;left:50%;transform:translateX(-50%);width:11px;height:11px;border-radius:50%;background:#1D4ED8;box-shadow:0 0 0 2px #fff}
 .swimbar{margin:12px 0}
 .swimbar h3{margin:0 0 2px;font-size:16px}
@@ -172,7 +173,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 .swd.on{background:#1D4ED8;border-color:#1D4ED8;color:#fff}
 .swd.on .tk{color:#fff}
 .swd.today{box-shadow:0 0 0 2px var(--buoy)}
-@media (prefers-color-scheme:dark){.cd.sw::after{background:#60A5FA;box-shadow:0 0 0 1.5px #08171F}.swd.on{background:#2563EB;border-color:#3B82F6}}
+@media (prefers-color-scheme:dark){.cd.sw:not(.on):not(.part){border-color:#60A5FA}.cd.sw::after{background:#60A5FA;box-shadow:0 0 0 1.5px #08171F}.swd.on{background:#2563EB;border-color:#3B82F6}}
 .btn:disabled{opacity:.4;cursor:default}
 .btn.favon{border-color:var(--buoy);color:var(--buoy);font-weight:600}
 #tmr{position:fixed;inset:0;z-index:50;background:rgba(6,20,30,.86);display:flex;align-items:center;justify-content:center;padding:16px}
@@ -249,7 +250,7 @@ body:has(#rest) #dpill{bottom:92px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 15, 2026, 8:20 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 15, 2026, 8:25 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1562,7 +1563,7 @@ function calendarCard(){
   return `<div class="card cal"><div class="calhead"><button class="btn small" data-act="calnav" data-d="-1" aria-label="Previous month">←</button><h3>${label}</h3>
     <button class="btn small" data-act="calnav" data-d="1" aria-label="Next month" ${U.cal>=0?'disabled':''}>→</button></div>
     <div class="calgrid">${['S','M','T','W','T','F','S'].map(x=>`<span class="cw">${x}</span>`).join('')}${cells}</div>
-    <p class="note">${n} ${n===1?'day':'days'} lifted and ${ns} ${ns===1?'day':'days'} swum this month.</p><p class="note">Teal fill = finished lift. Outline = sets logged but not finished. Blue dot = swam (the dot looks the same whether or not you lifted).</p></div>`;
+    <p class="note">${n} ${n===1?'day':'days'} lifted and ${ns} ${ns===1?'day':'days'} swum this month.</p><p class="note">Blue dot = swam. Blue ring with a dot = swam only. Teal fill = finished lift. Teal fill with a dot = swam and lifted. Teal outline = sets logged but not finished.</p></div>`;
 }
 function renderProgress(){
   const sessions=Object.values(S.sessions).filter(s=>s.done);
