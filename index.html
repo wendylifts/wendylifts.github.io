@@ -78,6 +78,12 @@ h3{font-size:21px}
 .tags span{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:0 6px}
 .cue{margin:6px 0;color:var(--ink)}
 .last{margin:2px 0 8px;font-size:14px;color:var(--muted)}
+.hist{background:none;border:1.5px solid var(--line);border-radius:999px;width:28px;height:28px;padding:0;margin-left:6px;font-size:14px;line-height:1;vertical-align:middle;cursor:pointer;color:var(--ink)}
+#hsheet{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.55);display:flex;align-items:flex-start;justify-content:center;padding:9vh 14px 14px}
+#hsheet .swbox{max-height:78vh;overflow:auto}
+#hsheet table{width:100%;border-collapse:collapse;margin:10px 0}
+#hsheet td{padding:7px 4px;border-bottom:1px solid var(--line);font-size:15px;vertical-align:top}
+#hsheet td:first-child{white-space:nowrap;color:var(--muted);padding-right:10px}
 .last b{color:var(--ink)}
 .sets{display:grid;grid-template-columns:auto 1fr 1fr 44px;gap:6px 8px;align-items:center;max-width:420px}
 .sets.nw{grid-template-columns:auto 1fr 44px;max-width:300px}
@@ -235,6 +241,9 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 #dpill{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:39;background:var(--deep);color:#fff;padding:5px 13px;border-radius:999px;font-weight:700;font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,.25);opacity:.92;pointer-events:none;transition:transform .25s,background .25s,bottom .2s,opacity .2s}
 #dpill[hidden]{display:none}
 body:has(#rest) #dpill{bottom:92px}
+body:has(#rest){padding-bottom:96px}
+#rest .redit{background:rgba(255,255,255,.18);border:0;color:#fff;border-radius:8px;width:30px;height:30px;font-size:15px;cursor:pointer;padding:0}
+#rest .rin{width:64px;font-size:20px;font-family:var(--head);text-align:center;border-radius:8px;border:0;padding:2px;color:#222}
 #dpill.pop{transform:translateX(-50%) scale(1.18);background:var(--ok);opacity:1}
 #dpill.all{background:var(--ok)}
 .toast{z-index:50}
@@ -264,7 +273,7 @@ body:has(#rest) #dpill{bottom:92px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 16, 2026, 12:10 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 18, 2026, 12:20 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1381,7 +1390,7 @@ function exCard(w,e,i,block){
     <p class="aim">${aim}</p>
     ${timed?`<p class="coach">${esc(coachNote(ex))}</p>`:''}
     ${adjustPanel(w,e,ex,block,i)}
-    <p class="last">${prev?`Last time: <b>${fmtRows(prev.rows)}</b>. ${esc(sg.text)}`:(showW?'No history yet. Pick a weight that leaves 2 reps in the tank.':'No history yet. Stop each set with about 2 reps left in the tank.')}</p>
+    <p class="last">${prev?`Last time${prev.date?' ('+esc(fmtShort(parse(prev.date)))+')':''}: <b>${fmtRows(prev.rows)}</b>. ${esc(sg.text)}`:(showW?'No history yet. Pick a weight that leaves 2 reps in the tank.':'No history yet. Stop each set with about 2 reps left in the tank.')}${exSessions(e.id).length?`<button class="hist" data-act="hist" data-id="${e.id}" aria-label="See all history for ${esc(ex.n)}" title="History">🕘</button>`:''}</p>
     ${noteHtml(e.id)}
     ${isCable(ex)&&showW?'<p class="note">Log the number of plates on the stack. One plate is about 7 lb.</p>':''}
     <div class="sets ${showW?'':'nw'}">${showW?'<span></span><span class="hd">Weight ('+wu(ex)+')</span>':'<span></span>'}<span class="hd">${timed?'Seconds':'Reps'}</span><span></span>${rows}</div>
@@ -1413,6 +1422,14 @@ const cmpYd=n=>n>=10000?Math.round(n/1000)+'k':n>=1000?(n/1000).toFixed(1).repla
 const miOf=y=>{const m=y/1760; return (m>=100?m.toFixed(0):m.toFixed(1)).replace(/\.0$/,'')}; // 1 mile = 1,760 yards
 const ydOf=k=>+((S.swimYds||{})[k])||0;
 function ydSum(start,days){let t=0,sw=0,noy=0; for(let i=0;i<days;i++){const k=iso(addDays(start,i)); if((S.swim||{})[k]){sw++; const y=ydOf(k); t+=y; if(!y) noy++}} return {t,sw,noy}}
+function closeHist(){const e=document.getElementById('hsheet'); if(e) e.remove()}
+function openHist(id){ closeHist(); const ex=exById(id); const list=exSessions(id).reverse();
+  const el=document.createElement('div'); el.id='hsheet'; el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true');
+  el.innerHTML=`<div class="swbox"><h3>${esc(ex.n)}</h3><p class="note" style="margin:0">Every time you logged it, newest first. ${list.length} ${list.length===1?'time':'times'}.</p>
+    <table><tbody>${list.map(x=>`<tr><td>${x.date?esc(fmtShort(parse(x.date))+', '+parse(x.date).getFullYear()):''}</td><td>${fmtRows(x.rows)}</td></tr>`).join('')}</tbody></table>
+    <div class="swrow"><button class="btn teal" id="hclose">Close</button></div></div>`;
+  document.body.appendChild(el);
+  el.addEventListener('click',ev=>{ if(ev.target===el) closeHist() }); el.querySelector('#hclose').onclick=closeHist }
 function closeSwimSheet(){const e=document.getElementById('swsheet'); if(e) e.remove()}
 function openSwimSheet(k,isNew){ // asks how many yards you swam that day
   closeSwimSheet();
@@ -1772,11 +1789,13 @@ function renderSettings(){
 
 let RT=null;
 function stopRest(){ if(RT){cancelSched(); clearInterval(RT.t); if(RT.trk) trackStop(); RT=null} const r=document.getElementById('rest'); if(r) r.remove() }
+let NOREST=0;
 function startRest(secs,label){
+  if(Date.now()<NOREST) return;
   stopRest(); closeTimer();
   unlockAudio();
   const el=document.createElement('div'); el.id='rest'; el.setAttribute('role','status');
-  el.innerHTML=`<div class="rinfo"><span class="rl">Rest</span><b class="rn">${secs}</b><span class="rs">sec</span></div><div class="rbtns"><button class="btn small" id="rplus">+15</button><button class="btn small teal" id="rskip">Skip</button></div>`;
+  el.innerHTML=`<div class="rinfo"><span class="rl">Rest</span><b class="rn">${secs}</b><span class="rs">sec</span><button class="redit" id="redit" aria-label="Edit rest time" title="Edit rest time">✎</button></div><div class="rbtns"><button class="btn small" id="rminus">−15</button><button class="btn small" id="rplus">+15</button><button class="btn small teal" id="rskip">Skip</button></div>`;
   document.body.appendChild(el);
   RT={end:Date.now()+secs*1000,t:null,dinged:false,done:false,nodes:[],pre:false,trk:false};
   const plan=()=>{ cancelSched(); const left=Math.max(0,(RT.end-Date.now())/1000); const ns=[]; let wn=null; if(left>10&&secs>15){wn=schedDing(1175,400,0.3,left-10); ns.push(wn)} ns.push(schedDing(880,250,0.35,left),schedDing(1320,500,0.4,left+0.3),schedDing(1320,450,0.35,left+0.85)); RT.nodes=ns.filter(Boolean); RT.pre=RT.nodes.length>=3; RT.preWarn=!!wn; RT.tgt=audioCtx?audioCtx.currentTime+left:0; RT.tgtW=audioCtx?audioCtx.currentTime+left-10:0; };
@@ -1784,15 +1803,22 @@ function startRest(secs,label){
   const planTrack=first=>{ const left=Math.max(0,(RT.end-Date.now())/1000), ev=[]; if(first) ev.push([0,523,170,0.3]); if(left>10&&secs>15) ev.push([left-10,1175,400,0.3]); ev.push([left,880,250,0.35],[left+0.3,1320,500,0.4],[left+0.85,1320,450,0.35]); RT.trk=trackPlay(ev,left+1.6) };
   if(S.engine==='player'&&S.sound!=='off') planTrack(true);
   if(!RT.trk){ plan(); ding(523,170,0.3) } // soft low note: the rest has started
-  const n=el.querySelector('.rn'), l=el.querySelector('.rl');
+  const l=el.querySelector('.rl');
   const tick=()=>{ if(!RT) return;
-    const left=Math.max(0,Math.ceil((RT.end-Date.now())/1000)); n.textContent=left;
+    const n=el.querySelector('.rn'); if(!n) return; const left=Math.max(0,Math.ceil((RT.end-Date.now())/1000)); n.textContent=left;
     el.classList.toggle('low',left<=10&&left>0);
     if(left<=10&&left>0&&!RT.dinged&&secs>15){RT.dinged=true;if(!RT.trk&&!(RT.preWarn&&played(RT.tgtW)))ding(1175,400,0.3)}
     if(left<=0&&!RT.done){RT.done=true;clearInterval(RT.t);l.textContent='Go!';n.textContent='';el.classList.add('fin');if(!RT.trk&&!(RT.pre&&played(RT.tgt))){cancelSched();chime([[880,0,250,0.35],[1320,0.3,500,0.4],[1320,0.85,450,0.35]])}haptic('go'); setTimeout(()=>{if(RT&&RT.done)stopRest()},4000)}
   };
   el.querySelector('#rskip').onclick=stopRest;
-  el.querySelector('#rplus').onclick=()=>{ if(!RT) return; if(RT.done){RT.done=false;RT.dinged=true;l.textContent='Rest';el.classList.remove('fin');RT.end=Date.now()+15000;RT.t=setInterval(tick,250)} else RT.end+=15000; if(RT.trk) planTrack(false); else plan(); tick() };
+  const setEnd=ms=>{ if(!RT) return; if(RT.done){RT.done=false;RT.dinged=false;l.textContent='Rest';el.classList.remove('fin');RT.t=setInterval(tick,250)} RT.end=Date.now()+ms; RT.dinged=ms/1000<=10; if(RT.trk) planTrack(false); else plan(); tick() };
+  el.querySelector('#rplus').onclick=()=>{ if(!RT) return; setEnd(RT.done?15000:Math.max(0,RT.end-Date.now())+15000) };
+  el.querySelector('#rminus').onclick=()=>{ if(!RT||RT.done) return; setEnd(Math.max(5000,RT.end-Date.now()-15000)) };
+  el.querySelector('#redit').onclick=()=>{ if(!RT) return; const rn=el.querySelector('.rn'); if(el.querySelector('.rin')){return}
+    const cur=Math.max(5,Math.ceil((RT.end-Date.now())/1000)); const inp=document.createElement('input'); inp.type='number'; inp.inputMode='numeric'; inp.className='rin'; inp.value=cur; inp.min=5; inp.max=600;
+    clearInterval(RT.t); rn.replaceWith(inp); inp.focus(); inp.select();
+    const done=()=>{ if(!RT) return; const v=Math.max(5,Math.min(600,parseInt(inp.value,10)||cur)); const b=document.createElement('b'); b.className='rn'; inp.replaceWith(b); RT.t=setInterval(tick,250); setEnd(v*1000) };
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();inp.blur()}}); inp.addEventListener('blur',done,{once:true}) };
   tick(); RT.t=setInterval(tick,250);
 }
 function isGroupedBtn(b){ const d=b.dataset.set.split('|'); if(d[0]!=='main') return false; const w=getWorkout(U.wk,U.day); const e=w&&w.main[+d[1]]; return !!(e&&e.grp) }
@@ -1899,7 +1925,7 @@ document.addEventListener('click',ev=>{
     location.hash=(n===0)?'#/':'#/week/'+(S.start&&wk<S.start?S.start:wk);
     if(n===0&&location.hash==='#/') route();
   }
-  else if(a==='note'){const id=b.dataset.id; const art=b.closest('article.ex'); const box=art&&art.querySelector(`[data-nbox="${id}"]`); if(box){box.hidden=!box.hidden; if(!box.hidden){const ta=box.querySelector('textarea'); ta.focus(); try{ta.setSelectionRange(ta.value.length,ta.value.length)}catch(e){}}}}
+  else if(a==='note'){const id=b.dataset.id; const art=b.closest('article.ex'); const box=art&&art.querySelector(`[data-nbox="${id}"]`); if(box){box.hidden=!box.hidden; if(!box.hidden){const ta=box.querySelector('textarea'); ta.focus(); try{ta.setSelectionRange(ta.value.length,ta.value.length)}catch(e){} setTimeout(()=>{try{box.scrollIntoView({block:'center',behavior:'smooth'})}catch(e){}},60)}}}
   else if(a==='notedel'){
     const id=b.dataset.id; if(!confirm('Delete this note?')) return;
     saveNote(id,''); document.querySelectorAll(`textarea[data-note="${id}"]`).forEach(t=>t.value=''); document.querySelectorAll(`[data-nbox="${id}"]`).forEach(x=>x.hidden=true); toast('Note deleted');
@@ -2001,6 +2027,7 @@ document.addEventListener('click',ev=>{
     w.min=estimate(w); save(); U.edit=null; render(true); toast('Updated');
   }
   else if(a==='timer'){runTimer(b)}
+  else if(a==='hist'){openHist(b.dataset.id)}
   else if(a==='pick'){
     const w=getWorkout(U.wk,U.day); const sw=U.swap; U.swap=null;
     if(sw&&swapEntry(w,sw.i,sw.b,b.dataset.id)) toast('Swapped');
@@ -2156,14 +2183,15 @@ function tmPlan(){ // lay out ALL of the timer's beeps ahead of time (ready tick
 }
 function tmLive(){ return !(TM&&TM.pre&&(TM.trk?!(TRK&&TRK.failed):(audioCtx&&audioCtx.state==='running'))) } // true = nothing is pre-arranged, so beep live
 function closeTimer(){
-  tmCancel(); if(!TM) return; clearInterval(TM.t); try{TM.wl&&TM.wl.release()}catch(e){}
+  tmCancel(); if(!TM) return; if(TM.markFn){ const f=TM.markFn; TM.markFn=null; setTimeout(f,0) } clearInterval(TM.t); try{TM.wl&&TM.wl.release()}catch(e){}
   const el=document.getElementById('tmr'); if(el) el.remove(); TM=null;
 }
 function runTimer(btn){
+  if(TM&&TM.markFn){ const f=TM.markFn; TM.markFn=null; NOREST=Date.now()+700; f() } // starting again/next: still tick the finished set, but no rest
   closeTimer(); stopRest();
   unlockAudio();
   const total=+btn.dataset.secs||30, READY=5;
-  const host=btn.closest('article.ex,li'); const nm=host&&host.querySelector('h3,.wh b'); const name=nm?nm.textContent:'Timer';
+  const host=btn.closest('article.ex,li'); const cardKey=host&&host.dataset?host.dataset.card:''; const nm=host&&host.querySelector('h3,.wh b'); const name=nm?nm.textContent:'Timer';
   const R=88, C2=2*Math.PI*R;
   const el=document.createElement('div'); el.id='tmr'; el.className='ready'; el.setAttribute('role','dialog'); el.setAttribute('aria-modal','true'); el.setAttribute('aria-label','Timer');
   el.innerHTML=`<div class="tbox"><p class="tname">${esc(name)}</p>
@@ -2191,12 +2219,13 @@ function runTimer(btn){
     if(left<=0){TM.done=true;clearInterval(TM.t);num.textContent='Done';fg.style.strokeDashoffset=String(C2);el.classList.remove('low');el.classList.add('fin');sub.textContent='Nice work';pb.textContent='Again';{if(!tmLive()) haptic('success'); else {tmCancel(); beep()}}
       if(btn.dataset.warm) setWarm(btn.dataset.warm,true);
       else if(btn.dataset.cool) setCool(btn.dataset.cool,true);
-      else { const tm=TM; setTimeout(()=>{ // timed exercise finished: log the next open set (this also starts the rest)
-        if(!tm||TM!==tm||!tm.done) { if(TM&&TM!==tm) return }
-        const art=btn.closest('article.ex'); const ck=art&&[...art.querySelectorAll('button.ck')].find(x=>!x.classList.contains('on')); if(ck) ck.click() },2200) } }
+      else { const tm=TM; let did=false;
+        tm.markFn=()=>{ if(did) return; did=true; clearTimeout(tm.mt); // timed exercise finished: log the next open set (this also starts the rest)
+          const art=(cardKey&&document.querySelector(`article.ex[data-card="${cardKey}"]`))||btn.closest('article.ex'); const ck=art&&[...art.querySelectorAll('button.ck')].find(x=>!x.classList.contains('on')); if(ck) ck.click() };
+        tm.mt=setTimeout(tm.markFn,2200) } }
   };
   pb.onclick=()=>{
-    if(TM.done){closeTimer();runTimer(btn);return}
+    if(TM.done){runTimer(btn);return}
     if(TM.paused){TM.paused=false;TM.end=Date.now()+TM.left*1000;pb.textContent='Pause';sub.textContent=TM.phase==='ready'?'Get ready':'seconds left';tmPlan()}
     else{TM.paused=true;tmCancel();pb.textContent='Resume';sub.textContent='paused'}
   };
