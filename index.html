@@ -273,7 +273,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 18, 2026, 12:20 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 18, 2026, 9:48 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -908,7 +908,8 @@ function parseLine(l){
   if(fo) ex.f = fo.slice(2).split(',');
   return ex;
 }
-const BASE = RAW.trim().split('\n').map(parseLine);
+const DUPES={squat_row:'cable_row_squat',cable_kick:'cable_tri_kick',knee_crunch:'crunch_up'}; // retired duplicates -> the move that stays
+const BASE = RAW.trim().split('\n').map(parseLine).filter(x=>!DUPES[x.id]);
 
 /* ---------- State ---------- */
 const KEY='swimlift.v1';
@@ -929,6 +930,12 @@ if((S.planV||0)<3){
   Object.keys(S.weeks||{}).forEach(k=>{ if(!Object.keys(S.sessions||{}).some(id=>id.startsWith(k+'#'))) delete S.weeks[k]; });
   S.planV=3; try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
 }
+(function migrateDupes(){ let ch=false; const mp=id=>{ if(DUPES[id]){ch=true;return DUPES[id]} return id };
+  Object.values(S.weeks||{}).forEach(wk=>(wk.workouts||[]).forEach(w=>['main','abs'].forEach(b=>(w[b]||[]).forEach(e=>{ if(e&&e.id) e.id=mp(e.id) }))));
+  Object.values(S.sessions||{}).forEach(se=>['sets','skip'].forEach(f=>{ const o=se&&se[f]; if(!o) return; Object.keys(o).forEach(k=>{ if(DUPES[k]){ ch=true; if(o[DUPES[k]]===undefined) o[DUPES[k]]=o[k]; delete o[k] } }) }));
+  ['fav','avoid'].forEach(f=>{ if(Array.isArray(S[f])) S[f]=[...new Set(S[f].map(mp))] });
+  if(S.notes) Object.keys(S.notes).forEach(k=>{ if(DUPES[k]){ ch=true; if(!S.notes[DUPES[k]]) S.notes[DUPES[k]]=S.notes[k]; delete S.notes[k] } });
+  if(ch){ try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){} } })();
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){memStore=JSON.parse(JSON.stringify(S))}}
 
 function lib(){
