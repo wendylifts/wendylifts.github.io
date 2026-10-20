@@ -279,7 +279,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 19, 2026, 10:30 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 19, 2026, 10:46 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -294,8 +294,9 @@ const GEAR = [
   ['bench','Adjustable bench'],['bb','Barbell, plates and power rack'],['hex','Hex (trap) bar'],['trx','TRX straps'],
   ['band','Stretch cords / bands'],['pullup','Pull-up bar with assist band'],['ball','Stability ball'],['blocks','Yoga blocks'],
   ['sliders','Sliders'],['step','Aerobic step'],['ankle','Ankle weights'],['pushbars','Push-up bars'],['mat','Exercise mat'],
-  ['loop','Thigh bands (mini loop bands)'],['roller','Foam roller'],['rope','Battle rope'],['hyper','Back extension bench (45° Roman chair)'],['abwheel','Ab wheel'],['bar','Lat bar for the cable machine'],['cuff','Ankle cuff for the cable machine'],['ezbar','Curl (EZ) bar and plates'],['plate','Weight plates (10 lb rubber)']
+  ['loop','Thigh bands (mini loop bands)'],['roller','Foam roller'],['rope','Battle rope'],['hyper','Back extension bench (45° Roman chair)'],['abwheel','Ab wheel'],['bar','Lat bar for the cable machine'],['cuff','Ankle cuff for the cable machine'],['rope','Rope attachment for the cable machine'],['sbar','Straight bar and curl bar for the cable machine'],['triangle','Triangle row handle for the cable machine'],['ezbar','Curl (EZ) bar and plates'],['plate','Weight plates (10 lb rubber)']
 ];
+const ATT={};'pullthru face_pull oh_tri cable_kneel_crunch cable_crunch cable_hammer'.split(' ').forEach(i=>ATT[i]='Rope');'tri_push straight_arm'.split(' ').forEach(i=>ATT[i]='Rope or straight bar');'cable_curl cable_rev_curl'.split(' ').forEach(i=>ATT[i]='Curl bar');'cable_rev_tri cable_wide_row cable_bent_row'.split(' ').forEach(i=>ATT[i]='Straight bar');'lat_pd lat_pd_floor'.split(' ').forEach(i=>ATT[i]='Lat bar');'cable_row lat_pd_close'.split(' ').forEach(i=>ATT[i]='Triangle handle');'cable_oa_tri cable_tri_kick cable_low_fly cable_high_fly cable_dbl_curl cable_rear_row cable_bo_lateral shotgun_row cable_shrug lat_pd_sa cable_row_sa cable_press_sa cable_chest cable_fly cable_incline_press cable_alt_press cable_lateral cable_er cable_rot_row cable_lift_press pallof pallof_hk pallof_hold wood cable_twist cable_lift cable_russian cable_sq_press cable_row_squat cable_squat'.split(' ').forEach(i=>ATT[i]='D-handle');'cable_abd cable_add cable_hip_flex cable_leg_ext cable_leg_curl cable_glute_kick'.split(' ').forEach(i=>ATT[i]='Ankle cuff');
 const GEAR_NAME = Object.fromEntries(GEAR.map(g => [g[0], g[1].split(' (')[0]]));
 
 /* ---------- Exercise library ----------
@@ -377,6 +378,7 @@ w_march|Marching high knees|wcard|none|1|t60|0|0|-|Drive your knees up, no jumpi
 w_run|Run in place|wcard|none|1|t60|0|0|-|Light and quick on the balls of your feet.
 w_step|Fast taps on the step|wcard|step|1|t60|0|0|-|Alternate feet, no jumping.
 lat_pd|Cable lat pulldown|vpull|cable|3|8-12|75|0|l|Pull your elbows down toward your ribs. Don't shrug.
+lat_pd_close|Close-grip triangle pulldown|vpull|cable,triangle|3|8-12|75|0|l|Chest tall. Pull your elbows down by your ribs.
 lat_pd_sa|Single-arm cable pulldown|vpull|cable|3|10-12|60|0|l u|Reach tall at the top, then drive the elbow to your hip.
 assist_pu|Assisted pull-up|vpull|pullup|3|4-8|90|0|b|Use the assist band. Chin over the bar, slow on the way down.
 chin_neg|Slow-lowering chin-up|vpull|pullup|3|3-5|90|0|b|Step up to the top, then take 3 to 4 seconds to lower.
@@ -413,6 +415,7 @@ cable_lateral|Cable lateral raise|shoulder|cable|3|12-15|45|0|l u|Steady tension
 curl|Dumbbell biceps curl|bi|db|3|10-12|45|0|l|Elbows pinned, no swinging.
 hammer|Hammer curl|bi|db|3|10-12|45|0|l|Thumbs up. Squeeze at the top.
 cable_curl|Cable curl|bi|cable|3|10-15|45|0|l|Constant tension and a slow lowering.
+cable_hammer|Cable rope hammer curl|bi|cable,rope|3|10-15|45|0|l|Thumbs up, elbows pinned. Pull the rope ends apart at the top.
 tri_push|Cable triceps pushdown|tri|cable|3|10-15|45|0|l|Elbows pinned to your sides. Full lockout.
 oh_tri|Cable overhead triceps extension|tri|cable|3|10-15|45|0|l|Face away from the stack. Elbows point forward.
 band_tri|Band triceps pushdown|tri|band|3|12-15|45|0|-|Anchor the cord high on the rack.
@@ -593,6 +596,7 @@ cable_crunch|Standing cable crunch|cfl|cable|3|12-15|45|0|l|Curl your ribs towar
 ball_crunch|Stability-ball crunch|cfl|ball|2|15-20|30|0|-|Ball under your low back, curl up and pause.
 hang_knee|Hanging knee raise|cfl|pullup|2|8-12|45|0|-|Curl your pelvis up. Don't swing.
 rev_crunch|Reverse crunch|cfl|mat|2|12-15|30|0|-|Lift your hips off the floor, control the lowering.
+rev_crunch_sl|Straight-leg reverse crunch|cfl|mat|2|10-15|30|0|-|Legs straight up. Lift your hips by pushing your feet to the ceiling.
 bench_leg|Bench leg raise|cfl|bench|2|10-15|30|0|-|Hold the bench behind your head and lower your legs slowly.
 wood|Cable woodchop|cro|cable|2|10-12|30|0|l u|Rotate from the trunk and pivot your back foot.
 russian|Russian twist|cro|mat|2|16-20|30|0|l|One rep = left and right. 18 reps = 18 to each side. Turn your ribcage, not just your arms.
@@ -718,6 +722,7 @@ w_march|Stand tall.;March in place, driving each knee up to hip height.;Swing yo
 w_run|Stand tall and run in place with quick, light steps.;Pump your arms.;Stay on the balls of your feet.
 w_step|Stand facing the step.;Tap one foot on, then the other, alternating quickly.;Keep it light with no jumping.
 lat_pd|Set the pulleys at the top and sit facing the machine. Hold the handles with your arms overhead.;Pull your elbows down toward your ribs, keeping your chest tall.;Let the handles rise slowly until your arms are straight.
+lat_pd_close|Attach the triangle handle to the high pulley and sit facing the machine with your thighs under the pad.;Pull the handle to your upper chest, keeping your elbows close to your ribs.;Let it rise slowly until your arms are straight.
 lat_pd_sa|Set one pulley at the top and sit facing it, holding the handle in one hand.;Pull your elbow down to your hip, keeping your shoulder away from your ear.;Return slowly. Finish all reps, then switch sides.
 assist_pu|Loop the assist band over the bar and step one foot into the loop.;Grab the bar and pull until your chin clears it.;Lower slowly until your arms are straight. Use a thicker band if you can't reach 4 reps.
 chin_neg|Stand on the step and grab the bar with your palms facing you.;Step up so your chin is over the bar, then lift your feet off the step.;Lower yourself over 3 to 4 seconds. Step back up for the next rep.
@@ -754,6 +759,7 @@ cable_lateral|Set a pulley low and stand sideways, holding the handle with your 
 curl|Stand holding dumbbells with your palms facing forward.;Curl the weights up, keeping your elbows pinned to your sides.;Lower slowly until your arms are straight.
 hammer|Stand holding dumbbells with your palms facing each other.;Curl the weights up without rotating your wrists.;Lower slowly.
 cable_curl|Set a pulley low, face the machine, and hold the handle.;Curl the handle up with your elbows pinned to your sides.;Lower slowly to keep constant tension.
+cable_hammer|Attach the rope to a low pulley and face the machine, holding one end in each hand with your palms facing each other.;Curl the rope up with your elbows pinned to your sides, and pull the ends apart at the top.;Lower slowly to keep tension.
 tri_push|Set a pulley high and hold the handle with your elbows at your sides.;Press down until your arms are straight.;Return slowly, keeping your elbows still.
 oh_tri|Set a pulley at medium height and face away from the machine, holding the handle behind your head.;Straighten your arms overhead with your elbows pointing forward.;Lower slowly behind your head.
 band_tri|Anchor the band high on the rack and face it, holding the ends with your elbows at your sides.;Press your hands down until your arms are straight.;Return slowly.
@@ -764,7 +770,7 @@ rdl_db|Stand holding dumbbells in front of your thighs.;Push your hips back with
 rdl_bb|Stand holding the barbell in front of your thighs.;Push your hips back with soft knees and slide the bar down your legs.;Stop when you feel a hamstring stretch, then drive your hips forward.
 hex_dl|Stand inside the hex bar with your feet hip-width apart and hold the handles.;Brace your core and push the floor away to stand up straight.;Lower the bar by pushing your hips back. Reset each rep.
 kb_dl|Stand with your feet wide and the kettlebell between them.;Hinge back, grab the handle, and keep your chest tall.;Push the floor apart to stand tall, then lower with control.
-pullthru|Set the pulley low, face away, and hold the handle between your legs.;Hinge your hips back and let the cable pull through.;Drive your hips forward and squeeze your glutes.
+pullthru|Attach the rope to the low pulley, face away from the machine, and hold the rope by the knotted ends between your legs.;Hinge your hips back and let the cable pull through.;Drive your hips forward and squeeze your glutes.
 kb_swing|Stand with your feet wide and the kettlebell slightly in front of you.;Hike it back between your legs, then snap your hips forward to float the bell to chest height.;Let it swing back and repeat. Your hips do the work, not your arms.
 sl_rdl|Stand on one leg holding a dumbbell, with one hand on the rack for balance.;Hinge forward while the other leg reaches back.;Return by squeezing your glute. Finish all reps, then switch legs.
 sl_bridge|Lie on your back with one foot flat and the other leg extended.;Press through your heel to lift your hips.;Lower slowly. Finish all reps, then switch legs.
@@ -931,6 +937,7 @@ cable_crunch|Set the pulley high, hold the handle at your chest, and face the ma
 ball_crunch|Lie back over the ball with your feet flat and your hands behind your head.;Curl your ribs toward your hips.;Lower slowly over the ball.
 hang_knee|Hang from the pull-up bar, using the assist band or step if needed.;Curl your knees toward your chest by tilting your pelvis.;Lower slowly without swinging.
 rev_crunch|Lie on your back with your knees bent over your hips.;Curl your hips up off the floor toward your ribs.;Lower slowly.
+rev_crunch_sl|Lie on your back with your legs straight up over your hips and your arms by your sides or hands under your hips.;Press your feet toward the ceiling and lift your hips a few inches off the floor.;Lower slowly without letting your legs swing. Bend your knees a little if your hamstrings are tight.
 bench_leg|Lie on the bench and hold the top edge behind your head.;Raise your legs together until they're over your hips.;Lower slowly without arching your back.
 wood|Set a pulley high and stand sideways, holding the handle with both hands.;Pull diagonally down across your body, rotating from your trunk.;Return slowly. Finish all reps, then switch sides.
 russian|Sit on the mat with your knees bent and lean back slightly, holding a dumbbell at your chest.;Rotate your ribcage from side to side. One rep is one twist to the left and one to the right, so 18 reps is 18 to each side.;Keep your chest tall and move slowly.
@@ -1119,7 +1126,7 @@ function applyPhase(e,ex,phi,idx){
 const FAMS=[[/rear-delt row|rear delt fly|rear lateral raise/,'reardelt'],[/push-?up|inchworm/,'pushup'],[/dead bug/,'deadbug'],[/bird dog/,'birddog'],[/mountain climber/,'mtnclimb'],
   [/crunch|sit-up/,'crunch'],[/russian twist|torso twist/,'twist'],[/woodchop|trunk rotation/,'chop'],[/pallof/,'pallof'],[/hamstring curl|leg curl/,'hamcurl'],[/wrist curl/,'wristcurl'],[/hammer curl/,'hammer'],[/reverse curl/,'revcurl'],[/curl/,'curl'],
   [/pulldown|pull-up|chin-up/,'vpull'],[/romanian|deadlift|rdl/,'deadlift'],[/split squat|single-leg bench squat|bulgarian/,'splitsquat'],[/squat/,'squat'],[/bridge|hip thrust/,'bridge'],
-  [/\brow\b/,'row'],[/\bplank\b/,'plank'],[/(bench|chest|floor|incline).*press/,'chestpress'],[/(shoulder|arnold|atlas|overhead) press|standing single-arm cable press/,'ohp'],
+  [/\brow\b/,'row'],[/\bplank\b/,'plank'],[/reverse crunch/,'revcrunch'],[/(bench|chest|floor|incline).*press/,'chestpress'],[/(shoulder|arnold|atlas|overhead) press|standing single-arm cable press/,'ohp'],
   [/\bfly\b/,'fly'],[/lateral raise/,'latraise'],[/front raise/,'frontraise'],[/calf raise/,'calf'],[/triceps|skull crusher|bench dip/,'tri'],
   [/glute kickback|bent-leg kickback|straight-leg kickback/,'glutekick'],[/shrug/,'shrug'],[/carry/,'carry'],[/lunge/,'lunge'],[/back extension/,'backext'],
   [/^(?!.*side).*(leg raise|knee raise|tuck)/,'legraise']];
@@ -1474,7 +1481,8 @@ function exCard(w,e,i,block){
     };
     rows+=ex.u?side('R')+side('L'):side('');
   }
-  const tags=ex.eq.filter(x=>x!=='none').map(x=>GEAR_NAME[x.split('/')[0]]+(x.includes('/')?' or '+GEAR_NAME[x.split('/')[1]]:'')).concat(ex.u?['One side at a time']:[]);
+  let tags=ex.eq.filter(x=>x!=='none').map(x=>GEAR_NAME[x.split('/')[0]]+(x.includes('/')?' or '+GEAR_NAME[x.split('/')[1]]:'')).concat(ex.u?['One side at a time']:[]); // attachment hint, unless the gear tag already says it
+  if(ATT[ex.id]){ const w0=ATT[ex.id].toLowerCase().split(' ')[0]; if(!tags.some(t=>t.toLowerCase().indexOf(w0)===0)) tags.splice(tags.length-(ex.u?1:0),0,'Use: '+ATT[ex.id]) }
   const grp=e.lab?`<span class="grp">${e.lab}</span>`:'';
   const steps=HOWTO[e.id]||['Use controlled reps in a pain-free range.','Stop a set if your form breaks down.'];
   const yt='https://www.youtube.com/results?search_query='+encodeURIComponent(ex.n+' exercise form');
