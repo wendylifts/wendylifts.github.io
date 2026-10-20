@@ -279,7 +279,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 19, 2026, 8:50 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 19, 2026, 10:20 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -294,7 +294,7 @@ const GEAR = [
   ['bench','Adjustable bench'],['bb','Barbell, plates and power rack'],['hex','Hex (trap) bar'],['trx','TRX straps'],
   ['band','Stretch cords / bands'],['pullup','Pull-up bar with assist band'],['ball','Stability ball'],['blocks','Yoga blocks'],
   ['sliders','Sliders'],['step','Aerobic step'],['ankle','Ankle weights'],['pushbars','Push-up bars'],['mat','Exercise mat'],
-  ['roller','Foam roller'],['rope','Battle rope'],['hyper','Back extension bench (45° Roman chair)'],['abwheel','Ab wheel'],['bar','Lat bar for the cable machine'],['cuff','Ankle cuff for the cable machine'],['ezbar','Curl (EZ) bar and plates'],['plate','Weight plates (10 lb rubber)']
+  ['loop','Thigh bands (mini loop bands)'],['roller','Foam roller'],['rope','Battle rope'],['hyper','Back extension bench (45° Roman chair)'],['abwheel','Ab wheel'],['bar','Lat bar for the cable machine'],['cuff','Ankle cuff for the cable machine'],['ezbar','Curl (EZ) bar and plates'],['plate','Weight plates (10 lb rubber)']
 ];
 const GEAR_NAME = Object.fromEntries(GEAR.map(g => [g[0], g[1].split(' (')[0]]));
 
@@ -372,6 +372,7 @@ w_pull|Band pull-aparts|wact|band|1|t50|0|0|-|Squeeze your shoulder blades toget
 w_er|Band external rotations|wact|band|1|t50|0|0|-|Elbow glued to your side.
 w_angel|Floor angels|wact|mat|1|t50|0|0|-|Ribs down, arms sliding along the floor.
 w_bridge|Glute bridge holds|wact|mat|1|t45|0|0|-|Squeeze your glutes at the top.
+w_loopwalk|Banded side steps|wact|loop|1|t45|0|0|-|Small steps sideways with soft knees. Keep tension on the band.
 w_march|Marching high knees|wcard|none|1|t60|0|0|-|Drive your knees up, no jumping.
 w_run|Run in place|wcard|none|1|t60|0|0|-|Light and quick on the balls of your feet.
 w_step|Fast taps on the step|wcard|step|1|t60|0|0|-|Alternate feet, no jumping.
@@ -492,6 +493,11 @@ toe_touch|Toe touch|cfl|mat|2|15-20|30|0|-|Reach for your toes by rolling your r
 db_bridge|Dumbbell glute bridge|glute|db,mat|3|10-15|60|0|l|Dumbbell across your hips. Squeeze your glutes to lift.
 sl_kick|Straight-leg kickback|glute|mat|3|12-20|45|0|b u|Reach one leg straight back and squeeze your glute.
 band_kick|Band glute kickback|glute|band|3|12-20|45|0|b u|Band around your feet. Kick straight back against the tension.
+loop_squat|Banded squat|squat|loop|3|10-15|60|1|b|Push your knees out against the band as you sit back.
+loop_walk|Banded side steps|glute|loop|3|10-12|45|0|b|Soft knees, small steps. Keep tension on the band the whole way.
+loop_bridge|Banded glute bridge|glute|loop,mat|3|12-15|45|0|b|Press your knees out against the band as you lift.
+loop_clam|Banded clamshell|glute|loop,mat|3|12-20|45|0|b u|Feet together, hips stacked. Open the top knee without rolling back.
+loop_hydrant|Banded fire hydrant|glute|loop,mat|3|12-15|45|0|b u|Keep your hips level as you lift the knee out to the side.
 drag_curl|Dumbbell drag curl|bi|db|3|10-12|45|0|l r|Drag the weights up your body, elbows going back.
 wn_squat|Dumbbell wide-narrow squat walk|squat|db|3|8-12|60|1|l r|Squat wide, step in and squat narrow, alternating sides.
 db_front_sq|Dumbbell front squat|squat|db|3|8-12|75|1|l r|Dumbbells at your shoulders. Knees, feet and hips in line.
@@ -522,6 +528,7 @@ ball_deadbug|Stability-ball dead bug|cae|ball|2|8-12|30|0|-|Squeeze the ball bet
 roller_ll|Active leg lowering to the roller|cfl|roller,mat|2|8-12|30|0|-|Stiff abs. One rep = one leg lowered. Alternate legs.
 side_leg_abd|Side plank leg raise|cla|mat|2|8-12|30|0|u|Lift through the heel. Drop the bottom knee to make it easier.
 ball_jack|Stability-ball jackknife|cfl|ball|2|8-12|30|0|-|Keep your back flat, pike with your abs.
+ball_pike|Stability-ball pike|cfl|ball|2|6-10|30|0|-|Legs straight. Lift your hips high and roll the ball toward your feet.
 ball_back_ext|Stability-ball back extension|hinge|ball|3|10-15|60|0|b|Smooth lift to a straight line. No over-arching.
 decline_pu|Decline push-up|hpush|bench,pushbars|3|8-15|60|0|b|Feet on the bench, hands on the push-up bars. Body in one line.
 cable_rev_curl|Cable reverse curl|bi|cable,bar|3|10-15|45|0|l|Overhand grip, elbows pinned. Good for forearms.
@@ -530,7 +537,7 @@ cable_wide_row|Cable seated wide-grip row|hpull|cable,bar|3|8-12|75|0|l|Pull to 
 cable_bent_row|Cable bent-over row|hpull|cable|3|8-12|60|0|l|Hinge with a flat back and row to your ribs.
 crab_walk|Crab walk|wact|none|1|t45|0|1|-|Hips up, small steps.
 jab_cross|Dumbbell jab and cross punch|shoulder|db|2|20-30|45|0|l r|Light weights. Alternate punches and rotate your torso.
-ball_twist|Stability-ball torso twist|car|ball|2|8-10|30|0|u r|Slow and controlled. Rotate through your ribs.
+ball_twist|Stability-ball torso twist|car|ball|2|8-10|30|0|u r|Upper back on the ball, hips lifted. Rotate your arms and ribs slowly.
 arnold_lat|Dumbbell Arnold press to lateral raise|shoulder|db|3|8-10|60|0|l r|Light weights and smooth transitions.
 cable_rot_row|Cable seated rotational row|hpull|cable|3|8-12|60|0|l r|Rotate your torso as you pull.
 squat_row|Cable squat to row|comp|cable|3|10-12|75|0|l f=pull,full,legs|Sit back while your arms reach, row as you stand.
@@ -580,6 +587,10 @@ hollow|Hollow-body hold|csw|mat|2|t30|30|0|-|Streamline arms overhead, low back 
 flutter_hold|Hollow-body flutter kicks|csw|mat|2|t40|30|0|-|Small fast kicks like your freestyle.
 vup|V-up|csw|mat|2|10-15|30|0|-|Reach your hands to your toes at the top.
 dolphin|Dolphin kick on the ball|csw|ball|2|t30|30|0|-|Lie over the ball and undulate through your chest and hips.
+roll_up|Roll-up|cfl|mat|2|8-12|30|0|-|Slow and smooth, one vertebra at a time. Roll down with control.
+side_plank_knee|Side plank with elbow to knee crunch|cla|mat|2|8-12|30|0|u|Lift your top knee to your top elbow, then reach back long.
+rev_plank_knee|Reverse plank with knee drive|cae|mat|2|8-12|30|0|-|Hips high, chest open. Drive one knee in, then switch.
+bike_hold|Bicycle hold with leg lifts|csw|mat|2|t30|30|0|-|Shoulders up, low back down. Small, slow leg lifts.
 c_chest|Doorway chest stretch|cool|none|1|t45|0|0|-|Gentle stretch across the front of your shoulders.
 c_cross|Cross-body shoulder stretch|cool|none|1|t45|0|0|-|Relax your shoulder down, switch arms halfway.
 c_lat|Standing side reach stretch|cool|none|1|t45|0|0|-|Long, slow breaths into the sides of your back.
@@ -685,6 +696,7 @@ w_pull|Hold a band at chest height with your arms straight.;Pull your hands apar
 w_er|Tie the band to the rack at elbow height and stand sideways.;With your elbow at your side bent 90 degrees, rotate your forearm outward.;Return slowly and do both sides.
 w_angel|Lie on your back with your knees bent and your arms in a goalpost shape.;Slide your arms overhead along the floor and back.;Keep your ribs down and your low back flat.
 w_bridge|Lie on your back with your knees bent and feet flat.;Press through your heels to lift your hips.;Squeeze your glutes and hold, breathing normally.
+w_loopwalk|Put the band just above your knees and stand with your feet hip-width and your knees soft.;Take small steps to the side, keeping tension on the band.;Take a few steps one way, then come back the other way.
 w_march|Stand tall.;March in place, driving each knee up to hip height.;Swing your arms. One foot always stays on the floor (no jumping).
 w_run|Stand tall and run in place with quick, light steps.;Pump your arms.;Stay on the balls of your feet.
 w_step|Stand facing the step.;Tap one foot on, then the other, alternating quickly.;Keep it light with no jumping.
@@ -803,6 +815,11 @@ toe_touch|Lie on your back and point your legs straight up. Bend your knees if y
 db_bridge|Lie on your back with your knees bent and a dumbbell across your hips, held in place with your hands.;Squeeze your glutes to lift your hips until your body is a straight line.;Keep your abs on so you don't arch your low back. Lower slowly.
 sl_kick|Get on your hands and knees on the mat with your knees padded and your abs braced.;Extend one leg straight back until it is level with your back.;Lower under control without letting your low back sway. Finish one side, then switch.
 band_kick|Get on your hands and knees on the mat with a band around your feet or secured under one hand.;Kick one leg straight back against the band, squeezing your glute.;Return slowly. Finish one side, then switch.
+loop_squat|Put the band just above your knees and stand with your feet shoulder-width apart.;Sit your hips back and down to a pain-free depth while pressing your knees out into the band.;Push through your heels to stand.
+loop_walk|Put the band just above your knees and stand with your feet hip-width apart and your knees soft.;Take a step to the side, then bring the other foot in without letting the band go slack.;Take all your steps one way, then come back the other way. Each step counts as a rep.
+loop_bridge|Put the band just above your knees and lie on your back with your knees bent and feet flat.;Press your knees out against the band and push through your heels to lift your hips.;Squeeze your glutes at the top, then lower slowly.
+loop_clam|Put the band just above your knees and lie on your side with your knees bent and your hips stacked.;Keep your feet together and open your top knee without letting your hips roll back.;Lower slowly. Finish all reps, then switch sides.
+loop_hydrant|Put the band just above your knees and get on your hands and knees on the mat.;Lift one knee out to the side, keeping your hips level and your back flat.;Lower slowly. Finish all reps, then switch sides.
 drag_curl|Stand holding dumbbells at your sides.;Curl the weights up close to your body, letting your elbows travel behind you.;Lower slowly.
 wn_squat|Hold dumbbells at shoulder height with your feet a little wider than normal.;Squat, then step one foot in close to the other and squat narrow.;Step back out wide and squat, then bring the other foot in. Alternate sides.
 db_front_sq|Hold dumbbells at your shoulders with your elbows forward.;Sit your hips back and down to a pain-free depth with your knees tracking over your feet.;Drive through your heels to stand.
@@ -833,6 +850,7 @@ ball_deadbug|Lie on your back holding the ball between your hands and knees over
 roller_ll|Lie on your back on the mat with a foam roller by your feet.;Raise both legs straight up, then slowly lower one leg to tap the roller while the other stays up.;Return it to the top and alternate legs.
 side_leg_abd|Get into a side plank on your forearm, or lie on your side if that is too hard.;Lift your top leg as high as you can, leading with the heel.;Lower slowly. Finish all reps, then switch sides.
 ball_jack|Start in a push-up position with your shins on the ball and a straight line from head to ankles.;Without rounding your low back, pull the ball toward your chest by bending your knees.;Pause, then roll back to the start.
+ball_pike|Start in a push-up position with your shins on the ball and a straight line from head to ankles.;Keeping your legs straight, lift your hips up toward the ceiling so the ball rolls toward your feet.;Pause, then lower your hips and roll the ball back to the start. Bend your knees to make it easier.
 ball_back_ext|Lie face down over the ball with your toes on the floor and your hands across your chest.;Lift your chest until your body is in one line.;Lower slowly.
 decline_pu|Put your feet on the bench and your hands on the push-up bars under your shoulders.;Lower your chest between the bars with your body in one straight line.;Press back up. Move your feet to the floor if it's too hard.
 cable_rev_curl|Attach the bar to a low pulley and hold it with a shoulder-width overhand grip.;With your elbows at your sides, raise the bar until your forearms are vertical.;Lower until your arms are straight.
@@ -841,7 +859,7 @@ cable_wide_row|Sit at the low pulley and hold the bar with a wide overhand grip.
 cable_bent_row|Set a low pulley and face it, hinged forward with a flat back.;Row the handle to your ribs.;Lower slowly.
 crab_walk|Sit on the floor with your hands behind you and your feet flat.;Lift your hips by squeezing your glutes.;Take small alternating steps with your hands and feet, keeping your hips up.
 jab_cross|Stand with your feet staggered, holding light dumbbells at your chin.;Punch one arm forward while pulling the other back.;Alternate smoothly and rotate through your torso.
-ball_twist|Lie face down on the ball in a push-up position with your feet on the floor.;Raise one arm toward the ceiling in line with the hand on the floor, twisting your torso.;Lower back and finish one side, then switch.
+ball_twist|Sit on the ball and walk your feet out until your upper back rests on it, with your feet flat and your hips lifted level with your knees.;Reach both arms straight up over your chest and clasp your hands.;Rotate your arms and ribs slowly toward one side, then return to the middle. Finish all reps on one side, then switch.
 arnold_lat|Hold light dumbbells at your chest with your palms facing you.;Rotate and press them overhead like an Arnold press.;Lower, then raise your arms out to the sides for a lateral raise.
 cable_rot_row|Sit at the low pulley and hold the handle with both hands.;Pull toward your ribs while rotating your torso slightly.;Return slowly and finish one side, then switch.
 squat_row|Set the pulleys at chest height and hold the handles, facing the machine with your arms straight.;Sit back into a comfortable squat while your arms reach forward.;Stand up and row the handles to your ribs.
@@ -890,6 +908,10 @@ hollow|Lie on your back and press your low back into the floor.;Lift your arms o
 flutter_hold|Lie on your back in a hollow position with your low back pressed down.;Kick your legs in small, fast flutters.;Keep your core tight.
 vup|Lie on your back with your arms overhead and legs straight.;Lift your arms and legs together, reaching your hands toward your toes.;Lower slowly.
 dolphin|Drape your hips over the ball with your hands on the floor.;Move your legs in a small wave from the hips, like a dolphin kick.;Keep your core tight.
+roll_up|Lie on your back with your legs long and your arms overhead.;Reach your arms up and slowly roll your chest up and over your legs, one vertebra at a time.;Roll back down slowly with control. Bend your knees a little if your legs lift off the floor.
+side_plank_knee|Get into a side plank on your forearm, or with your bottom knee down if you need an easier version, with your top hand behind your head.;Lift your top knee toward your top elbow in a side crunch.;Extend back out long. Finish all reps, then switch sides.
+rev_plank_knee|Sit with your hands behind you and your fingers pointing toward your hips, then lift your hips into a reverse plank.;Drive one knee toward your chest, then return that foot to the floor.;Alternate legs and keep your hips high. One rep is a right and a left. Come down and rest if your shoulders or wrists complain.
+bike_hold|Lie on your back with your hands behind your head and your shoulders lifted off the floor.;Hold one knee in toward your chest and extend the other leg a few inches above the floor.;Slowly lift and lower the extended leg, switching legs halfway. Stop if your low back arches.
 `;
 const HOWTO = {};
 HOWRAW.trim().split('\n').forEach(l => { const i = l.indexOf('|'); HOWTO[l.slice(0, i)] = l.slice(i + 1).split(';'); });
@@ -953,7 +975,7 @@ const exById = id => lib().find(x=>x.id===id);
 
 /* Big-toe care: moves that load the toes (calf raises, planks, push-ups, sliders on the toes, climbers, taps) */
 const TOE=new Set('cable_calf calf db_calf sl_calf slider_pike slider_mc body_saw mtn_climb bench_mc'.split(' '));
-const TOEW=new Set(['reneg','ball_jack','step_taps']); // she can try these: no weekly limit, but the Fine/Twinge/Sore buttons show
+const TOEW=new Set(['reneg','ball_jack','ball_pike','step_taps']); // she can try these: no weekly limit, but the Fine/Twinge/Sore buttons show
 const isToe=ex=>!!ex&&TOE.has(ex.id);
 const toeWatch=ex=>!!ex&&(TOE.has(ex.id)||TOEW.has(ex.id));
 const toeOn=()=>S.toeCare!==false;
@@ -1423,7 +1445,9 @@ function exCard(w,e,i,block){
   const steps=HOWTO[e.id]||['Use controlled reps in a pain-free range.','Stop a set if your form breaks down.'];
   const yt='https://www.youtube.com/results?search_query='+encodeURIComponent(ex.n+' exercise form');
   const musc=muscOf(ex);
-  const aim=timed?`Aim for ${e.secs} seconds${ex.u?' each side':''} per set.`:`Aim for ${tgt} reps per set${ex.u?' on each side':''}. Your range is ${e.lo}–${e.hi}.`;
+  const ALTN={incl_curl:1,atlas:1,plank_drag:1,plank_shift:1,plank_pu:1,ball_deadbug:1,dead_bug:1,bird_dog:1,roller_ll:1,rev_plank_knee:1}; // alternating moves: a rep is both sides
+  const aim0=timed?`Aim for ${e.secs} seconds${ex.u?' each side':''} per set.`:`Aim for ${tgt} reps per set${ex.u?' on each side':''}. Your range is ${e.lo}–${e.hi}.`;
+  const aim=aim0+(!timed&&ALTN[e.id]?' One rep means both sides: a right and a left.':'');
   const skipped=!!(s&&s.skip&&s.skip[e.id]);
   return `<article class="ex${skipped?' skipped':''}" data-card="${block}|${i}" data-needw="${ex.l?1:0}">
     <div class="ex-head"><div class="nm">${grp}<h3>${esc(ex.n)}</h3></div>
