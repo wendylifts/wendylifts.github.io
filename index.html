@@ -279,7 +279,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 19, 2026, 10:46 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 19, 2026, 10:53 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -294,9 +294,10 @@ const GEAR = [
   ['bench','Adjustable bench'],['bb','Barbell, plates and power rack'],['hex','Hex (trap) bar'],['trx','TRX straps'],
   ['band','Stretch cords / bands'],['pullup','Pull-up bar with assist band'],['ball','Stability ball'],['blocks','Yoga blocks'],
   ['sliders','Sliders'],['step','Aerobic step'],['ankle','Ankle weights'],['pushbars','Push-up bars'],['mat','Exercise mat'],
-  ['loop','Thigh bands (mini loop bands)'],['roller','Foam roller'],['rope','Battle rope'],['hyper','Back extension bench (45° Roman chair)'],['abwheel','Ab wheel'],['bar','Lat bar for the cable machine'],['cuff','Ankle cuff for the cable machine'],['rope','Rope attachment for the cable machine'],['sbar','Straight bar and curl bar for the cable machine'],['triangle','Triangle row handle for the cable machine'],['ezbar','Curl (EZ) bar and plates'],['plate','Weight plates (10 lb rubber)']
+  ['loop','Thigh bands (mini loop bands)'],['roller','Foam roller'],['rope','Battle rope'],['hyper','Back extension bench (45° Roman chair)'],['abwheel','Ab wheel'],['bar','Lat bar for the cable machine'],['cuff','Ankle cuff or foot strap for the cable machine'],['rope','Rope attachment for the cable machine'],['sbar','Straight bar and curl bar for the cable machine'],['triangle','Triangle row handle for the cable machine'],['ezbar','Curl (EZ) bar and plates'],['plate','Weight plates (10 lb rubber)']
 ];
-const ATT={};'pullthru face_pull oh_tri cable_kneel_crunch cable_crunch cable_hammer'.split(' ').forEach(i=>ATT[i]='Rope');'tri_push straight_arm'.split(' ').forEach(i=>ATT[i]='Rope or straight bar');'cable_curl cable_rev_curl'.split(' ').forEach(i=>ATT[i]='Curl bar');'cable_rev_tri cable_wide_row cable_bent_row'.split(' ').forEach(i=>ATT[i]='Straight bar');'lat_pd lat_pd_floor'.split(' ').forEach(i=>ATT[i]='Lat bar');'cable_row lat_pd_close'.split(' ').forEach(i=>ATT[i]='Triangle handle');'cable_oa_tri cable_tri_kick cable_low_fly cable_high_fly cable_dbl_curl cable_rear_row cable_bo_lateral shotgun_row cable_shrug lat_pd_sa cable_row_sa cable_press_sa cable_chest cable_fly cable_incline_press cable_alt_press cable_lateral cable_er cable_rot_row cable_lift_press pallof pallof_hk pallof_hold wood cable_twist cable_lift cable_russian cable_sq_press cable_row_squat cable_squat'.split(' ').forEach(i=>ATT[i]='D-handle');'cable_abd cable_add cable_hip_flex cable_leg_ext cable_leg_curl cable_glute_kick'.split(' ').forEach(i=>ATT[i]='Ankle cuff');
+const ATT={};'pullthru face_pull oh_tri cable_kneel_crunch cable_crunch cable_hammer'.split(' ').forEach(i=>ATT[i]='Rope');'tri_push straight_arm'.split(' ').forEach(i=>ATT[i]='Rope or straight bar');'cable_curl cable_rev_curl'.split(' ').forEach(i=>ATT[i]='Curl bar');'cable_rev_tri cable_wide_row cable_bent_row'.split(' ').forEach(i=>ATT[i]='Straight bar');'lat_pd lat_pd_floor'.split(' ').forEach(i=>ATT[i]='Lat bar');'cable_row lat_pd_close'.split(' ').forEach(i=>ATT[i]='Triangle handle');'cable_oa_tri cable_tri_kick cable_low_fly cable_high_fly cable_dbl_curl cable_rear_row cable_bo_lateral shotgun_row cable_shrug lat_pd_sa cable_row_sa cable_press_sa cable_chest cable_fly cable_incline_press cable_alt_press cable_lateral cable_er cable_rot_row cable_lift_press pallof pallof_hk pallof_hold wood cable_twist cable_lift cable_russian cable_sq_press cable_row_squat cable_squat'.split(' ').forEach(i=>ATT[i]='D-handle');'cable_abd cable_add cable_hip_flex cable_leg_ext cable_leg_curl'.split(' ').forEach(i=>ATT[i]='Ankle cuff');
+ATT.cable_glute_kick='Foot strap';
 const GEAR_NAME = Object.fromEntries(GEAR.map(g => [g[0], g[1].split(' (')[0]]));
 
 /* ---------- Exercise library ----------
@@ -512,7 +513,7 @@ db_front_sq|Dumbbell front squat|squat|db|3|8-12|75|1|l r|Dumbbells at your shou
 atlas|Dumbbell Atlas press|vpush|db|3|8-12|60|0|l r|Press one dumbbell overhead and bring it down to the other shoulder.
 band_tri_kick|Band triceps kickback|tri|band|3|12-15|45|0|b r|Elbow pinned, straighten your arm back against the band.
 db_ham|Dumbbell hamstring curl|ham|db,mat|3|10-15|60|0|l r|Hold a dumbbell between your feet. Curl your heels toward your hips.
-cable_glute_kick|Cable glute kickback|glute|cable,cuff|3|12-15|60|0|l u|Cuff on your ankle. Hold the stack and kick straight back.
+cable_glute_kick|Cable glute kickback|glute|cable,cuff|3|12-15|60|0|l u|Foot strap on your shoe. Hold the stack and kick straight back.
 db_decline|Dumbbell decline bench press|hpush|db,bench|3|10-15|75|0|l r|Bench set to decline. Press straight up over your lower chest.
 decline_fly|Dumbbell decline chest fly|hpush|db,bench|3|10-15|60|0|l r|Soft elbows, wide arc, squeeze your chest at the top.
 front_raise|Dumbbell front raise|shoulder|db|3|10-12|45|0|l|Light weights. Raise to shoulder height, no swinging.
@@ -854,7 +855,7 @@ db_front_sq|Hold dumbbells at your shoulders with your elbows forward.;Sit your 
 atlas|Stand holding one dumbbell with both hands at one shoulder.;Press it overhead until your arms are straight.;Lower it to the other shoulder and press again, alternating sides each rep.
 band_tri_kick|Hinge forward with the band anchored under your front foot or hand, holding the other end with your elbow at your side.;Straighten your arm back until fully extended.;Return slowly. Finish all reps, then switch sides.
 db_ham|Lie face down on the mat with a dumbbell held between your feet.;Curl your heels toward your hips.;Lower slowly without arching your back.
-cable_glute_kick|Set the pulley low and attach the ankle cuff to one ankle. Face the machine and hold the frame for balance.;Kick that leg straight back, squeezing your glute, without arching your low back.;Return slowly. Finish all reps, then switch legs.
+cable_glute_kick|Set the pulley low and put your shoe in the foot strap (or use the ankle cuff). Face the machine and hold the frame for balance.;Kick that leg straight back, squeezing your glute, without arching your low back.;Return slowly. Finish all reps, then switch legs.
 db_decline|Set the bench to a decline and lie back holding dumbbells at your chest.;Press the weights straight up until your arms are straight.;Lower slowly and repeat.
 decline_fly|Set the bench to a decline and lie back holding dumbbells over your chest with your palms facing each other.;Open your arms in a wide arc with soft elbows.;Bring the weights back together over your chest.
 front_raise|Stand holding light dumbbells in front of your thighs.;Raise both arms straight in front of you to shoulder height.;Lower slowly without leaning back.
