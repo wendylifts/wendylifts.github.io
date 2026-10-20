@@ -279,7 +279,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 19, 2026, 11:01 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 20, 2026, 11:34 AM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -294,7 +294,7 @@ const GEAR = [
   ['bench','Adjustable bench'],['bb','Barbell, plates and power rack'],['hex','Hex (trap) bar'],['trx','TRX straps'],
   ['band','Stretch cords / bands'],['pullup','Pull-up bar with assist band'],['ball','Stability ball'],['blocks','Yoga blocks'],
   ['sliders','Sliders'],['step','Aerobic step'],['ankle','Ankle weights'],['pushbars','Push-up bars'],['mat','Exercise mat'],
-  ['loop','Thigh bands (mini loop bands)'],['roller','Foam roller'],['hyper','Back extension bench (45° Roman chair)'],['abwheel','Ab wheel'],['bar','Lat bar for the cable machine'],['cuff','Ankle cuff or foot strap for the cable machine'],['crope','Rope attachment for the cable machine'],['sbar','Straight bar and curl bar for the cable machine'],['triangle','Triangle row handle for the cable machine'],['ezbar','Curl (EZ) bar and plates'],['plate','Weight plates (10 lb rubber)']
+  ['loop','Thigh bands (mini loop bands)'],['roller','Foam roller'],['hyper','Back extension bench (45° Roman chair)'],['abwheel','Ab wheel'],['bar','Lat bar for the cable machine'],['cuff','Ankle cuff or foot strap for the cable machine'],['crope','Rope attachment for the cable machine'],['sbar','Straight bar and curl bar for the cable machine'],['triangle','Triangle row handle for the cable machine'],['lm','Landmine attachment (for the barbell)'],['ezbar','Curl (EZ) bar and plates'],['plate','Weight plates (10 lb rubber)']
 ];
 const ATT={};'pullthru face_pull oh_tri cable_kneel_crunch cable_crunch cable_hammer'.split(' ').forEach(i=>ATT[i]='Rope');'tri_push straight_arm'.split(' ').forEach(i=>ATT[i]='Rope or straight bar');'cable_curl cable_rev_curl'.split(' ').forEach(i=>ATT[i]='Curl bar');'cable_rev_tri cable_wide_row cable_bent_row'.split(' ').forEach(i=>ATT[i]='Straight bar');'lat_pd lat_pd_floor'.split(' ').forEach(i=>ATT[i]='Lat bar');'cable_row lat_pd_close'.split(' ').forEach(i=>ATT[i]='Triangle handle');'cable_oa_tri cable_tri_kick cable_low_fly cable_high_fly cable_dbl_curl cable_rear_row cable_bo_lateral shotgun_row cable_shrug lat_pd_sa cable_row_sa cable_press_sa cable_chest cable_fly cable_incline_press cable_alt_press cable_lateral cable_er cable_rot_row cable_lift_press pallof pallof_hk pallof_hold wood cable_twist cable_lift cable_russian cable_sq_press cable_row_squat cable_squat'.split(' ').forEach(i=>ATT[i]='D-handle');'cable_abd cable_add cable_hip_flex cable_leg_ext cable_leg_curl'.split(' ').forEach(i=>ATT[i]='Ankle cuff');
 ATT.cable_glute_kick='Foot strap';ATT.wood='Rope or D-handle';
@@ -390,6 +390,14 @@ db_row|One-arm dumbbell row|hpull|db,bench|3|8-12|60|0|l u|Hand and knee on the 
 cs_row|Chest-supported incline row|hpull|db,bench|3|10-12|60|0|l|Lie face down on the incline bench. Pull elbows past your ribs.
 trx_row|TRX row|hpull|trx|3|10-15|60|0|b|Walk your feet forward to make it harder. Body stays in one line.
 bb_row|Barbell bent-over row|hpull|bb|3|6-10|90|0|l|Hinge back, flat back. Pull the bar to your belly button.
+lm_rot|Landmine rotations|cro|lm,bb|2|10-12|30|0|l u|Arms long, rotate through your ribs and pivot your feet. Hips stay steady.
+lm_press|Standing landmine press|vpush|lm,bb|3|8-12|60|0|l u|Hold the end at your shoulder, press up and forward. Ribs down.
+lm_row|Landmine T-bar row|hpull|lm,bb|3|8-12|75|0|l|Hinge with a flat back, row the end to your chest, squeeze your shoulder blades.
+lm_row1|Single-arm landmine row|hpull|lm,bb|3|8-12|60|0|l u|Hinge, one hand on your thigh. Row the end to your hip.
+lm_squat|Landmine goblet squat|squat|lm,bb|3|8-12|75|1|l|Hold the end at your chest. Sit between your hips, chest tall.
+lm_lunge|Landmine reverse lunge|single|lm,bb|3|8-10|75|1|l u|Hold the end at your chest. Step back, then drive up through the front foot.
+lm_sl_rdl|Landmine single-leg Romanian deadlift|hinge|lm,bb|3|8-10|60|0|l u r|Hold the end in the opposite hand. Hinge on one leg, back flat, hips square.
+lm_squat_press|Landmine squat to press|comp|lm,bb|3|8-10|75|1|l f=push,legs,full|Squat holding the end at your chest, then stand and press it up and forward.
 db_ohp|Seated dumbbell shoulder press|vpush|db,bench|3|8-12|75|0|l|Back supported, ribs down. Press up without arching.
 cable_press_sa|Standing single-arm cable press|vpush|cable|3|10-12|60|0|l u|Brace your core and press straight up.
 arnold|Arnold press|vpush|db,bench|3|8-12|75|0|l|Rotate your palms as you press. Light and smooth.
@@ -733,6 +741,14 @@ db_row|Stand beside the bench, hinge forward, and place one hand on it. Hold a d
 cs_row|Set the bench to a low incline and lie face down with a dumbbell in each hand.;Row both elbows up past your ribs, squeezing your shoulder blades.;Lower slowly until your arms are straight.
 trx_row|Hold the TRX handles and lean back with your arms straight and your body in a plank line.;Pull your chest to your hands while squeezing your shoulder blades.;Lower slowly. Walk your feet closer to make it easier.
 bb_row|Stand with feet hip-width, hinge forward with a flat back, and hold the bar just outside your knees.;Row the bar to your belly button with your elbows close to your body.;Lower slowly. Keep your hips and torso still.
+lm_rot|Set one end of the barbell in the landmine, stand facing it, and hold the other end with both hands at chest height.;Keep your arms long and rotate your trunk to one side, letting your feet pivot.;Rotate back through the middle to the other side. Move smoothly with a steady core.
+lm_press|Stand facing the landmine and hold the end of the bar at your shoulder with one hand.;Press it up and forward until your arm is straight, ribs down.;Lower under control. Finish all reps, then switch sides.
+lm_row|Straddle the bar and hinge forward with a flat back, holding the end of the bar or a handle with both hands.;Row the end up toward your chest, squeezing your shoulder blades together.;Lower slowly without rounding your back.
+lm_row1|Stand beside the bar, hinge forward with a flat back, and rest one hand on your thigh. Hold the end of the bar with the other hand.;Row it toward your hip, keeping your elbow close.;Lower slowly. Finish all reps, then switch sides.
+lm_squat|Hold the end of the bar against your chest with both hands.;Sit your hips back and down to a pain-free depth, keeping your chest tall.;Stand by pushing through your heels.
+lm_lunge|Hold the end of the bar against your chest with both hands.;Step one foot back and lower to a pain-free depth.;Push through the front foot to stand. Finish all reps, then switch sides.
+lm_sl_rdl|Hold the end of the bar in the hand opposite your standing leg.;Hinge forward on one leg, reaching your free leg back, back flat and hips square.;Squeeze your glute to return to standing. Finish all reps, then switch sides.
+lm_squat_press|Hold the end of the bar at your chest with both hands.;Squat to a pain-free depth.;Stand up and press the bar up and forward. Lower it back to your chest and repeat.
 db_ohp|Set the bench upright and sit with a dumbbell in each hand at shoulder height.;Press up until your arms are straight, keeping your ribs down.;Lower slowly back to shoulder height.
 cable_press_sa|Set one pulley low and stand in a split stance, holding the handle at your shoulder.;Press the handle straight up while keeping your core tight.;Lower slowly. Finish all reps, then switch sides.
 arnold|Sit on an upright bench holding dumbbells at chest height with your palms facing you.;Press up while rotating your palms to face forward.;Reverse the motion as you lower.
@@ -990,7 +1006,7 @@ function loadState(){
   if(!s) s=memStore;
   const d=DEFAULTS();
   if(!s) return d;
-  s.gear=Object.assign(d.gear,s.gear||{});if(s.gear.rope!==undefined){delete s.gear.rope;s.gear.crope=true;}
+  const _lm=(s.gear||{}).lm;s.gear=Object.assign(d.gear,s.gear||{});s.gear.lm=_lm===undefined?false:_lm;if(s.gear.rope!==undefined){delete s.gear.rope;s.gear.crope=true;}
   return Object.assign(d,s);
 }
 let S=loadState();
