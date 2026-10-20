@@ -235,6 +235,9 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 .backupnote{border-color:#F59E0B;border-width:2px;margin:12px 0}
 .backupnote h3{margin:0 0 4px}
 .backupnote .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.btn.fin-o{border-color:var(--ok);color:var(--ok);background:rgba(31,138,91,.12);background:color-mix(in srgb,var(--ok) 14%,var(--surface));font-weight:700}
+.btn.amber-o{border-color:#F5A524;color:#9A5B00;background:rgba(245,165,36,.14);font-weight:700}
+@media (prefers-color-scheme:dark){.btn.amber-o{color:#FBBF24}}
 .fin-badge{background:var(--ok);border-color:var(--ok);color:#fff;cursor:default}
 .ex.skipped{opacity:.6;border-style:dashed}
 .ex.skipped h3::after{content:" (skipped)";font-size:.6em;color:var(--mut,#5b7083)}
@@ -276,7 +279,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 19, 2026, 8:27 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 19, 2026, 8:50 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -911,7 +914,7 @@ function parseLine(l){
   if(fo) ex.f = fo.slice(2).split(',');
   return ex;
 }
-const DUPES={squat_row:'cable_row_squat',cable_kick:'cable_tri_kick',knee_crunch:'crunch_up'}; // retired duplicates -> the move that stays
+const DUPES={squat_row:'cable_row_squat',cable_kick:'cable_tri_kick',knee_crunch:'crunch_up',plank_jack:'plank'}; // retired duplicates -> the move that stays
 const BASE = RAW.trim().split('\n').map(parseLine).filter(x=>!DUPES[x.id]);
 
 /* ---------- State ---------- */
@@ -948,8 +951,37 @@ function lib(){
 }
 const exById = id => lib().find(x=>x.id===id);
 
+/* Big-toe care: moves that load the toes (calf raises, planks, push-ups, sliders on the toes, climbers, taps) */
+const TOE=new Set('cable_calf calf db_calf sl_calf slider_pike slider_mc body_saw mtn_climb bench_mc'.split(' '));
+const TOEW=new Set(['reneg','ball_jack','step_taps']); // she can try these: no weekly limit, but the Fine/Twinge/Sore buttons show
+const isToe=ex=>!!ex&&TOE.has(ex.id);
+const toeWatch=ex=>!!ex&&(TOE.has(ex.id)||TOEW.has(ex.id));
+const toeOn=()=>S.toeCare!==false;
+function toeHist(id){
+  const ok=(S.toeOk&&S.toeOk[id])||'';
+  return Object.values(S.sessions).filter(s=>s.toe&&s.toe[id]&&s.date&&s.date>ok).map(s=>({d:s.date,v:s.toe[id]})).sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:0);
+}
+function toeState(id){ // same rule as the knee: rest the move 3 weeks after one sore or two twinges/sores in a row
+  const h=toeHist(id); if(!h.length) return null;
+  const last=h[h.length-1], pv=h[h.length-2];
+  const days=Math.floor((parse(iso(new Date()))-parse(last.d))/864e5);
+  if(days>=21) return null;
+  const rest=last.v===3||(last.v>=2&&pv&&pv.v>=2);
+  return {last,rest,hold:!rest&&last.v===2,until:iso(addDays(parse(last.d),21))};
+}
+function toeHtml(ex,wid){
+  if(!toeWatch(ex)) return '';
+  const cur=(S.sessions[wid]&&S.sessions[wid].toe&&S.sessions[wid].toe[ex.id])||0;
+  const ts=toeState(ex.id);
+  const btn=(v,l)=>`<button class="btn small ${cur===v?'teal':''}" data-act="toe" data-id="${ex.id}" data-v="${v}" aria-pressed="${cur===v}">${l}</button>`;
+  let msg='';
+  if(ts&&ts.rest) msg=`<p class="note">Your big toe flagged this move. I'll leave it out of new workouts until ${ts.until}. Use "Swap for another" to change it today.</p>`;
+  else if(ts&&ts.hold) msg='<p class="note">Your big toe twinged on this one. Go easy or skip it. Another twinge and I will rest it.</p>';
+  return `<div class="kneebox"><span class="hd">How did your big toe feel?</span><div class="ex-actions">${btn(1,'Fine')}${btn(2,'Twinge')}${btn(3,'Sore')}</div>${msg}</div>`;
+}
 function available(ex){
   if(S.avoid.includes(ex.id)) return false;
+  if(toeWatch(ex)&&toeOn()){const ts=toeState(ex.id); if(ts&&ts.rest) return false}
   if(ex.k>S.knee) return false;
   if(ex.k>=1){const ks=kneeState(ex.id); if(ks&&ks.rest) return false}
   return ex.eq.every(spec => spec==='none' || spec.split('/').some(k => S.gear[k]));
@@ -1039,8 +1071,9 @@ const famOf=x=>{const n=(x.n||'').toLowerCase(); for(const [re,k] of FAMS) if(re
 let FAMMAP=new Map(), WKUSED=new Set();
 const famPrep=()=>{FAMMAP=new Map(lib().map(x=>[x.id,famOf(x)]))};
 const famClash=(x,used)=>{const f=FAMMAP.get(x.id)||famOf(x); if(f.indexOf('id:')===0) return false; for(const id of used) if(FAMMAP.get(id)===f) return true; return false};
+const toeCap=(x,used)=>{ if(!toeOn()||!isToe(x)) return true; for(const id of used) if(TOE.has(id)) return false; for(const id of WKUSED) if(TOE.has(id)) return false; return true }; // at most one toe-loading move a week
 function cands(all,ok,used){ // best choices first: not already used this week and no same-day version; a repeat from earlier in the week is allowed only if nothing else is left
-  const base=all.filter(x=>ok(x)&&!used.has(x.id));
+  const base=all.filter(x=>ok(x)&&!used.has(x.id)&&toeCap(x,used));
   let c=base.filter(x=>!WKUSED.has(x.id)&&!famClash(x,used)); if(c.length) return c;
   return base.filter(x=>!famClash(x,used)); // never two versions of one move in a day: if only versions are left, that slot is skipped (the workout fills the time with another move)
 }
@@ -1207,7 +1240,9 @@ function altOptions(w,block,i){
   const list=block==='abs'?w.abs:w.main; const e=list[i]; const cur=exById(e.id);
   const used=new Set([...w.main,...w.abs].map(x=>x.id)); famPrep();
   const others=new Set([...used]); others.delete(e.id); // the move being swapped out doesn't count against its own replacement
-  const ok=x=>available(x)&&!used.has(x.id)&&!famClash(x,others);
+  const wkO=(S.weeks[w.wk]&&S.weeks[w.wk].workouts)||[]; // other toe-loading moves already planned this week (not counting the one being swapped out)
+  const toeBusy=wkO.some(o=>[...(o.warm||[]),...o.main,...o.abs].some(x=>TOE.has(x.id)&&!(o===w&&x.id===e.id)));
+  const ok=x=>available(x)&&!used.has(x.id)&&!famClash(x,others)&&!(toeOn()&&isToe(x)&&toeBusy);
   let same,related=[];
   if(block==='abs'){
     const pt=cur.pat.find(p=>/^c/.test(p));
@@ -1405,7 +1440,7 @@ function exCard(w,e,i,block){
     ${isCable(ex)&&showW?'<p class="note">Log the number of plates on the stack. One plate is about 7 lb.</p>':''}
     <div class="sets ${showW?'':'nw'}">${showW?'<span></span><span class="hd">Weight ('+wu(ex)+')</span>':'<span></span>'}<span class="hd">${timed?'Seconds':'Reps'}</span><span></span>${rows}</div>
     <div class="setbtns"><button class="btn small" data-act="addset" data-b="${block}" data-i="${i}">+ Add a set</button>${e.sets>1?`<button class="btn small" data-act="rmset" data-b="${block}" data-i="${i}">− Remove a set</button>`:''}</div>
-    ${kneeHtml(ex,wid)}
+    ${kneeHtml(ex,wid)}${toeOn()?toeHtml(ex,wid):''}
     <div class="ex-actions">
       ${timed?`<button class="btn small teal" data-act="timer" data-secs="${e.secs}">Start ${e.secs} sec timer</button>`:''}
       <button class="btn small" data-act="adjust" data-b="${block}" data-i="${i}">Adjust sets or reps</button>
@@ -1607,9 +1642,9 @@ function renderDay(){
   ${w.abs.map((e,i)=>exCard(w,e,i,'abs')).join('')}
   ${coolOn?`<div class="sec"><h3>Cool-down</h3><span class="t">optional, about 2 min</span></div><div class="warm"><ul>${cool}</ul></div>`:''}
   <div class="foot">
-    ${done?'<span class="btn fin-badge" role="status">✓ Finished</span><button class="btn" data-act="editwo">Edit workout</button>':'<button class="btn primary" data-act="finish">Finish workout</button>'}
+    ${done?'<span class="btn fin-badge" role="status">✓ Finished</span><button class="btn" data-act="editwo">Edit workout</button>':'<button class="btn fin-o" data-act="finish">Finish workout</button>'}
     <a class="btn" href="#/week/${U.wk}">Back to week</a>
-    <button class="btn amber" data-act="regen-day">New version of this day</button>
+    <button class="btn amber-o" data-act="regen-day">New version of this day</button>
     ${w.extra&&U.day===wkObj.workouts.length-1?'<button class="btn ghost" data-act="rmextra">Remove this extra workout</button>':''}
   </div>
   <p class="note">Weights and reps save as you type on this device. ${done?'Finished on '+esc(done)+'.':''}</p>
@@ -1767,6 +1802,7 @@ function renderSettings(){
       <option value="player" ${S.engine==='player'?'selected':''}>Audio player (backup if Standard is silent)</option></select>
       <button class="btn small teal" data-act="testsound">Test sound</button></div>
     <label class="chk" style="margin:4px 0"><input type="checkbox" id="haptics" ${S.haptics!==false?'checked':''}>Haptic taps (when your phone allows it)</label>
+    <label class="chk" style="margin:4px 0"><input type="checkbox" id="toecare" ${toeOn()?'checked':''}>Go easy on my big toe: no more than one toe-loading move a week (weighted calf raises, mountain climbers, slider moves, toe taps)</label>
     <label class="chk" style="margin:4px 0"><input type="checkbox" id="autorest" ${S.autoRest!==false?'checked':''}>Start a rest timer when I tap a set's ✓</label>
     <div class="row"><label for="swgoal">Yearly swim goal (miles)</label><input id="swgoal" type="number" min="0" max="5000" step="10" inputmode="numeric" value="${S.swimGoal===undefined?500:S.swimGoal}" style="width:90px"></div>
     <p class="note" style="margin:0 0 6px">Starting in 2027, Progress shows whether you are ahead of or behind the pace for this goal. Set 0 to hide it.</p>
@@ -1914,7 +1950,16 @@ function render(keep){
   if(keep) window.scrollTo(0,y);
 }
 
+function toeMigrate(){ // one time: rebuild this week's and later weeks' untouched days so they follow the toe rule
+  S.toeV=2;
+  try{ const cur=iso(mondayOf(new Date()));
+    Object.keys(S.weeks).filter(k=>k>=cur).sort().forEach(k=>{ const wk=S.weeks[k];
+      wk.workouts.forEach((w,di)=>{ const se=S.sessions[w.id]; const started=se&&(se.done||Object.values(se.sets||{}).some(a=>a.some(r=>r&&((r.r!==''&&r.r!=null)||(r.lr!==''&&r.lr!=null)))));
+        const has=[...w.main,...w.abs,...(w.warm||[])].some(e=>TOE.has(e.id));
+        if(!started&&!w.extra&&has) regenDay(k,di) }) }) }catch(e){}
+  save(); }
 function route(){
+  if((S.toeV||0)<2&&toeOn()) toeMigrate();
   const h=location.hash.replace(/^#\/?/,'').split('/');
   const okWk=v=>/^\d{4}-\d{2}-\d{2}$/.test(v||'')?iso(mondayOf(parse(v))):null;
   U.swap=null;U.edit=null;
@@ -2061,6 +2106,8 @@ document.addEventListener('click',ev=>{
   }
   else if(a==='knee'){const w=getWorkout(U.wk,U.day);const s=sess(w.id);s.knee=s.knee||{};const v=+b.dataset.v;if(s.knee[b.dataset.id]===v)delete s.knee[b.dataset.id];else s.knee[b.dataset.id]=v;save();render(true);
     const ks=kneeState(b.dataset.id);if(v===3||(ks&&ks.rest))toast('Noted. Resting this move for 3 weeks.');else if(v===2)toast('Noted. Keep it pain-free.')}
+  else if(a==='toe'){const w=getWorkout(U.wk,U.day);const s=sess(w.id);s.toe=s.toe||{};const v=+b.dataset.v;if(s.toe[b.dataset.id]===v)delete s.toe[b.dataset.id];else s.toe[b.dataset.id]=v;save();render(true);
+    const ts=toeState(b.dataset.id);if(v===3||(ts&&ts.rest))toast('Noted. Resting this move for 3 weeks.');else if(v===2)toast('Noted. Go easy on it.')}
   else if(a==='kneeok'){S.kneeOk=S.kneeOk||{};S.kneeOk[b.dataset.id]=iso(new Date());save();render(true)}
   else if(a==='unhide'){S.avoid=S.avoid.filter(x=>x!==b.dataset.id);save();render(true)}
   else if(a==='metric'){U.metric=b.dataset.k;render(true)}
@@ -2297,6 +2344,7 @@ document.addEventListener('change',ev=>{
   else if(t.id==='engine'){S.engine=t.value;save();trackStop();unlockAudio();chime([[1175,0,500,0.4],[1320,0.35,500,0.4]])}
   else if(t.id==='haptics'){S.haptics=t.checked;save(); if(t.checked) haptic('done')}
   else if(t.id==='bkdays'){S.backupDays=+t.value; save(); toast(S.backupDays?'Backup reminder updated':'Backup reminder turned off')}
+  else if(t.id==='toecare'){S.toeCare=t.checked;save()}
   else if(t.id==='autorest'){S.autoRest=t.checked;save(); if(!t.checked) stopRest()}
   else if(t.id==='wdate'){
     if(!t.value) return;
