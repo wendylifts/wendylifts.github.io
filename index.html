@@ -270,6 +270,21 @@ body:has(#rest){padding-bottom:96px}
 #rest.fin{background:var(--ok)}
 #rest .btn:not(.teal){background:rgba(255,255,255,.15);border-color:transparent;color:#fff}
 .kneebox{margin:10px 0 2px}.kneebox .hd{display:block;margin-bottom:4px}
+/* larger text + colored coach notes (how-to text unchanged) */
+:root{--coach:#B45309}
+@media (prefers-color-scheme:dark){:root{--coach:#FBBF24}}
+.note{font-size:16px}.chip{font-size:15px;padding:3px 12px}.weekbar .sub,.sec .t,.sets .sl,.daycard .dt,.dc-d,.stat span,.datef,.opt span{font-size:16px}
+.tags span{font-size:14px;padding:1px 8px}.last{font-size:16px}.coach{font-size:16px}.cue{font-size:17px}
+.presc{font-size:18px}.presc small{font-size:15px}
+.sets .hd{font-size:14px}.sets input{font-size:18px}
+.btn.small{font-size:16px;padding:7px 12px}.badge{font-size:13px}table{font-size:15px}.cw{font-size:14px}.ver{font-size:14px}
+#hsheet td{font-size:16px}.swd{font-size:13px}
+.aim{font-size:18px}
+.cnote{display:block;color:var(--coach);font-weight:600;font-size:16px;margin:6px 0 2px}.cnote b,.phbox .cnote b{font-weight:800;display:inline;font-size:inherit}p.cnote{margin:4px 0 6px}
+.phnote,.sug,.coach,.wnote{color:var(--coach);font-weight:700}
+.phnote{font-size:17px}.coach{margin:4px 0 8px}
+.wnote{font-size:16px;margin:6px 0}
+.how li,.how summary,.how a{font-size:16px}
 </style>
 </head>
 <body>
@@ -281,7 +296,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 20, 2026, 9:24 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 20, 2026, 9:34 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1422,7 +1437,7 @@ function dayDate(wk,di){
 /* ---------- Render ---------- */
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('show'),1800)}
+function toast(m,ms){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('show'),ms||1800)}
 
 function renderNav(){
   const items=[['workout','Workout','#/'],['progress','Progress','#/progress'],['settings','Gear & settings','#/settings']];
@@ -1471,6 +1486,27 @@ function saveNote(id,txt){
   document.querySelectorAll(`[data-nshow="${id}"]`).forEach(el=>{ el.hidden=!has; const sp=el.querySelector('[data-ntxt]'); if(sp) sp.textContent=has?S.notes[id].t:''; const sm=el.querySelector('small'); if(sm) sm.textContent=has?' ('+S.notes[id].d+')':'' });
   document.querySelectorAll(`[data-act="note"][data-id="${id}"]`).forEach(bt=>bt.textContent=has?'Edit note':'Add note');
 }
+const ENCG=["You showed up. That is the hardest part.", "Strong swimmers are built on days like today.", "Every rep is a deposit in your future self’s account.", "Steady beats perfect. Just keep going.", "You are stronger than you were a month ago.", "Listen to your body, move with purpose, and be proud of every set.", "Small, consistent work wins.", "Today counts, even on a slow day.", "Your lane is waiting, and you are getting ready for it.", "Slow is smooth and smooth is strong.", "You do not have to be fast today. You just have to be here.", "Think of this as pool time you can feel in your stroke.", "One good set at a time.", "Your shoulders, hips and core will thank you in the water.", "Strength now means easier laps later.", "You are building a body that moves well for a long time.", "Some days are for pushing. Some are for showing up. Both count.", "Breathe, brace, and lift with a smile.", "Your future self just gave you a high five.", "Make each rep look like the one you are proudest of.", "Consistency is your superpower.", "The best workout is the one you actually do.", "You are doing something good for yourself today.", "Quality beats quantity. Take your time.", "Today’s effort is tomorrow’s strength.", "Feeling stiff? Warm-ups work miracles. Start easy.", "Be patient with yourself. Progress adds up quietly.", "Strong legs, strong core, strong stroke.", "You have got this. One move at a time.", "Treat the weights like a training partner and listen to them.", "Nobody gets stronger by thinking about it. You are doing it.", "Move well first, then move heavier.", "A little tired is normal. Pain is not, so adjust if you need to.", "You earn every swim yard in this room.", "Keep your breath steady and your focus on the next rep.", "The work you do here shows up in every wall push-off.", "This is you taking care of your body.", "Show the weights who is in charge today.", "Looking after your joints is part of getting stronger.", "Easy does it. Strong comes from patient practice.", "Another workout toward a stronger season.", "Trust the plan and trust yourself.", "You are building habits, not just muscle.", "Smile when it gets hard. That is where the growth is.", "Your effort today matters more than the numbers.", "Take a sip of water and settle in. You have time.", "It is okay to go lighter today. Moving still counts.", "Your swimming will feel the difference.", "Proud of you for making time for this.", "Start where you are and finish a little stronger."];
+const ENCF=["Workout done. Nicely done.", "Another one in the books.", "That is how it is done. Great work.", "Finished and strong. Go get some water.", "Well earned. Enjoy the rest of your day.", "You did the work. Your body will do the rest.", "Done. Take a minute to feel good about that.", "That counts. Stretch it out and refuel.", "Great session. See you next time.", "One more step toward a stronger stroke.", "Solid work today.", "You showed up and you finished. That is a win.", "Nice effort. Recovery starts now.", "Good job sticking with it.", "All done. Be proud of that one.", "Great work. Your muscles are already getting to work.", "Wrapped up and ready for the water.", "You made it count today.", "Strong finish. Rest up.", "That is another deposit in your strength account.", "Done and dusted. Treat yourself to something good.", "Awesome work. Eat well and rest well.", "You did it again. Consistency wins.", "Fantastic effort. Take a breath.", "Workout complete. Go have a good day."];
+const pickBag=(pool,bagKey,key,map)=>{S.enc=S.enc||{};const E=S.enc;E[map]=E[map]||{};E[bagKey]=E[bagKey]||[];if(E[map][key]!==undefined&&E[map][key]<pool.length)return pool[E[map][key]];let free=pool.map((_,i)=>i).filter(i=>!E[bagKey].includes(i));if(!free.length){const last=E[bagKey][E[bagKey].length-1];E[bagKey]=[];free=pool.map((_,i)=>i).filter(i=>i!==last)}const ix=free[Math.floor(Math.random()*free.length)];E[bagKey].push(ix);E[map][key]=ix;save();return pool[ix]};
+const encOf=id=>pickBag(ENCG,'bagG',id,'g');
+const encFin=id=>{const w=S.weeks&&S.weeks[id.split('#')[0]]&&S.weeks[id.split('#')[0]].workouts[+id.split('#')[1]];return milestone(id)||pickBag(ENCF,'bagF',id,'f')};
+function milestone(wid){
+  const done=Object.keys(S.sessions).filter(k=>S.sessions[k].done);
+  const n=done.length, wk=wid.split('#')[0];
+  const inWeek=done.filter(k=>k.split('#')[0]===wk).length;
+  if([1,10,25,50,75,100,150,200].includes(n)) return n===1?'Your very first workout is done. What a great start!':'That was workout number '+n+'. Look how far you have come!';
+  const se=S.sessions[wid]; let prs=0;
+  if(se&&se.sets){Object.keys(se.sets).forEach(id=>{const mine=Math.max(0,...(se.sets[id]||[]).map(r=>+(r&&r.w)||0));if(!mine)return;let prior=0;Object.entries(S.sessions).forEach(([k,o])=>{if(k===wid)return;(o.sets&&o.sets[id]||[]).forEach(r=>{prior=Math.max(prior,+(r&&r.w)||0)})});if(prior>0&&mine>prior)prs++})}
+  if(inWeek>=4) return 'That is all four workouts this week. Fantastic!';
+  if(prs>=2) return 'New personal bests on '+prs+' moves today. You are getting stronger!';
+  if(prs===1) return 'A new personal best on one move today. Nice lifting!';
+  if(inWeek===3) return 'Three workouts this week. One to go!';
+  return '';
+}
+const CN={vpull:'Your lats power the underwater pull. Start the pull with your elbows, not your hands.',hpull:'Rows build the mid-back that holds your stroke together. Squeeze your shoulder blades at the end.',vpush:'Keep your ribs down and your shoulders away from your ears. That protects your swimming shoulders.',hpush:'Pressing builds the finish of your stroke. Keep your shoulder blades flat and your wrists stacked over your elbows.',shoulder:'Light and slow wins here. This is shoulder insurance for all those laps.',tri:'Triceps finish every stroke. Straighten fully and keep your elbows still.',bi:'Elbows stay pinned and no swinging. Lower for a slow count of three.',squat:'Strong legs mean powerful push-offs. Stay in a pain-free range for your knees.',hinge:'Your hips, glutes and hamstrings drive your kick and your wall push-offs. Keep your back flat.',single:'One-leg strength steadies your kick. Go slow, because balance counts as work.',glute:'Glutes drive your kick. Squeeze at the top and keep your low back quiet.',ham:'Strong hamstrings protect your knees and power your kick. Control the lowering part.',comp:'Big full-body moves. Smooth beats fast, so slow down and own every rep.',carry:'Stand tall and walk steady. This builds the core that holds your body line in the water.',cardio:'Quick but controlled. You should be able to say a short sentence.'};
+['cae','car','cfl','cro','cla','csw'].forEach(k=>CN[k]='Breathe out as you work and keep your low back comfortable. A tight core means a streamlined body in the water.');
+const PHN=['Focus on smooth, controlled reps and a steady tempo.','Take the full rest on the heavy sets. They need it.','Keep moving. The shorter rests are part of the plan.','Stop every set with about 3 reps left. Easy weeks make the hard weeks work.'];
 function exCard(w,e,i,block){
   const ex=exById(e.id); if(!ex) return '';
   const wid=w.id; const timed=!!e.secs;
@@ -1507,7 +1543,9 @@ function exCard(w,e,i,block){
   const ALTN={cord_free:1,cord_back:1,dead_bug_db:1,incl_curl:1,atlas:1,plank_drag:1,plank_shift:1,plank_pu:1,ball_deadbug:1,dead_bug:1,bird_dog:1,roller_ll:1,rev_plank_knee:1}; // alternating moves: a rep is both sides
   const aim0=timed?`Aim for ${e.secs} seconds${ex.u?' each side':''} per set.`:`Aim for ${tgt} reps per set${ex.u?' on each side':''}. Your range is ${e.lo}–${e.hi}.`;
   const heavy=!timed&&w.phase===1&&e.lo===5&&e.hi===6&&!(ex.k>0&&0);
-  const phn=heavy?'<p class="phnote">Strength week: heavier weight, fewer reps. If last time was easy, go up a plate or a few lb.</p>':'';
+  const cpat=ex.pat.find(p=>CN[p]);const cn=(!timed||block==='abs')&&cpat?'<p class="cnote"><b>Coach:</b> '+CN[cpat]+'</p>':'';
+  const phn0=heavy?'<p class="phnote">Strength week: heavier weight, fewer reps. If last time was easy, go up a plate or a few lb.</p>':'';
+  const phn=phn0+cn;
   const aim=aim0+(!timed&&ALTN[e.id]?' One rep means both sides: a right and a left.':'');
   const skipped=!!(s&&s.skip&&s.skip[e.id]);
   return `<article class="ex${skipped?' skipped':''}" data-card="${block}|${i}" data-needw="${ex.l?1:0}">
@@ -1520,9 +1558,9 @@ function exCard(w,e,i,block){
     <p class="aim">${aim}</p>${phn}
     ${timed?`<p class="coach">${esc(coachNote(ex))}</p>`:''}
     ${adjustPanel(w,e,ex,block,i)}
-    <p class="last">${prev?`Last time${prev.date?' ('+esc(fmtShort(parse(prev.date)))+')':''}: <b>${fmtRows(prev.rows)}</b>. ${esc(sg.text)}`:(showW?'No history yet. Pick a weight that leaves 2 reps in the tank.':'No history yet. Stop each set with about 2 reps left in the tank.')}${exSessions(e.id).length?`<button class="hist" data-act="hist" data-id="${e.id}" aria-label="See all history for ${esc(ex.n)}" title="History">🕘</button>`:''}</p>
+    <p class="last">${prev?`Last time${prev.date?' ('+esc(fmtShort(parse(prev.date)))+')':''}: <b>${fmtRows(prev.rows)}</b>. <span class="sug">${esc(sg.text)}</span>`:(showW?'<span class="sug">No history yet. Pick a weight that leaves 2 reps in the tank.</span>':'<span class="sug">No history yet. Stop each set with about 2 reps left in the tank.</span>')}${exSessions(e.id).length?`<button class="hist" data-act="hist" data-id="${e.id}" aria-label="See all history for ${esc(ex.n)}" title="History">🕘</button>`:''}</p>
     ${noteHtml(e.id)}
-    ${isCable(ex)&&showW?'<p class="note">Log the number of plates on the stack. One plate is about 7 lb.</p>':''}
+    ${isCable(ex)&&showW?'<p class="wnote">Log the number of plates on the stack. One plate is about 7 lb.</p>':''}
     <div class="sets ${showW?'':'nw'}">${showW?'<span></span><span class="hd">Weight ('+wu(ex)+')</span>':'<span></span>'}<span class="hd">${timed?'Seconds':'Reps'}</span><span></span>${rows}</div>
     <div class="setbtns"><button class="btn small" data-act="addset" data-b="${block}" data-i="${i}">+ Add a set</button>${e.sets>1?`<button class="btn small" data-act="rmset" data-b="${block}" data-i="${i}">− Remove a set</button>`:''}</div>
     ${kneeHtml(ex,wid)}${toeOn()?toeHtml(ex,wid):''}
@@ -1713,7 +1751,7 @@ function renderDay(){
   const dateVal=(S.sessions[w.id]&&S.sessions[w.id].date)||iso(new Date());
   return `
   <div class="dayhead"><a class="back" href="#/week/${U.wk}">← Week of ${fmtShort(mon)}</a></div>
-  <div class="phbox"><b>${ph.n} week</b> ${esc(ph.d)}</div>
+  <div class="phbox"><b>${ph.n} week</b> ${esc(ph.d)}<span class="cnote"><b>Coach:</b> ${esc(PHN[PHASES.indexOf(ph)]||'')}</span><span class="cnote">${esc(encOf(w.id))}</span></div>
   <div class="hero"><h2>${f.n}</h2><span class="note">${DOWL[d.getDay()]}, ${fmtShort(d)}</span></div>
   <div class="meta"><span class="chip">About ${w.min} min</span><span class="chip">${FMTN[w.format]}</span><span class="chip">Abs included</span><span class="chip">No jumping</span><label class="datef">Date done <input type="date" id="wdate" value="${dateVal}"></label></div>
   <p class="note">${esc(f.d)} ${esc(fmtNote)}</p>
@@ -1728,7 +1766,7 @@ function renderDay(){
   ${w.abs.map((e,i)=>exCard(w,e,i,'abs')).join('')}
   ${coolOn?`<div class="sec"><h3>Cool-down</h3><span class="t">optional, about 2 min</span></div><div class="warm"><ul>${cool}</ul></div>`:''}
   <div class="foot">
-    ${done?'<span class="btn fin-badge" role="status">✓ Finished</span><button class="btn" data-act="editwo">Edit workout</button>':'<button class="btn fin-o" data-act="finish">Finish workout</button>'}
+    ${done?'<p class="cnote" style="flex-basis:100%">'+esc((S.sessions[w.id]&&S.sessions[w.id].fin)||encFin(w.id))+'</p><span class="btn fin-badge" role="status">✓ Finished</span><button class="btn" data-act="editwo">Edit workout</button>':'<button class="btn fin-o" data-act="finish">Finish workout</button>'}
     <a class="btn" href="#/week/${U.wk}">Back to week</a>
     <button class="btn amber-o" data-act="regen-day">New version of this day</button>
     ${w.extra&&U.day===wkObj.workouts.length-1?'<button class="btn ghost" data-act="rmextra">Remove this extra workout</button>':''}
@@ -2117,7 +2155,7 @@ document.addEventListener('click',ev=>{
     }
   }
   else if(a==='cooldone'){const nowOn=!b.classList.contains('on'); haptic(nowOn?'done':'tick'); setCool(b.dataset.id,nowOn)}
-  else if(a==='finish'){const w=getWorkout(U.wk,U.day);const s=sess(w.id);if(!s.dateEdited)s.date=iso(new Date());s.done=s.date;save();toast('Workout saved');render(true)}
+  else if(a==='finish'){const w=getWorkout(U.wk,U.day);const s=sess(w.id);if(!s.dateEdited)s.date=iso(new Date());s.done=s.date;save();render(true);(s.fin=encFin(w.id),save(),toast('Workout saved. '+s.fin,4800))}
   else if(a==='regen-day'){askSure('Build a new version of this day?','This swaps the exercises for a new set.',()=>{regenDay(U.wk,U.day);render(true);toast('New version built')})}
   else if(a==='regen-week'){askSure('Rebuild the whole week?','This swaps every workout this week for new ones.',()=>{regenWeek(U.wk);render(true);toast('Week rebuilt')})}
   else if(a==='swap'){
