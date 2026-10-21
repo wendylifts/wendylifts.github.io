@@ -119,6 +119,8 @@ th{color:var(--muted);font-weight:600}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--deep);color:#fff;padding:10px 16px;border-radius:10px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s}
 .toast.show{opacity:1}
 
+.phbox{background:var(--soft);border-left:4px solid var(--lane);border-radius:10px;padding:10px 12px;margin:0 0 12px;font-size:17px;line-height:1.35}.phbox b{display:block;font-size:18px}
+.phnote{font-size:16px;font-weight:700;margin:6px 0 2px}
 .dayhead{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
 .back{font-weight:600;color:var(--link);text-decoration:none;padding:8px 0;display:inline-block}
 .cards{display:grid;gap:12px;margin:14px 0}
@@ -279,7 +281,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 20, 2026, 9:10 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 20, 2026, 9:24 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1504,6 +1506,8 @@ function exCard(w,e,i,block){
   const musc=muscOf(ex);
   const ALTN={cord_free:1,cord_back:1,dead_bug_db:1,incl_curl:1,atlas:1,plank_drag:1,plank_shift:1,plank_pu:1,ball_deadbug:1,dead_bug:1,bird_dog:1,roller_ll:1,rev_plank_knee:1}; // alternating moves: a rep is both sides
   const aim0=timed?`Aim for ${e.secs} seconds${ex.u?' each side':''} per set.`:`Aim for ${tgt} reps per set${ex.u?' on each side':''}. Your range is ${e.lo}–${e.hi}.`;
+  const heavy=!timed&&w.phase===1&&e.lo===5&&e.hi===6&&!(ex.k>0&&0);
+  const phn=heavy?'<p class="phnote">Strength week: heavier weight, fewer reps. If last time was easy, go up a plate or a few lb.</p>':'';
   const aim=aim0+(!timed&&ALTN[e.id]?' One rep means both sides: a right and a left.':'');
   const skipped=!!(s&&s.skip&&s.skip[e.id]);
   return `<article class="ex${skipped?' skipped':''}" data-card="${block}|${i}" data-needw="${ex.l?1:0}">
@@ -1513,7 +1517,7 @@ function exCard(w,e,i,block){
     <p class="cue">${esc(ex.cue)}</p>
     <details class="how"><summary>How to</summary><ol>${steps.map(t=>`<li>${esc(t)}</li>`).join('')}</ol>
       <a href="${yt}" target="_blank" rel="noopener">Find a demo video</a></details>
-    <p class="aim">${aim}</p>
+    <p class="aim">${aim}</p>${phn}
     ${timed?`<p class="coach">${esc(coachNote(ex))}</p>`:''}
     ${adjustPanel(w,e,ex,block,i)}
     <p class="last">${prev?`Last time${prev.date?' ('+esc(fmtShort(parse(prev.date)))+')':''}: <b>${fmtRows(prev.rows)}</b>. ${esc(sg.text)}`:(showW?'No history yet. Pick a weight that leaves 2 reps in the tank.':'No history yet. Stop each set with about 2 reps left in the tank.')}${exSessions(e.id).length?`<button class="hist" data-act="hist" data-id="${e.id}" aria-label="See all history for ${esc(ex.n)}" title="History">🕘</button>`:''}</p>
@@ -1708,7 +1712,8 @@ function renderDay(){
   const done=S.sessions[w.id]&&S.sessions[w.id].done;
   const dateVal=(S.sessions[w.id]&&S.sessions[w.id].date)||iso(new Date());
   return `
-  <div class="dayhead"><a class="back" href="#/week/${U.wk}">← Week of ${fmtShort(mon)}</a><span class="chip">${ph.n} phase</span></div>
+  <div class="dayhead"><a class="back" href="#/week/${U.wk}">← Week of ${fmtShort(mon)}</a></div>
+  <div class="phbox"><b>${ph.n} week</b> ${esc(ph.d)}</div>
   <div class="hero"><h2>${f.n}</h2><span class="note">${DOWL[d.getDay()]}, ${fmtShort(d)}</span></div>
   <div class="meta"><span class="chip">About ${w.min} min</span><span class="chip">${FMTN[w.format]}</span><span class="chip">Abs included</span><span class="chip">No jumping</span><label class="datef">Date done <input type="date" id="wdate" value="${dateVal}"></label></div>
   <p class="note">${esc(f.d)} ${esc(fmtNote)}</p>
