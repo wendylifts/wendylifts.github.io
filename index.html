@@ -298,7 +298,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 20, 2026, 10:14 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 21, 2026, 7:35 AM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1506,9 +1506,43 @@ function milestone(wid){
   if(inWeek===3) return 'Three workouts this week. One to go!';
   return '';
 }
-const CN={vpull:'Your lats power the underwater pull. Start the pull with your elbows, not your hands.',hpull:'Rows build the mid-back that holds your stroke together. Squeeze your shoulder blades at the end.',vpush:'Keep your ribs down and your shoulders away from your ears. That protects your swimming shoulders.',hpush:'Pressing builds the finish of your stroke. Keep your shoulder blades flat and your wrists stacked over your elbows.',shoulder:'Light and slow wins here. This is shoulder insurance for all those laps.',tri:'Triceps finish every stroke. Straighten fully and keep your elbows still.',bi:'Elbows stay pinned and no swinging. Lower for a slow count of three.',squat:'Strong legs mean powerful push-offs. Stay in a pain-free range for your knees.',hinge:'Your hips, glutes and hamstrings drive your kick and your wall push-offs. Keep your back flat.',single:'One-leg strength steadies your kick. Go slow, because balance counts as work.',glute:'Glutes drive your kick. Squeeze at the top and keep your low back quiet.',ham:'Strong hamstrings protect your knees and power your kick. Control the lowering part.',comp:'Big full-body moves. Smooth beats fast, so slow down and own every rep.',carry:'Stand tall and walk steady. This builds the core that holds your body line in the water.',cardio:'Quick but controlled. You should be able to say a short sentence.'};
+const CN={vpull:'Your lats power the underwater pull. Start the pull with your elbows, not your hands.',hpull:'Rows build the mid-back that holds your stroke together. Squeeze your shoulder blades at the end.',vpush:'Keep your ribs down and your shoulders away from your ears. That protects your swimming shoulders.',hpush:'Pressing builds the finish of your stroke. Keep your shoulders away from your ears and your wrists stacked over your elbows.',shoulder:'Keep the weight light and the movement smooth. Shoulder health comes first.',tri:'Triceps finish every stroke. Straighten fully and keep your elbows still.',bi:'Elbows stay pinned and no swinging. Lower for a slow count of three.',squat:'Strong legs mean powerful push-offs. Stay in a pain-free range for your knees.',hinge:'Your hips, glutes and hamstrings drive your kick and your wall push-offs. Keep your back flat.',single:'One-leg strength steadies your kick. Go slow, because balance counts as work.',glute:'Glutes drive your kick. Squeeze at the top and keep your low back quiet.',ham:'Strong hamstrings protect your knees and power your kick. Control the lowering part.',comp:'Big full-body moves. Smooth beats fast, so slow down and own every rep.',carry:'Stand tall and walk steady. This builds the core that holds your body line in the water.',cardio:'Quick but controlled. You should be able to say a short sentence.'};
 ['cae','car','cfl','cro','cla','csw'].forEach(k=>CN[k]='Breathe out as you work and keep your low back comfortable. A tight core means a streamlined body in the water.');
 const PHN=['Focus on smooth, controlled reps and a steady tempo.','Take the full rest on the heavy sets. They need it.','Keep moving. The shorter rests are part of the plan.','Stop every set with about 3 reps left. Easy weeks make the hard weeks work.'];
+const CNX=[
+[/push-up plus/i,'Press the floor away at the top to wake up the muscles that hold your shoulder blades in place.'],
+[/push-?up/i,'Keep your body in one straight line from head to heels and lower with control.'],
+[/rear|Y-T-W|reverse fly/i,'Small and controlled. This trains the back of your shoulders, which balances all that reaching in your stroke.'],
+[/face pull/i,'Pull toward your forehead with your elbows high. It balances the forward reach of swimming.'],
+[/external rotation|internal rotation/i,'Tiny movement, slow tempo, light weight. This is rotator-cuff insurance for your swimming shoulders.'],
+[/shrug/i,'Lift straight up, pause, and lower slowly. Do not roll your shoulders.'],
+[/lateral raise|lateral$/i,'Lead with your elbows and stop around shoulder height. Light weight and no swinging.'],
+[/front raise/i,'Raise to shoulder height with a soft elbow and lower slowly.'],
+[/halo/i,'Keep the circles smooth with your ribs down. It is great for shoulder mobility.'],
+[/jab|punch/i,'Rotate from your trunk and keep your wrist straight. Quick and crisp, but stay controlled.'],
+[/\bfly\b/i,'Soft elbows and a wide arc, like hugging a big tree. Squeeze at the center.'],
+[/standing cable chest press|cable chest press/i,'Stay tall in your split stance and brace your core. Press straight out without letting your ribs flare.'],
+[/floor press/i,'Let your elbow lightly touch the floor, then press up. Keep your wrist over your elbow.'],
+[/bench press|incline dumbbell press|incline.*press|decline.*press|cable incline/i,'Keep your shoulder blades pinched and flat on the bench with your wrists stacked over your elbows.'],
+[/seated .*press|seated .*shoulder/i,'Keep your back supported and your ribs down. Press up without arching.'],
+[/curl to press/i,'Curl smoothly, then press. Keep your ribs down so your low back stays quiet.'],
+[/press|arnold|atlas/i,'Brace your core and keep your ribs down so your low back stays quiet. Do not shrug.'],
+[/pull-up|chin-up/i,'Start from a long hang with your shoulders away from your ears. Control the lowering.'],
+[/pullover|skier|straight-arm/i,'Keep your arms nearly straight and think of sweeping them through the water.'],
+[/pulldown|pull-down/i,'Pull your elbows down toward your ribs. Keep your chest tall and do not lean back.'],
+[/stretch-cord|cord/i,'Copy your stroke slowly. Feel your lats and back do the work, not your neck.'],
+[/chest-supported/i,'Let the bench hold your chest so your back does all the work. Squeeze your shoulder blades.'],
+[/row/i,'Squeeze your shoulder blades together at the end of each pull. Do not shrug.'],
+[/skull|overhead triceps|oh_tri/i,'Keep your upper arms still and lower under control, with your elbows pointing forward.'],
+[/kickback|kick$/i,'Pin your elbow high, straighten fully, and squeeze. No swinging.'],
+[/dip/i,'Keep your shoulders down and stop at a comfortable depth. Do not let your shoulders roll forward.'],
+[/pushdown|extension/i,'Pin your elbows to your sides and straighten fully.'],
+[/close-grip/i,'Keep your elbows tucked and press up smoothly.'],
+[/wrist/i,'Small, slow movements. Strong forearms support your grip and your catch.'],
+[/21s/i,'Seven reps in the bottom half, seven in the top, then seven full. Keep the weight light.'],
+[/curl/i,'Elbows stay pinned and no swinging. Lower for a slow count of three.']
+];
+const cnFor=ex=>{if(ex.pat.some(p=>['vpull','hpull','vpush','hpush','shoulder','tri','bi'].includes(p))){const m=CNX.find(r=>r[0].test(ex.n));if(m)return m[1]}const p=ex.pat.find(p=>CN[p]);return p?CN[p]:''};
 function exCard(w,e,i,block){
   const ex=exById(e.id); if(!ex) return '';
   const wid=w.id; const timed=!!e.secs;
@@ -1545,7 +1579,7 @@ function exCard(w,e,i,block){
   const ALTN={cord_free:1,cord_back:1,dead_bug_db:1,incl_curl:1,atlas:1,plank_drag:1,plank_shift:1,plank_pu:1,ball_deadbug:1,dead_bug:1,bird_dog:1,roller_ll:1,rev_plank_knee:1}; // alternating moves: a rep is both sides
   const aim0=timed?`Aim for ${e.secs} seconds${ex.u?' each side':''} per set.`:`Aim for ${tgt} reps per set${ex.u?' on each side':''}. Your range is ${e.lo}–${e.hi}.`;
   const heavy=!timed&&w.phase===1&&e.lo===5&&e.hi===6&&!(ex.k>0&&0);
-  const cpat=ex.pat.find(p=>CN[p]);const cn=(!timed||block==='abs')&&cpat?'<p class="cnote"><b>Coach:</b> '+CN[cpat]+'</p>':'';
+  const ctxt=cnFor(ex);const cn=(!timed||block==='abs')&&ctxt?'<p class="cnote"><b>Coach:</b> '+ctxt+'</p>':'';
   const phn0=heavy?'<p class="phnote">Strength week: heavier weight, fewer reps. If last time was easy, go up a plate or a few lb.</p>':'';
   const phn=phn0+cn;
   const aim=aim0+(!timed&&ALTN[e.id]?' One rep means both sides: a right and a left.':'');
