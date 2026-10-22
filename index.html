@@ -258,9 +258,11 @@ body:has(#rest){padding-bottom:96px}
 .toast{z-index:50}
 #tmr.ready .tfg{stroke:#E8A317}
 #tmr.ready .tnum{color:#C98A00}
-.setbtns{display:flex;gap:8px;align-items:center;margin:8px 0 2px}.setbtns .sfill{flex:1}.btn.ibtn{width:48px;height:46px;padding:0;display:inline-flex;align-items:center;justify-content:center;border:2px solid #DC2626;color:#DC2626;background:transparent}.btn.ibtn.on{background:#DC2626;color:#fff}.btn.ibtn svg{pointer-events:none}@media (prefers-color-scheme:dark){.btn.ibtn{border-color:#F87171;color:#F87171}.btn.ibtn.on{background:#F87171;color:#2A0A0A}}
+.setbtns{display:flex;gap:8px;align-items:center;margin:8px 0 2px}.setbtns .sfill{flex:1}.btn.ibtn{width:44px;height:38px;padding:0;display:inline-flex;align-items:center;justify-content:center;border:2px solid #DC2626;color:#DC2626;background:transparent}.btn.ibtn.on{background:#DC2626;color:#fff}.btn.ibtn svg{pointer-events:none;width:22px;height:22px}.btn.ibtn[data-act=hide]{border-color:#2563EB;color:#2563EB}.ex-actions .btn.small{padding:7px 14px}
+.pen{width:30px;height:30px;font-size:15px}@media (prefers-color-scheme:dark){.btn.ibtn[data-act=hide]{border-color:#60A5FA;color:#60A5FA}.btn.ibtn{border-color:#F87171;color:#F87171}.btn.ibtn.on{background:#F87171;color:#2A0A0A}}
+.secbtn{cursor:pointer;-webkit-tap-highlight-color:transparent}.chev{color:var(--link);font-size:18px;margin-left:6px}.warm[hidden]{display:none}
 .pen{background:var(--soft);border:1.5px solid var(--line);color:var(--ink);border-radius:8px;width:34px;height:34px;font-size:17px;line-height:1;cursor:pointer;padding:0;vertical-align:middle;margin-left:4px}
-.setbtns .sbl{color:var(--muted);font-size:16px;margin-right:2px}.setbtns .btn.sbtn{width:56px;height:46px;padding:0 0 3px;font-size:32px;font-weight:700;line-height:1;display:inline-flex;align-items:center;justify-content:center}
+.setbtns .sbl{color:var(--muted);font-size:16px;margin-right:2px}.setbtns .btn.sbtn{width:50px;height:38px;padding:0 0 3px;font-size:28px;font-weight:700;line-height:1;display:inline-flex;align-items:center;justify-content:center}
 .setbtns .btn{border-color:var(--buoy);color:var(--buoy);background:rgba(232,71,43,.10);background:color-mix(in srgb,var(--buoy) 12%,var(--surface))}
 .setbtns .btn[data-act=addset]{border-color:var(--ok);color:var(--ok);background:rgba(31,138,91,.12);background:color-mix(in srgb,var(--ok) 14%,var(--surface))}
 #rest{position:fixed;left:12px;right:12px;bottom:14px;z-index:40;max-width:420px;margin:0 auto;background:var(--deep);color:#fff;border-radius:16px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;box-shadow:0 6px 20px rgba(0,0,0,.3)}
@@ -279,7 +281,7 @@ body:has(#rest){padding-bottom:96px}
 .note{font-size:16px}.chip{font-size:15px;padding:3px 12px}.weekbar .sub,.sec .t,.sets .sl,.daycard .dt,.dc-d,.stat span,.datef,.opt span{font-size:16px}
 .tags span{font-size:14px;padding:1px 8px}.last{font-size:16px}.coach{font-size:16px}.cue{font-size:17px}
 .presc{font-size:18px}.presc small{font-size:15px}
-.sets .hd{font-size:14px}.sets input{font-size:18px}
+.sets .hd{font-size:14px}.sets input{font-size:17px;padding:5px 8px}.sets{gap:5px 8px}.ck{width:40px;height:34px}
 .btn.small{font-size:16px;padding:7px 12px}.badge{font-size:13px}table{font-size:15px}.cw{font-size:14px}.ver{font-size:14px}
 #hsheet td{font-size:16px}.swd{font-size:13px}
 .aim{font-size:18px}
@@ -300,7 +302,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 21, 2026, 7:38 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 21, 2026, 7:44 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1493,7 +1495,7 @@ function saveNote(id,txt){
   if(txt.trim()) S.notes[id]={t:txt.trim(),d:fmtShort(new Date())}; else delete S.notes[id];
   save(); const has=!!txt.trim();
   document.querySelectorAll(`[data-nshow="${id}"]`).forEach(el=>{ el.hidden=!has; const sp=el.querySelector('[data-ntxt]'); if(sp) sp.textContent=has?S.notes[id].t:''; const sm=el.querySelector('small'); if(sm) sm.textContent=has?' ('+S.notes[id].d+')':'' });
-  document.querySelectorAll(`[data-act="note"][data-id="${id}"]`).forEach(bt=>bt.textContent=has?'Edit note':'Add note');
+  document.querySelectorAll(`[data-act="note"][data-id="${id}"]`).forEach(bt=>bt.textContent=has?'✎ Note':'+ Note');
 }
 const ENCG=["You showed up. That is the hardest part.", "Strong swimmers are built on days like today.", "Every rep is a deposit in your future self’s account.", "Steady beats perfect. Just keep going.", "You are stronger than you were a month ago.", "Listen to your body, move with purpose, and be proud of every set.", "Small, consistent work wins.", "Today counts, even on a slow day.", "Your lane is waiting, and you are getting ready for it.", "Slow is smooth and smooth is strong.", "You do not have to be fast today. You just have to be here.", "Think of this as pool time you can feel in your stroke.", "One good set at a time.", "Your shoulders, hips and core will thank you in the water.", "Strength now means easier laps later.", "You are building a body that moves well for a long time.", "Some days are for pushing. Some are for showing up. Both count.", "Breathe, brace, and lift with a smile.", "Your future self just gave you a high five.", "Make each rep look like the one you are proudest of.", "Consistency is your superpower.", "The best workout is the one you actually do.", "You are doing something good for yourself today.", "Quality beats quantity. Take your time.", "Today’s effort is tomorrow’s strength.", "Feeling stiff? Warm-ups work miracles. Start easy.", "Be patient with yourself. Progress adds up quietly.", "Strong legs, strong core, strong stroke.", "You have got this. One move at a time.", "Treat the weights like a training partner and listen to them.", "Nobody gets stronger by thinking about it. You are doing it.", "Move well first, then move heavier.", "A little tired is normal. Pain is not, so adjust if you need to.", "You earn every swim yard in this room.", "Keep your breath steady and your focus on the next rep.", "The work you do here shows up in every wall push-off.", "This is you taking care of your body.", "Show the weights who is in charge today.", "Looking after your joints is part of getting stronger.", "Easy does it. Strong comes from patient practice.", "Another workout toward a stronger season.", "Trust the plan and trust yourself.", "You are building habits, not just muscle.", "Smile when it gets hard. That is where the growth is.", "Your effort today matters more than the numbers.", "Take a sip of water and settle in. You have time.", "It is okay to go lighter today. Moving still counts.", "Your swimming will feel the difference.", "Proud of you for making time for this.", "Start where you are and finish a little stronger."];
 const ENCF=["Workout done. Nicely done.", "Another one in the books.", "That is how it is done. Great work.", "Finished and strong. Go get some water.", "Well earned. Enjoy the rest of your day.", "You did the work. Your body will do the rest.", "Done. Take a minute to feel good about that.", "That counts. Stretch it out and refuel.", "Great session. See you next time.", "One more step toward a stronger stroke.", "Solid work today.", "You showed up and you finished. That is a win.", "Nice effort. Recovery starts now.", "Good job sticking with it.", "All done. Be proud of that one.", "Great work. Your muscles are already getting to work.", "Wrapped up and ready for the water.", "You made it count today.", "Strong finish. Rest up.", "That is another deposit in your strength account.", "Done and dusted. Treat yourself to something good.", "Awesome work. Eat well and rest well.", "You did it again. Consistency wins.", "Fantastic effort. Take a breath.", "Workout complete. Go have a good day."];
@@ -1516,6 +1518,7 @@ function milestone(wid){
 const CN={vpull:'Your lats power the underwater pull. Start the pull with your elbows, not your hands.',hpull:'Rows build the mid-back that holds your stroke together. Squeeze your shoulder blades at the end.',vpush:'Keep your ribs down and your shoulders away from your ears. That protects your swimming shoulders.',hpush:'Pressing builds the finish of your stroke. Keep your shoulders away from your ears and your wrists stacked over your elbows.',shoulder:'Keep the weight light and the movement smooth. Shoulder health comes first.',tri:'Triceps finish every stroke. Straighten fully and keep your elbows still.',bi:'Elbows stay pinned and no swinging. Lower for a slow count of three.',squat:'Strong legs mean powerful push-offs. Stay in a pain-free range for your knees.',hinge:'Your hips, glutes and hamstrings drive your kick and your wall push-offs. Keep your back flat.',single:'One-leg strength steadies your kick. Go slow, because balance counts as work.',glute:'Glutes drive your kick. Squeeze at the top and keep your low back quiet.',ham:'Strong hamstrings protect your knees and power your kick. Control the lowering part.',comp:'Big full-body moves. Smooth beats fast, so slow down and own every rep.',carry:'Stand tall and walk steady. This builds the core that holds your body line in the water.',cardio:'Quick but controlled. You should be able to say a short sentence.'};
 ['cae','car','cfl','cro','cla','csw'].forEach(k=>CN[k]='Breathe out as you work and keep your low back comfortable. A tight core means a streamlined body in the water.');
 const PHN=['Focus on smooth, controlled reps and a steady tempo.','Take the full rest on the heavy sets. They need it.','Keep moving. The shorter rests are part of the plan.','Stop every set with about 3 reps left. Easy weeks make the hard weeks work.'];
+const warmOpen=()=>{try{return localStorage.getItem('swimlift.warmclosed')!=='1'}catch(e){return !U.warmClosed}};
 const CAPPED=new Set(['db_bench','incline_db','db_decline','tri_bench']);const dbMax=()=>Math.max(5,+S.dbmax||25);
 const CNX=[
 [/push-up plus/i,'Press the floor away at the top to wake up the muscles that hold your shoulder blades in place.'],
@@ -1611,9 +1614,9 @@ function exCard(w,e,i,block){
     ${kneeHtml(ex,wid)}${toeOn()?toeHtml(ex,wid):''}
     <div class="ex-actions">
       ${timed?`<button class="btn small teal" data-act="timer" data-secs="${e.secs}">Start ${e.secs} sec timer</button>`:''}
-      <button class="btn small" data-act="swap" data-b="${block}" data-i="${i}">Swap for another</button>
-      <button class="btn small" data-act="note" data-id="${e.id}">${(S.notes&&S.notes[e.id]&&S.notes[e.id].t)?'Edit note':'Add note'}</button>
-      <button class="btn small ${skipped?'teal':''}" data-act="skip" data-id="${e.id}">${skipped?'Undo skip':'Skip this one today'}</button>
+      <button class="btn small" data-act="swap" data-b="${block}" data-i="${i}">Swap</button>
+      <button class="btn small" data-act="note" data-id="${e.id}">${(S.notes&&S.notes[e.id]&&S.notes[e.id].t)?'✎ Note':'+ Note'}</button>
+      <button class="btn small ${skipped?'teal':''}" data-act="skip" data-id="${e.id}">${skipped?'Undo skip':'Skip'}</button>
     </div></article>`;
 }
 
@@ -1800,8 +1803,8 @@ function renderDay(){
   ${w.format==='superset'?'<details class="how fmthelp"><summary>What are A1, A2, B1, B2?</summary><ol><li>A1 and A2 are a pair. Do one set of A1, then go straight into one set of A2 with no rest between.</li><li>Now rest for the time shown, then repeat A1, A2 until all the sets are done.</li><li>Then do the same with B1 and B2, and so on.</li></ol><p class="note">The two moves in a pair use different muscles, so one rests while the other works. The rest bar starts after each check, so you can skip it after A1 and only rest after A2.</p></details>':''}
   ${w.format==='circuit'?'<details class="how fmthelp"><summary>What are C1, C2, C3?</summary><ol><li>Do one set of C1, then one set of C2, and keep going in order to the last move.</li><li>That is one round. Rest 60 to 90 seconds.</li><li>Repeat for every round shown.</li></ol></details>':''}
   <p class="dprog" id="dprog" aria-live="polite"></p>
-  <div class="sec"><h3>Warm-up</h3><span class="t">about 5 min</span></div>
-  <div class="warm"><ul>${warm}</ul></div>
+  <div class="sec secbtn" data-act="warmtoggle" role="button" tabindex="0" aria-expanded="${warmOpen()}"><h3>Warm-up</h3><span class="t">about 5 min <span class="chev">${warmOpen()?'▾':'▸'}</span></span></div>
+  <div class="warm" id="warmbox" ${warmOpen()?'':'hidden'}><ul>${warm}</ul></div>
   <div class="sec"><h3>Strength</h3><span class="t">${w.main.length} moves</span></div>
   ${mainHtml}
   <div class="sec"><h3>Core</h3><span class="t">${w.abs.length} moves, every workout</span></div>
@@ -2268,6 +2271,7 @@ document.addEventListener('click',ev=>{
       render(true);
     })
   }
+  else if(a==='warmtoggle'){const box=document.getElementById('warmbox');if(box){const open=box.hidden;box.hidden=!open;try{localStorage.setItem('swimlift.warmclosed',open?'0':'1')}catch(e){U.warmClosed=!open}b.setAttribute('aria-expanded',open);const c=b.querySelector('.chev');if(c)c.textContent=open?'▾':'▸'}}
   else if(a==='more'){const id=b.dataset.id;U.more[id]=!U.more[id];const mb=b.parentElement.querySelector('.morebox');if(mb)mb.hidden=!U.more[id];b.setAttribute('aria-expanded',!!U.more[id]);b.textContent=U.more[id]?'Less':'More'}
   else if(a==='fav'){
     S.fav=S.fav||[]; const id=b.dataset.id;
