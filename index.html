@@ -302,7 +302,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 21, 2026, 9:30 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 22, 2026, 5:00 AM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1523,7 +1523,8 @@ const PHN=['Focus on smooth, controlled reps and a steady tempo.','Take the full
 const warmOpen=()=>{try{return localStorage.getItem('swimlift.warmclosed')!=='1'}catch(e){return !U.warmClosed}};
 const coreOpen=()=>{try{return localStorage.getItem('swimlift.coreclosed')!=='1'}catch(e){return !U.coreClosed}};
 const foldKeys=w=>[...w.main.map((e,i)=>'main|'+i),...w.abs.map((e,i)=>'abs|'+i)];
-const anyOpen=w=>{const f=(S.fold&&S.fold[w.id])||{};return warmOpen()||coreOpen()||foldKeys(w).some(k=>!f[k])};
+const anyOpen=w=>{const f=(S.fold&&S.fold[w.id])||{};return warmOpen()||coreOpen()||(!!U.hasCool&&coolOpen())||foldKeys(w).some(k=>!f[k])};
+const coolOpen=()=>{try{return localStorage.getItem('swimlift.coolclosed')!=='1'}catch(e){return !U.coolClosed}};
 const CAPPED=new Set(['db_bench','incline_db','db_decline','tri_bench']);const dbMax=()=>Math.max(5,+S.dbmax||25);
 const CNX=[
 [/push-up plus/i,'Press the floor away at the top to wake up the muscles that hold your shoulder blades in place.'],
@@ -1781,7 +1782,7 @@ function renderDay(){
     return `<li class="${wd?'complete':''}" data-warm="${x.id}"><div class="wh"><button class="wck ${wd?'on':''}" data-act="warmdone" data-id="${x.id}" aria-pressed="${wd}" aria-label="Mark ${esc(ex.n)} done">✓</button><b>${esc(ex.n)}</b><span>${fmtSecs(wsecs)}</span></div><p class="note">${esc(ex.cue)}</p>
       <details class="how"><summary>How to</summary><ol>${steps.map(t=>`<li>${esc(t)}</li>`).join('')}</ol><a href="${yt}" target="_blank" rel="noopener">Find a demo video</a></details>
       <div class="ex-actions"><button class="btn small teal" data-act="timer" data-secs="${wsecs}" data-warm="${x.id}">Start ${fmtSecs(wsecs)} timer</button><button class="btn small" data-act="wswap" data-kind="warm" data-id="${x.id}">Swap</button></div></li>`}).join('');
-  const coolOn=iso(d)>=COOL_START;
+  const coolOn=iso(d)>=COOL_START; U.hasCool=coolOn;
   const cool=!coolOn?'':coolPair(w).map(orig=>{const id=(w.coolSw&&w.coolSw[orig])||orig; const ex=exById(id); if(!ex) return '';
     const steps=HOWTO[id]||['Move slowly and smoothly.','Stop if anything pinches.'];
     const yt='https://www.youtube.com/results?search_query='+encodeURIComponent(ex.n+' stretch');
@@ -1816,7 +1817,7 @@ function renderDay(){
   ${mainHtml}
   <div class="sec secbtn" data-act="coretoggle" role="button" tabindex="0" aria-expanded="${coreOpen()}"><span class="tri ${coreOpen()?'open':''}"></span><h3>Core</h3><span class="t">${w.abs.length} moves, every workout</span></div>
   <div id="corebox" ${coreOpen()?'':'hidden'}>${w.abs.map((e,i)=>exCard(w,e,i,'abs')).join('')}</div>
-  ${coolOn?`<div class="sec"><h3>Cool-down</h3><span class="t">optional, about 2 min</span></div><div class="warm"><ul>${cool}</ul></div>`:''}
+  ${coolOn?`<div class="sec secbtn" data-act="cooltoggle" role="button" tabindex="0" aria-expanded="${coolOpen()}"><span class="tri ${coolOpen()?'open':''}"></span><h3>Cool-down</h3><span class="t">optional, about 2 min</span></div><div class="warm" id="coolbox" ${coolOpen()?'':'hidden'}><ul>${cool}</ul></div>`:''}
   <div class="foot">
     ${done?'<p class="cnote" style="flex-basis:100%">'+esc((S.sessions[w.id]&&S.sessions[w.id].fin)||encFin(w.id))+'</p><span class="btn fin-badge" role="status">✓ Finished</span><button class="btn" data-act="editwo">Edit workout</button>':'<button class="btn fin-o" data-act="finish">Finish workout</button>'}
     <a class="btn" href="#/week/${U.wk}">Back to week</a>
@@ -2296,9 +2297,10 @@ document.addEventListener('click',ev=>{
   }
   else if(a==='foldall'){const w=getWorkout(U.wk,U.day);const close=anyOpen(w);S.fold=S.fold||{};
     if(close){const f={};foldKeys(w).forEach(k=>f[k]=1);S.fold[w.id]=f}else delete S.fold[w.id];
-    try{localStorage.setItem('swimlift.warmclosed',close?'1':'0');localStorage.setItem('swimlift.coreclosed',close?'1':'0')}catch(e){U.warmClosed=close;U.coreClosed=close}
+    try{localStorage.setItem('swimlift.warmclosed',close?'1':'0');localStorage.setItem('swimlift.coreclosed',close?'1':'0');localStorage.setItem('swimlift.coolclosed',close?'1':'0')}catch(e){U.warmClosed=close;U.coreClosed=close}
     save();render(true)}
   else if(a==='fold'){const w=getWorkout(U.wk,U.day);S.fold=S.fold||{};const f=S.fold[w.id]=S.fold[w.id]||{};const k=b.dataset.key;if(f[k])delete f[k];else f[k]=1;if(!Object.keys(f).length)delete S.fold[w.id];save();const art=b.closest('article.ex');const body=art&&art.querySelector('.exbody');const open=!f[k];if(body)body.hidden=!open;if(art)art.classList.toggle('folded',!open);b.classList.toggle('open',open);b.setAttribute('aria-expanded',open)}
+  else if(a==='cooltoggle'){const box=document.getElementById('coolbox');if(box){const open=box.hidden;box.hidden=!open;try{localStorage.setItem('swimlift.coolclosed',open?'0':'1')}catch(e){U.coolClosed=!open}b.setAttribute('aria-expanded',open);const c=b.querySelector('.tri');if(c)c.classList.toggle('open',open)}}
   else if(a==='coretoggle'){const box=document.getElementById('corebox');if(box){const open=box.hidden;box.hidden=!open;try{localStorage.setItem('swimlift.coreclosed',open?'0':'1')}catch(e){U.coreClosed=!open}b.setAttribute('aria-expanded',open);const c=b.querySelector('.tri');if(c)c.classList.toggle('open',open)}}
   else if(a==='warmtoggle'){const box=document.getElementById('warmbox');if(box){const open=box.hidden;box.hidden=!open;try{localStorage.setItem('swimlift.warmclosed',open?'0':'1')}catch(e){U.warmClosed=!open}b.setAttribute('aria-expanded',open);const c=b.querySelector('.tri');if(c)c.classList.toggle('open',open)}}
   else if(a==='more'){const id=b.dataset.id;U.more[id]=!U.more[id];const mb=b.parentElement.querySelector('.morebox');if(mb)mb.hidden=!U.more[id];b.setAttribute('aria-expanded',!!U.more[id]);b.textContent=U.more[id]?'Less':'More'}
