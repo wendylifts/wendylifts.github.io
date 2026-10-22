@@ -302,7 +302,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 21, 2026, 7:56 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 21, 2026, 9:05 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -414,6 +414,7 @@ cs_row|Chest-supported incline row|hpull|db,bench|3|10-12|60|0|l|Lie face down o
 trx_row|TRX row|hpull|trx|3|10-15|60|0|b|Walk your feet forward to make it harder. Body stays in one line.
 bb_row|Barbell bent-over row|hpull|bb|3|6-10|90|0|l|Hinge back, flat back. Pull the bar to your belly button.
 lm_rot|Landmine rotations|cro|lm,bb|2|10-12|30|0|l u|Arms long, rotate through your ribs and pivot your feet. Hips stay steady.
+lm_russian|Landmine Russian twist|cro|lm,bb,mat|2|10-12|30|0|l|Sit tall, lean back slightly and turn your ribs. Let the bar end swing with control.
 lm_press|Standing landmine press|vpush|lm,bb|3|8-12|60|0|l u|Hold the end at your shoulder, press up and forward. Ribs down.
 lm_row|Landmine T-bar row|hpull|lm,bb|3|8-12|75|0|l|Hinge with a flat back, row the end to your chest, squeeze your shoulder blades.
 lm_row1|Single-arm landmine row|hpull|lm,bb|3|8-12|60|0|l u|Hinge, one hand on your thigh. Row the end to your hip.
@@ -452,7 +453,7 @@ cable_hammer|Cable rope hammer curl|bi|cable,crope|3|10-15|45|0|l|Thumbs up, elb
 tri_push|Cable triceps pushdown|tri|cable|3|10-15|45|0|l|Elbows pinned to your sides. Full lockout.
 oh_tri|Cable overhead triceps extension|tri|cable|3|10-15|45|0|l|Face away from the stack. Elbows point forward.
 band_tri|Band triceps pushdown|tri|band|3|12-15|45|0|-|Anchor the cord high on the rack.
-cable_squat|Cable squat|squat|cable|3|10-15|75|0|l|Your go-to. Hold the handle at your chest and sit back to a pain-free depth.
+cable_squat|Cable squat|squat|cable|3|10-15|75|1|l|Your go-to. Hold the handle at your chest and sit back to a pain-free depth.
 goblet_box|Goblet squat to bench|squat|kb/db,bench|3|8-12|75|1|l|Sit back until you lightly touch the bench, then stand tall.
 trx_squat|TRX-assisted squat|squat|trx|3|10-15|60|1|b|Hold the straps for support and sit into a comfortable depth.
 rdl_db|Dumbbell Romanian deadlift|hinge|db|3|8-12|75|0|l|Soft knees, hips back, flat back. Feel the hamstrings load.
@@ -474,7 +475,7 @@ ball_curl|Stability-ball hamstring curl|ham|ball|3|8-12|60|0|b|Hips stay high th
 trx_curl|TRX hamstring curl|ham|trx|3|8-12|60|0|b|Heels in the straps, hips up, curl in.
 calf|Single-leg calf raise on the step|calf|step|3|12-15|45|0|l u|Pause at the top and lower slowly. Strong ankles make a strong kick.
 flutter|Ankle-weight flutter kicks|calf|ankle,mat|3|t40|45|0|-|Lie face down. Small fast kicks from the hips.
-cable_sq_press|Cable squat to overhead press|comp|cable|3|8-12|75|0|l f=legs,push,full|Squat to a comfortable depth, then press as you stand.
+cable_sq_press|Cable squat to overhead press|comp|cable|3|8-12|75|1|l f=legs,push,full|Squat to a comfortable depth, then press as you stand.
 goblet_press|Goblet squat to overhead press|comp|kb/db|3|8-10|75|1|l f=push,full,legs|Shallow squat, drive up and press the weight overhead.
 thruster|Dumbbell thruster from the bench|comp|db,bench|3|8-12|75|1|l f=push,full,legs|Sit to stand with weights at your shoulders, press at the top.
 rdl_row|Romanian deadlift to row|comp|db|3|8-12|75|0|l f=pull,legs,full|Hinge, row both dumbbells, lower, then stand.
@@ -767,6 +768,7 @@ cs_row|Set the bench to a low incline and lie face down with a dumbbell in each 
 trx_row|Hold the TRX handles and lean back with your arms straight and your body in a plank line.;Pull your chest to your hands while squeezing your shoulder blades.;Lower slowly. Walk your feet closer to make it easier.
 bb_row|Stand with feet hip-width, hinge forward with a flat back, and hold the bar just outside your knees.;Row the bar to your belly button with your elbows close to your body.;Lower slowly. Keep your hips and torso still.
 lm_rot|Set one end of the barbell in the landmine, stand facing it, and hold the other end with both hands at chest height.;Keep your arms long and rotate your trunk to one side, letting your feet pivot.;Rotate back through the middle to the other side. Move smoothly with a steady core.
+lm_russian|Sit on the mat with your knees bent and your heels on the floor, holding the end of the bar at your chest.;Lean back a little with a tall chest, then swing the bar end to one side, turning through your ribs.;Swing it to the other side. One rep is a swing to the right and a swing to the left.
 lm_press|Stand facing the landmine and hold the end of the bar at your shoulder with one hand.;Press it up and forward until your arm is straight, ribs down.;Lower under control. Finish all reps, then switch sides.
 lm_row|Straddle the bar and hinge forward with a flat back, holding the end of the bar or a handle with both hands.;Row the end up toward your chest, squeezing your shoulder blades together.;Lower slowly without rounding your back.
 lm_row1|Stand beside the bar, hinge forward with a flat back, and rest one hand on your thigh. Hold the end of the bar with the other hand.;Row it toward your hip, keeping your elbow close.;Lower slowly. Finish all reps, then switch sides.
@@ -1060,7 +1062,7 @@ const exById = id => lib().find(x=>x.id===id);
 const TOE=new Set('cable_calf calf db_calf sl_calf slider_pike slider_mc body_saw mtn_climb bench_mc'.split(' '));
 const TOEW=new Set(['reneg','ball_jack','ball_pike','trx_pike','trx_tuck','trx_oblique','step_taps']); // she can try these: no weekly limit, but the Fine/Twinge/Sore buttons show
 const isToe=ex=>!!ex&&TOE.has(ex.id);
-const toeWatch=ex=>!!ex&&(TOE.has(ex.id)||TOEW.has(ex.id));
+const toeWatch=ex=>!!ex&&(TOE.has(ex.id)||TOEW.has(ex.id)||/push-?up|inchworm/i.test(ex.n||'')||ex.id==='plank_drag'||ex.id==='plank_shift');
 const toeOn=()=>S.toeCare!==false;
 function toeHist(id){
   const ok=(S.toeOk&&S.toeOk[id])||'';
@@ -1463,7 +1465,7 @@ function repText(e){return e.secs?e.secs+' sec':(e.lo===e.hi?e.lo:e.lo+'–'+e.h
 function presc(e){return `${e.sets} × ${repText(e)}`}
 
 function targetReps(e,sg){
-  if(e.secs) return e.secs;
+  if(e.secs) return (sg&&sg.r>0)?Math.min(sg.r,300):e.secs;
   if(sg&&sg.r) return Math.min(e.hi,Math.max(e.lo,sg.r));
   return Math.round((e.lo+e.hi)/2);
 }
@@ -1588,8 +1590,8 @@ function exCard(w,e,i,block){
   const steps=HOWTO[e.id]||['Use controlled reps in a pain-free range.','Stop a set if your form breaks down.'];
   const yt='https://www.youtube.com/results?search_query='+encodeURIComponent(ex.n+' exercise form');
   const musc=muscOf(ex);
-  const ALTN={cord_free:1,cord_back:1,dead_bug_db:1,incl_curl:1,atlas:1,plank_drag:1,plank_shift:1,plank_pu:1,ball_deadbug:1,dead_bug:1,bird_dog:1,roller_ll:1,rev_plank_knee:1}; // alternating moves: a rep is both sides
-  const aim0=timed?`Aim for ${e.secs} seconds${ex.u?' each side':''} per set.`:`Aim for ${tgt} reps per set${ex.u?' on each side':''}. Your range is ${e.lo}–${e.hi}.`;
+  const ALTN={lm_russian:1,cord_free:1,cord_back:1,dead_bug_db:1,incl_curl:1,atlas:1,plank_drag:1,plank_shift:1,plank_pu:1,ball_deadbug:1,dead_bug:1,bird_dog:1,roller_ll:1,rev_plank_knee:1}; // alternating moves: a rep is both sides
+  const aim0=timed?`Aim for ${tgt} seconds${ex.u?' each side':''} per set.`:`Aim for ${tgt} reps per set${ex.u?' on each side':''}. Your range is ${e.lo}–${e.hi}.`;
   const heavy=!timed&&w.phase===1&&e.lo===5&&e.hi===6&&!(ex.k>0&&0);
   const ctxt=cnFor(ex);const cn=(!timed||block==='abs')&&ctxt?'<p class="cnote"><b>Coach:</b> '+ctxt+'</p>':'';
   const phn0=heavy?'<p class="phnote">Strength week: heavier weight, fewer reps. If last time was easy, go up a plate or a few lb.</p>':'';
@@ -1612,7 +1614,7 @@ function exCard(w,e,i,block){
     <div class="setbtns"><span class="sbl">Sets</span><button class="btn small sbtn" data-act="addset" data-b="${block}" data-i="${i}" aria-label="Add a set">+</button>${e.sets>1?`<button class="btn small sbtn" data-act="rmset" data-b="${block}" data-i="${i}" aria-label="Remove a set">−</button>`:''}<span class="sfill"></span><button class="btn small ibtn ${(S.fav||[]).includes(e.id)?'on':''}" data-act="fav" data-id="${e.id}" aria-pressed="${(S.fav||[]).includes(e.id)}" aria-label="${(S.fav||[]).includes(e.id)?'Remove from favorites':'Favorite this move'}">${(S.fav||[]).includes(e.id)?'<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 5 6.4 5c2 0 3.6 1.1 4.6 2.7h2C14 6.1 15.600 5 17.600 5 21 5 23.100 8.400 21.600 11.800 19.500 16.400 12 21 12 21z" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>':'<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 5 6.4 5c2 0 3.6 1.1 4.6 2.7h2C14 6.1 15.600 5 17.600 5 21 5 23.100 8.400 21.600 11.800 19.500 16.400 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>'}</button><button class="btn small ibtn" data-act="hide" data-b="${block}" data-i="${i}" aria-label="Never show this move"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.4"/><line x1="5.6" y1="5.6" x2="18.4" y2="18.4" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button></div>
     ${kneeHtml(ex,wid)}${toeOn()?toeHtml(ex,wid):''}
     <div class="ex-actions">
-      ${timed?`<button class="btn small teal" data-act="timer" data-secs="${e.secs}">Start ${e.secs} sec timer</button>`:''}
+      ${timed?`<button class="btn small teal" data-act="timer" data-secs="${tgt}">Start ${tgt} sec timer</button>`:''}
       <button class="btn small" data-act="swap" data-b="${block}" data-i="${i}">Swap</button>
       <button class="btn small" data-act="note" data-id="${e.id}">${(S.notes&&S.notes[e.id]&&S.notes[e.id].t)?'✎ Note':'+ Note'}</button>
       <button class="btn small ${skipped?'teal':''}" data-act="skip" data-id="${e.id}">${skipped?'Undo skip':'Skip'}</button>
@@ -2418,11 +2420,12 @@ function tmPlan(){ // lay out ALL of the timer's beeps ahead of time (ready tick
 }
 function tmLive(){ return !(TM&&TM.pre&&(TM.trk?!(TRK&&TRK.failed):(audioCtx&&audioCtx.state==='running'))) } // true = nothing is pre-arranged, so beep live
 function closeTimer(){
-  tmCancel(); if(!TM) return; if(TM.markFn){ const f=TM.markFn; TM.markFn=null; setTimeout(f,0) } clearInterval(TM.t); try{TM.wl&&TM.wl.release()}catch(e){}
+  tmCancel(); if(!TM) return; if(TM.logFn&&TM.phase==='run'&&!TM.done){ const lf=TM.logFn; TM.logFn=null; const left=TM.paused?TM.left:Math.max(0,(TM.end-Date.now())/1000); const el2=Math.round(TM.total-left); if(el2>=3) lf(el2) } if(TM.markFn){ const f=TM.markFn; TM.markFn=null; setTimeout(f,0) } clearInterval(TM.t); try{TM.wl&&TM.wl.release()}catch(e){}
   const el=document.getElementById('tmr'); if(el) el.remove(); TM=null;
 }
 function runTimer(btn){
   if(TM&&TM.markFn){ const f=TM.markFn; TM.markFn=null; NOREST=Date.now()+700; f() } // starting again/next: still tick the finished set, but no rest
+  if(TM&&TM.logFn&&TM.phase==='run'&&!TM.done) NOREST=Date.now()+700;
   closeTimer(); stopRest();
   unlockAudio();
   const total=+btn.dataset.secs||30, READY=5;
@@ -2436,6 +2439,7 @@ function runTimer(btn){
     <div class="trow"><button class="btn teal" id="tpause">Pause</button><button class="btn" id="tclose">Close</button></div></div>`;
   document.body.appendChild(el);
   TM={phase:'ready',end:Date.now()+READY*1000,left:READY,last:READY+1,total,paused:false,dinged:false,done:false,t:null,wl:null,pre:false,trk:false,nodes:[]};
+  if(!btn.dataset.warm&&!btn.dataset.cool) TM.logFn=sec=>{ const art=(cardKey&&document.querySelector(`article.ex[data-card="${cardKey}"]`))||btn.closest('article.ex'); const ck=art&&[...art.querySelectorAll('button.ck')].find(x=>!x.classList.contains('on')); if(!ck) return; const ri=document.querySelector(`input[data-set="${ck.dataset.set}"]`); if(ri) ri.value=String(sec); ck.click(); toast('Logged '+sec+' sec') };
   try{ if(navigator.wakeLock) navigator.wakeLock.request('screen').then(w=>{TM?TM.wl=w:w.release()}).catch(()=>{}) }catch(e){}
   const num=el.querySelector('.tnum'), fg=el.querySelector('.tfg'), sub=el.querySelector('.tsub'), pb=el.querySelector('#tpause');
   const paint=(left,max)=>{ num.textContent=left; fg.style.strokeDashoffset=String(C2*(1-left/max)); el.classList.toggle('low',TM.phase==='run'&&left<=10&&left>0) };
