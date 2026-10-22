@@ -260,7 +260,7 @@ body:has(#rest){padding-bottom:96px}
 #tmr.ready .tnum{color:#C98A00}
 .setbtns{display:flex;gap:8px;align-items:center;margin:8px 0 2px}.setbtns .sfill{flex:1}.btn.ibtn{width:44px;height:38px;padding:0;display:inline-flex;align-items:center;justify-content:center;border:2px solid #DC2626;color:#DC2626;background:transparent}.btn.ibtn.on{background:#DC2626;color:#fff}.btn.ibtn svg{pointer-events:none;width:22px;height:22px}.btn.ibtn[data-act=hide]{border-color:#2563EB;color:#2563EB}.ex-actions .btn.small{padding:7px 14px}
 .pen{width:30px;height:30px;font-size:15px}@media (prefers-color-scheme:dark){.btn.ibtn[data-act=hide]{border-color:#60A5FA;color:#60A5FA}.btn.ibtn{border-color:#F87171;color:#F87171}.btn.ibtn.on{background:#F87171;color:#2A0A0A}}
-.secbtn{cursor:pointer;-webkit-tap-highlight-color:transparent}.chev{color:var(--link);font-size:18px;margin-left:6px}.warm[hidden]{display:none}
+.secbtn{cursor:pointer;-webkit-tap-highlight-color:transparent;align-items:center;justify-content:flex-start}.secbtn h3{flex:1}.allrow{display:flex;align-items:center;gap:6px;margin:14px 0 0;padding:2px 0}.allrow b{font-family:var(--head);font-size:22px;flex:1}.allrow .t{color:var(--muted);font-size:15px}.secbtn .tri{margin-right:2px}.tri{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;flex:none;border:0;background:transparent;color:var(--link);padding:0;cursor:pointer;transition:transform .15s;-webkit-tap-highlight-color:transparent}.tri::before{content:"";border-left:13px solid currentColor;border-top:8px solid transparent;border-bottom:8px solid transparent;margin-left:3px}.tri.open{transform:rotate(90deg)}.ex-head .nm{align-items:center}.ex-head .nm .tri{margin-left:-8px}.exbody[hidden],#corebox[hidden]{display:none}.ex.folded.complete h3::after{content:" ✓";color:var(--ok);font-weight:800}.chev{color:var(--link);font-size:18px;margin-left:6px}.warm[hidden]{display:none}
 .pen{background:var(--soft);border:1.5px solid var(--line);color:var(--ink);border-radius:8px;width:34px;height:34px;font-size:17px;line-height:1;cursor:pointer;padding:0;vertical-align:middle;margin-left:4px}
 .setbtns .sbl{color:var(--muted);font-size:16px;margin-right:2px}.setbtns .btn.sbtn{width:50px;height:38px;padding:0 0 3px;font-size:28px;font-weight:700;line-height:1;display:inline-flex;align-items:center;justify-content:center}
 .setbtns .btn{border-color:var(--buoy);color:var(--buoy);background:rgba(232,71,43,.10);background:color-mix(in srgb,var(--buoy) 12%,var(--surface))}
@@ -302,7 +302,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 21, 2026, 9:05 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 21, 2026, 9:30 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -403,7 +403,7 @@ w_run|Run in place|wcard|none|1|t60|0|0|-|Light and quick on the balls of your f
 w_step|Fast taps on the step|wcard|step|1|t60|0|0|-|Alternate feet, no jumping.
 lat_pd|Cable lat pulldown|vpull|cable|3|8-12|75|0|l|Pull your elbows down toward your ribs. Don't shrug.
 lat_pd_close|Close-grip triangle pulldown|vpull|cable,triangle|3|8-12|75|0|l|Chest tall. Pull your elbows down by your ribs.
-lat_pd_sa|Single-arm cable pulldown|vpull|cable|3|10-12|60|0|l u|Reach tall at the top, then drive the elbow to your hip.
+lat_pd_sa|Single-arm lat pulldown|vpull|cable|3|10-12|60|0|l u|Reach tall at the top, then drive the elbow to your hip.
 assist_pu|Assisted pull-up|vpull|pullup|3|4-8|90|0|b|Use the assist band. Chin over the bar, slow on the way down.
 chin_neg|Slow-lowering chin-up|vpull|pullup|3|3-5|90|0|b|Step up to the top, then take 3 to 4 seconds to lower.
 straight_arm|Straight-arm cable pulldown|vpull|cable|3|10-15|60|0|l|Arms stay long. This is your freestyle catch.
@@ -1187,9 +1187,9 @@ function cands(all,ok,used){ // best choices first: not already used this week a
 
 function build(rng,focus,phi,hist,seedTag){
   const all=lib().filter(available);
-  const recent={}; hist.slice(-6).forEach(w=>[...w.main,...w.abs].forEach(e=>recent[e.id]=(recent[e.id]||0)+1));
+  const recent={}; hist.slice(-6).forEach(w=>[...w.main,...w.abs,...(w.warm||[])].forEach(e=>recent[e.id]=(recent[e.id]||0)+1));
   const prevSame=[...hist].reverse().find(w=>w.focus===focus);
-  const prevIds=new Set(prevSame?[...prevSame.main,...prevSame.abs].map(e=>e.id):[]);
+  const prevIds=new Set(prevSame?[...prevSame.main,...prevSame.abs,...(prevSame.warm||[])].map(e=>e.id):[]);
   const used=new Set();
   const wf=x=>(1/(1+(recent[x.id]||0)*0.8))*(prevIds.has(x.id)?0.3:1)*(S.fav&&S.fav.includes(x.id)?2.5:(x.r?0.25:1));
   const pick=(pats,f)=>{
@@ -1521,6 +1521,9 @@ const CN={vpull:'Your lats power the underwater pull. Start the pull with your e
 ['cae','car','cfl','cro','cla','csw'].forEach(k=>CN[k]='Breathe out as you work and keep your low back comfortable. A tight core means a streamlined body in the water.');
 const PHN=['Focus on smooth, controlled reps and a steady tempo.','Take the full rest on the heavy sets. They need it.','Keep moving. The shorter rests are part of the plan.','Stop every set with about 3 reps left. Easy weeks make the hard weeks work.'];
 const warmOpen=()=>{try{return localStorage.getItem('swimlift.warmclosed')!=='1'}catch(e){return !U.warmClosed}};
+const coreOpen=()=>{try{return localStorage.getItem('swimlift.coreclosed')!=='1'}catch(e){return !U.coreClosed}};
+const foldKeys=w=>[...w.main.map((e,i)=>'main|'+i),...w.abs.map((e,i)=>'abs|'+i)];
+const anyOpen=w=>{const f=(S.fold&&S.fold[w.id])||{};return warmOpen()||coreOpen()||foldKeys(w).some(k=>!f[k])};
 const CAPPED=new Set(['db_bench','incline_db','db_decline','tri_bench']);const dbMax=()=>Math.max(5,+S.dbmax||25);
 const CNX=[
 [/push-up plus/i,'Press the floor away at the top to wake up the muscles that hold your shoulder blades in place.'],
@@ -1598,9 +1601,11 @@ function exCard(w,e,i,block){
   const phn=phn0+cn;
   const aim=aim0+(!timed&&ALTN[e.id]?' One rep means both sides: a right and a left.':'');
   const skipped=!!(s&&s.skip&&s.skip[e.id]);
-  return `<article class="ex${skipped?' skipped':''}" data-card="${block}|${i}" data-needw="${ex.l?1:0}">
-    <div class="ex-head"><div class="nm">${grp}<h3>${esc(ex.n)}</h3></div>
+  const folded=!!(S.fold&&S.fold[wid]&&S.fold[wid][block+'|'+i]);
+  return `<article class="ex${skipped?' skipped':''}${folded?' folded':''}" data-card="${block}|${i}" data-needw="${ex.l?1:0}">
+    <div class="ex-head"><div class="nm"><button class="tri ${folded?'':'open'}" data-act="fold" data-key="${block}|${i}" aria-expanded="${!folded}" aria-label="Show or hide this exercise"></button>${grp}<h3>${esc(ex.n)}</h3></div>
       <div class="presc">${presc(e)}<small>rest ${e.grp&&w.format==='circuit'?'after the round':e.rest+' sec'}</small></div></div>
+    <div class="exbody" ${folded?'hidden':''}>
     <div class="tags">${musc?`<span>Works: ${esc(musc)}</span>`:''}${tags.map(t=>`<span>${esc(t)}</span>`).join('')}${ex.k>0?'<span>Stop at pain-free depth</span>':''}</div>
     <p class="cue">${esc(ex.cue)}</p>
     <details class="how"><summary>How to</summary><ol>${steps.map(t=>`<li>${esc(t)}</li>`).join('')}</ol>${isCable(ex)&&showW?'<p class="plnote"><b>Cable weights:</b> log the number of plates on the stack. One plate is about 7 lb.</p>':''}
@@ -1618,7 +1623,7 @@ function exCard(w,e,i,block){
       <button class="btn small" data-act="swap" data-b="${block}" data-i="${i}">Swap</button>
       <button class="btn small" data-act="note" data-id="${e.id}">${(S.notes&&S.notes[e.id]&&S.notes[e.id].t)?'✎ Note':'+ Note'}</button>
       <button class="btn small ${skipped?'teal':''}" data-act="skip" data-id="${e.id}">${skipped?'Undo skip':'Skip'}</button>
-    </div>${cn}</article>`;
+    </div>${cn}</div></article>`;
 }
 
 function weekBalance(wk){
@@ -1804,12 +1809,13 @@ function renderDay(){
   ${w.format==='superset'?'<details class="how fmthelp"><summary>What are A1, A2, B1, B2?</summary><ol><li>A1 and A2 are a pair. Do one set of A1, then go straight into one set of A2 with no rest between.</li><li>Now rest for the time shown, then repeat A1, A2 until all the sets are done.</li><li>Then do the same with B1 and B2, and so on.</li></ol><p class="note">The two moves in a pair use different muscles, so one rests while the other works. The rest bar starts after each check, so you can skip it after A1 and only rest after A2.</p></details>':''}
   ${w.format==='circuit'?'<details class="how fmthelp"><summary>What are C1, C2, C3?</summary><ol><li>Do one set of C1, then one set of C2, and keep going in order to the last move.</li><li>That is one round. Rest 60 to 90 seconds.</li><li>Repeat for every round shown.</li></ol></details>':''}
   <p class="dprog" id="dprog" aria-live="polite"></p>
-  <div class="sec secbtn" data-act="warmtoggle" role="button" tabindex="0" aria-expanded="${warmOpen()}"><h3>Warm-up</h3><span class="t">about 5 min <span class="chev">${warmOpen()?'▾':'▸'}</span></span></div>
+  <div class="allrow secbtn" data-act="foldall" role="button" tabindex="0" aria-expanded="${anyOpen(w)}"><span class="tri ${anyOpen(w)?'open':''}"></span><b>All</b><span class="t">${anyOpen(w)?'close everything':'open everything'}</span></div>
+  <div class="sec secbtn" data-act="warmtoggle" role="button" tabindex="0" aria-expanded="${warmOpen()}"><span class="tri ${warmOpen()?'open':''}"></span><h3>Warm-up</h3><span class="t">about 5 min</span></div>
   <div class="warm" id="warmbox" ${warmOpen()?'':'hidden'}><ul>${warm}</ul></div>
   <div class="sec"><h3>Strength</h3><span class="t">${w.main.length} moves</span></div>
   ${mainHtml}
-  <div class="sec"><h3>Core</h3><span class="t">${w.abs.length} moves, every workout</span></div>
-  ${w.abs.map((e,i)=>exCard(w,e,i,'abs')).join('')}
+  <div class="sec secbtn" data-act="coretoggle" role="button" tabindex="0" aria-expanded="${coreOpen()}"><span class="tri ${coreOpen()?'open':''}"></span><h3>Core</h3><span class="t">${w.abs.length} moves, every workout</span></div>
+  <div id="corebox" ${coreOpen()?'':'hidden'}>${w.abs.map((e,i)=>exCard(w,e,i,'abs')).join('')}</div>
   ${coolOn?`<div class="sec"><h3>Cool-down</h3><span class="t">optional, about 2 min</span></div><div class="warm"><ul>${cool}</ul></div>`:''}
   <div class="foot">
     ${done?'<p class="cnote" style="flex-basis:100%">'+esc((S.sessions[w.id]&&S.sessions[w.id].fin)||encFin(w.id))+'</p><span class="btn fin-badge" role="status">✓ Finished</span><button class="btn" data-act="editwo">Edit workout</button>':'<button class="btn fin-o" data-act="finish">Finish workout</button>'}
@@ -1974,6 +1980,7 @@ function renderSettings(){
     <label class="chk" style="margin:4px 0"><input type="checkbox" id="haptics" ${S.haptics!==false?'checked':''}>Haptic taps (when your phone allows it)</label>
     <label class="chk" style="margin:4px 0"><input type="checkbox" id="toecare" ${toeOn()?'checked':''}>Go easy on my big toe: no more than one toe-loading move a week (weighted calf raises, mountain climbers, slider moves, toe taps)</label>
     <label class="chk" style="margin:4px 0"><input type="checkbox" id="autorest" ${S.autoRest!==false?'checked':''}>Start a rest timer when I tap a set's ✓</label>
+    <label class="chk" style="margin:4px 0"><input type="checkbox" id="autofold" ${S.autoFold!==false?'checked':''}>Collapse an exercise when I finish its last set</label>
     <div class="row"><label for="swgoal">Yearly swim goal (miles)</label><input id="swgoal" type="number" min="0" max="5000" step="10" inputmode="numeric" value="${S.swimGoal===undefined?500:S.swimGoal}" style="width:90px"></div>
     <p class="note" style="margin:0 0 6px">Starting in 2027, Progress shows whether you are ahead of or behind the pace for this goal. Set 0 to hide it.</p>
     <div class="row"><label for="dbmax">Heaviest dumbbell for lying presses (lb)</label><input id="dbmax" type="number" min="5" max="100" step="2.5" value="${dbMax()}" style="width:90px"></div>
@@ -2050,6 +2057,17 @@ function focusSet(b){ // put the cursor in the next weight box (if empty) or rep
   const inp=(wi&&wi.value.trim()==='')?wi:ri; if(!inp) return;
   try{ inp.focus({preventScroll:true}); inp.scrollIntoView({block:'center',behavior:'smooth'}) }catch(e){}
 }
+function autoFoldCard(art,after){
+  if(S.autoFold===false||!art||!art.isConnected) return;
+  setTimeout(()=>{
+    if(!art.isConnected||!art.classList.contains('complete')||art.classList.contains('skipped')) return;
+    const w=getWorkout(U.wk,U.day); const k=art.dataset.card; S.fold=S.fold||{}; const f=S.fold[w.id]=S.fold[w.id]||{};
+    if(!f[k]){ f[k]=1; save() }
+    const body=art.querySelector('.exbody'); if(body) body.hidden=true; art.classList.add('folded');
+    const t=art.querySelector('.tri'); if(t){t.classList.remove('open');t.setAttribute('aria-expanded','false')}
+    after&&after();
+  },750);
+}
 function afterSet(btn){
   const [block,i,n,k]=btn.dataset.set.split('|'); const art=btn.closest('article.ex'); if(!art) return;
   const w=getWorkout(U.wk,U.day); const list=block==='abs'?w.abs:w.main; const e=list[+i]; const ex=e&&exById(e.id);
@@ -2066,6 +2084,7 @@ function afterSet(btn){
     if(!target){ const f=document.querySelector('[data-act="finish"]'); if(f) f.scrollIntoView({behavior:'smooth',block:'center'}); return }
     if(rest&&S.autoRest!==false){ const lastE=w.main[idxs[idxs.length-1]]; setTimeout(()=>startRest((lastE&&lastE.rest)||e.rest||60),250) }
     if(target.matches&&target.matches('button.ck')) focusSet(target); else target.scrollIntoView({behavior:'smooth',block:'center'});
+    if(art.classList.contains('complete')) autoFoldCard(art,()=>{ if(target.isConnected&&target.matches&&target.matches('button.ck')) focusSet(target); else if(target.isConnected) target.scrollIntoView({behavior:'smooth',block:'center'}) });
     return;
   }
   let target=[...art.querySelectorAll('button.ck')].find(x=>!x.classList.contains('on'));
@@ -2073,6 +2092,9 @@ function afterSet(btn){
   if(!target){ const arts=[...document.querySelectorAll('article.ex')]; const nx=arts[arts.indexOf(art)+1];
     if(nx) target=nx.querySelector('button.ck:not(.on)')||nx; else atEnd=true }
   if(S.autoRest!==false&&ex&&(!ex.u||k==='lr')&&!atEnd) setTimeout(()=>startRest(e.rest||60),250);
+  const willFold=S.autoFold!==false&&art.classList.contains('complete')&&!art.classList.contains('skipped');
+  const goNext=()=>{ const cur=document.querySelector('article.ex.current'); if(atEnd||!cur){ const f=document.querySelector('[data-act="finish"]'); if(f) f.scrollIntoView({behavior:'smooth',block:'center'}); return } cur.scrollIntoView({behavior:'smooth',block:'start'}) };
+  if(willFold){ autoFoldCard(art,goNext); return }
   if(atEnd){ const f=document.querySelector('[data-act="finish"]'); if(f) f.scrollIntoView({behavior:'smooth',block:'center'}); return }
   if(target) setTimeout(()=>target.scrollIntoView({behavior:'smooth',block:'center'}),80);
 }
@@ -2272,7 +2294,13 @@ document.addEventListener('click',ev=>{
       render(true);
     })
   }
-  else if(a==='warmtoggle'){const box=document.getElementById('warmbox');if(box){const open=box.hidden;box.hidden=!open;try{localStorage.setItem('swimlift.warmclosed',open?'0':'1')}catch(e){U.warmClosed=!open}b.setAttribute('aria-expanded',open);const c=b.querySelector('.chev');if(c)c.textContent=open?'▾':'▸'}}
+  else if(a==='foldall'){const w=getWorkout(U.wk,U.day);const close=anyOpen(w);S.fold=S.fold||{};
+    if(close){const f={};foldKeys(w).forEach(k=>f[k]=1);S.fold[w.id]=f}else delete S.fold[w.id];
+    try{localStorage.setItem('swimlift.warmclosed',close?'1':'0');localStorage.setItem('swimlift.coreclosed',close?'1':'0')}catch(e){U.warmClosed=close;U.coreClosed=close}
+    save();render(true)}
+  else if(a==='fold'){const w=getWorkout(U.wk,U.day);S.fold=S.fold||{};const f=S.fold[w.id]=S.fold[w.id]||{};const k=b.dataset.key;if(f[k])delete f[k];else f[k]=1;if(!Object.keys(f).length)delete S.fold[w.id];save();const art=b.closest('article.ex');const body=art&&art.querySelector('.exbody');const open=!f[k];if(body)body.hidden=!open;if(art)art.classList.toggle('folded',!open);b.classList.toggle('open',open);b.setAttribute('aria-expanded',open)}
+  else if(a==='coretoggle'){const box=document.getElementById('corebox');if(box){const open=box.hidden;box.hidden=!open;try{localStorage.setItem('swimlift.coreclosed',open?'0':'1')}catch(e){U.coreClosed=!open}b.setAttribute('aria-expanded',open);const c=b.querySelector('.tri');if(c)c.classList.toggle('open',open)}}
+  else if(a==='warmtoggle'){const box=document.getElementById('warmbox');if(box){const open=box.hidden;box.hidden=!open;try{localStorage.setItem('swimlift.warmclosed',open?'0':'1')}catch(e){U.warmClosed=!open}b.setAttribute('aria-expanded',open);const c=b.querySelector('.tri');if(c)c.classList.toggle('open',open)}}
   else if(a==='more'){const id=b.dataset.id;U.more[id]=!U.more[id];const mb=b.parentElement.querySelector('.morebox');if(mb)mb.hidden=!U.more[id];b.setAttribute('aria-expanded',!!U.more[id]);b.textContent=U.more[id]?'Less':'More'}
   else if(a==='fav'){
     S.fav=S.fav||[]; const id=b.dataset.id;
@@ -2522,6 +2550,7 @@ document.addEventListener('change',ev=>{
   else if(t.id==='haptics'){S.haptics=t.checked;save(); if(t.checked) haptic('done')}
   else if(t.id==='bkdays'){S.backupDays=+t.value; save(); toast(S.backupDays?'Backup reminder updated':'Backup reminder turned off')}
   else if(t.id==='toecare'){S.toeCare=t.checked;save()}
+  else if(t.id==='autofold'){S.autoFold=t.checked;save()}
   else if(t.id==='autorest'){S.autoRest=t.checked;save(); if(!t.checked) stopRest()}
   else if(t.id==='wdate'){
     if(!t.value) return;
