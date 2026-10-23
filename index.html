@@ -303,7 +303,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 23, 2026, 2:06 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 23, 2026, 2:46 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -2060,16 +2060,22 @@ function focusSet(b){ // put the cursor in the next weight box (if empty) or rep
   const inp=(wi&&wi.value.trim()==='')?wi:ri; if(!inp) return;
   try{ inp.focus({preventScroll:true}); inp.scrollIntoView({block:'center',behavior:'smooth'}) }catch(e){}
 }
-function autoFoldCard(art,after){
+function autoFoldCard(art,after,delay){
   if(S.autoFold===false||!art||!art.isConnected) return;
-  setTimeout(()=>{
-    if(!art.isConnected||!art.classList.contains('complete')||art.classList.contains('skipped')) return;
+  if(art._af){ if(after) art._afAfter=after; return }
+  art._af=1; art._afAfter=after||null;
+  const run=tries=>setTimeout(()=>{
+    if(!art.isConnected||!art.classList.contains('complete')||art.classList.contains('skipped')){ art._af=0; return }
+    const ae=document.activeElement;
+    if(tries<4&&ae&&art.contains(ae)&&ae.matches&&ae.matches('input')){ run(tries+1); return } // still typing in this card: wait
     const w=getWorkout(U.wk,U.day); const k=art.dataset.card; S.fold=S.fold||{}; const f=S.fold[w.id]=S.fold[w.id]||{};
     if(!f[k]){ f[k]=1; save() }
     const body=art.querySelector('.exbody'); if(body) body.hidden=true; art.classList.add('folded');
     const t=art.querySelector('.tri'); if(t){t.classList.remove('open');t.setAttribute('aria-expanded','false')}
-    after&&after();
-  },750);
+    const cb=art._afAfter||(()=>{ const cur=document.querySelector('article.ex.current'); if(cur) cur.scrollIntoView({behavior:'smooth',block:'start'}) });
+    art._af=0; art._afAfter=null; cb();
+  },tries===0?(delay||750):1500);
+  run(0);
 }
 function afterSet(btn){
   const [block,i,n,k]=btn.dataset.set.split('|'); const art=btn.closest('article.ex'); if(!art) return;
@@ -2118,7 +2124,7 @@ function updateDone(user){
   if(U.tab!=='day'){const pl0=document.getElementById('dpill'); if(pl0){pl0.hidden=true;delete pl0.dataset.n;pl0.classList.remove('pop')}} // leaving a workout page: hide the counter
   const cards=[...document.querySelectorAll('article.ex[data-card]')]; if(!cards.length&&!document.querySelector('li[data-warm]')) return;
   let done=0;
-  cards.forEach(c=>{if(c.classList.contains('skipped')){c.classList.remove('complete');return} const was=c.classList.contains('complete'); const needw=c.dataset.needw==='1'; const ins=[...c.querySelectorAll('input[data-set]')].filter(x=>needw||/\|l?r$/.test(x.dataset.set)); const ok=ins.length>0&&ins.every(x=>x.value.trim()!==''); c.classList.toggle('complete',ok); if(ok) done++; if(user&&ok&&!was) haptic('success')});
+  cards.forEach(c=>{if(c.classList.contains('skipped')){c.classList.remove('complete');return} const was=c.classList.contains('complete'); const needw=c.dataset.needw==='1'; const ins=[...c.querySelectorAll('input[data-set]')].filter(x=>needw||/\|l?r$/.test(x.dataset.set)); const ok=ins.length>0&&ins.every(x=>x.value.trim()!==''); c.classList.toggle('complete',ok); if(ok) done++; if(user&&ok&&!was){ haptic('success'); autoFoldCard(c,null,900) }});
   const warmLeft=[...document.querySelectorAll('li[data-warm]')].some(l=>!l.classList.contains('complete')); const anyLogged=cards.some(c=>c.classList.contains('complete')||[...c.querySelectorAll('input[data-set]')].some(x=>x.value.trim()!==''&&!x.classList.contains('pre')));
   const cur=(warmLeft&&!anyLogged)?null:cards.find(c=>!c.classList.contains('complete')&&!c.classList.contains('skipped')); cards.forEach(c=>c.classList.toggle('current',c===cur)); cards.forEach(c=>c.classList.toggle('started',c===cur&&[...c.querySelectorAll('input[data-set]')].some(x=>x.value.trim()!==''&&!x.classList.contains('pre'))));
   const total=cards.filter(c=>!c.classList.contains('skipped')).length; // whole exercises only (strength + abs); warm-ups and stretches don't count
