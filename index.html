@@ -141,7 +141,7 @@ th{color:var(--muted);font-weight:600}
 .badge.ok{background:var(--ok);color:#fff}
 .badge.hot{background:var(--buoy);color:#fff}
 .how{margin:8px 0 2px}
-.eqd summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none;-webkit-tap-highlight-color:transparent}.eqd summary::-webkit-details-marker{display:none}.eqd summary h3{margin:0;flex:1}.eqd summary::before{content:'';border-left:12px solid var(--link);border-top:8px solid transparent;border-bottom:8px solid transparent;transition:transform .15s}.eqd[open] summary::before{transform:rotate(90deg)}.eqd .eqn{color:var(--muted);font-size:15px}
+.sd summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none;-webkit-tap-highlight-color:transparent}.sd summary::-webkit-details-marker{display:none}.sd summary h3{margin:0;flex:1}.sd summary::before{content:'';border-left:12px solid var(--link);border-top:8px solid transparent;border-bottom:8px solid transparent;transition:transform .15s}.sd[open] summary::before{transform:rotate(90deg)}.sd .eqn{color:var(--muted);font-size:15px}
 .how summary{cursor:pointer;font-weight:600;color:var(--link);padding:4px 0}
 .how ol{margin:6px 0 6px 20px;padding:0}
 .how li{margin-bottom:4px}
@@ -197,6 +197,12 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 .swrm{margin-top:12px;border-color:var(--buoy);color:var(--buoy);background:transparent}
 .ydtbl td:not(:first-child),.ydtbl th:not(:first-child){text-align:right;font-variant-numeric:tabular-nums}
 .ydtbl .dim{color:var(--muted)}
+.ydtbl{border:1.5px solid var(--line);border-radius:10px;border-collapse:separate;border-spacing:0;overflow:hidden}
+.ydtbl thead th{background:var(--deep);color:#fff;font-weight:700;padding:9px 8px;border-bottom:0}
+.ydtbl tbody td{padding:9px 8px;background:var(--surface);border-bottom:1px solid var(--line)}
+.ydtbl tbody tr:nth-child(even) td{background:#F3F8FA;background:color-mix(in srgb,var(--lane) 8%,var(--surface))}
+.ydtbl tbody tr:last-child td{border-bottom:0}
+@media (prefers-color-scheme:dark){.ydtbl thead th{background:#14506F}.ydtbl tbody tr:nth-child(even) td{background:var(--soft)}}
 .gbar{position:relative;height:14px;border-radius:7px;background:var(--soft);border:1.5px solid var(--line);margin:10px 0 8px;overflow:visible}
 .gbar i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;background:var(--lane)}
 .gbar u{position:absolute;top:-5px;bottom:-5px;width:3px;margin-left:-1.5px;background:var(--buoy);border-radius:2px;text-decoration:none}
@@ -305,7 +311,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 23, 2026, 3:33 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 23, 2026, 3:40 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1974,7 +1980,8 @@ function renderSettings(){
   const fav=(S.fav||[]).map(id=>exById(id)).filter(Boolean);
   const kr=lib().filter(x=>x.k>=1).map(x=>({x,ks:kneeState(x.id)})).filter(o=>o.ks&&o.ks.rest);
   return `<h2>Gear & settings</h2>
-  <div class="card" style="margin-top:12px"><h3>Workout days</h3>
+  <div class="allrow secbtn" id="sdall" data-act="sdall" role="button" tabindex="0" aria-expanded="${(()=>{const o=Object.values(U.sec||{}).some(Boolean);return o})()}"><span class="tri ${Object.values(U.sec||{}).some(Boolean)?'open':''}"></span><b>All</b><span class="t">${Object.values(U.sec||{}).some(Boolean)?'close everything':'open everything'}</span></div>
+  <div class="card" style="margin-top:12px"><details class="sd" data-k="days"${U.sec&&U.sec.days?' open':''}><summary><h3>Workout days & settings</h3><span class="eqn"></span></summary><div style="margin-top:10px">
     <div class="row">${[0,1,2,3].map(n=>`<select data-day="${n}" aria-label="Day ${n+1}">${dayOpts(n)}</select>`).join('')}</div>
     <div class="row"><label for="sound">Timer sounds</label>
       <select id="sound"><option value="mix" ${(S.sound||'mix')==='mix'?'selected':''}>✓ Mix with my audio (won't pause an audiobook)</option>
@@ -1996,31 +2003,31 @@ function renderSettings(){
       <select id="knee"><option value="0" ${S.knee===0?'selected':''}>Strict: hip-dominant and cable moves only</option>
       <option value="1" ${S.knee===1?'selected':''}>Comfortable: shallow squats to a bench are ok</option>
       <option value="2" ${S.knee===2?'selected':''}>Allow everything except jumping</option></select></div>
-    <p class="note">Changes apply to workouts you build from now on. Use "Rebuild whole week" on the Workout tab to refresh the current week.</p></div>
-  <div class="card"><details class="eqd"${U.eqOpen?' open':''}><summary><h3>Your equipment</h3><span class="eqn">${GEAR.filter(g=>S.gear[g[0]]).length} of ${GEAR.length} checked</span></summary><div class="grid2" style="margin-top:10px">
+    <p class="note">Changes apply to workouts you build from now on. Use "Rebuild whole week" on the Workout tab to refresh the current week.</p></div></details></div>
+  <div class="card"><details class="sd eqd" data-k="gear"${U.sec&&U.sec.gear?' open':''}><summary><h3>Your equipment</h3><span class="eqn">${GEAR.filter(g=>S.gear[g[0]]).length} of ${GEAR.length} checked</span></summary><div class="grid2" style="margin-top:10px">
     ${GEAR.map(g=>`<label class="chk"><input type="checkbox" data-gear="${g[0]}" ${S.gear[g[0]]?'checked':''}>${esc(g[1])}</label>`).join('')}</div></details></div>
-  <div class="card"><h3>Favorite exercises</h3>
-    ${fav.length?fav.map(x=>`<div class="row"><span>♥ ${esc(x.n)}</span><button class="btn small" data-act="fav" data-id="${x.id}">Remove</button></div>`).join(''):'<p class="note">None yet. Tap ♡ Favorite on any exercise and it will show up a bit more often in new workouts.</p>'}</div>
-  <div class="card"><h3>Hidden exercises</h3>
+  <div class="card"><details class="sd" data-k="fav"${U.sec&&U.sec.fav?' open':''}><summary><h3>Favorite exercises</h3><span class="eqn">${fav.length||'none'}</span></summary><div style="margin-top:10px">
+    ${fav.length?fav.map(x=>`<div class="row"><span>♥ ${esc(x.n)}</span><button class="btn small" data-act="fav" data-id="${x.id}">Remove</button></div>`).join(''):'<p class="note">None yet. Tap ♡ Favorite on any exercise and it will show up a bit more often in new workouts.</p>'}</div></details></div>
+  <div class="card"><details class="sd" data-k="hid"${U.sec&&U.sec.hid?' open':''}><summary><h3>Hidden exercises</h3><span class="eqn">${avoid.length+kr.length||'none'}</span></summary><div style="margin-top:10px">
     ${avoid.length?avoid.map(x=>`<div class="row"><span>${esc(x.n)}</span><button class="btn small" data-act="unhide" data-id="${x.id}">Bring back</button></div>`).join(''):'<p class="note">Nothing hidden. Use "Never show this" on any exercise you don\'t want.</p>'}
-    ${kr.length?'<h3 style="margin-top:14px">Resting for your knee</h3>'+kr.map(o=>`<div class="row"><span>${esc(o.x.n)} (until ${o.ks.until})</span><button class="btn small" data-act="kneeok" data-id="${o.x.id}">Bring back</button></div>`).join(''):''}</div>
-  <div class="card"><h3>Add your own exercise</h3>
+    ${kr.length?'<h3 style="margin-top:14px">Resting for your knee</h3>'+kr.map(o=>`<div class="row"><span>${esc(o.x.n)} (until ${o.ks.until})</span><button class="btn small" data-act="kneeok" data-id="${o.x.id}">Bring back</button></div>`).join(''):''}</div></details></div>
+  <div class="card"><details class="sd" data-k="own"${U.sec&&U.sec.own?' open':''}><summary><h3>Add your own exercise</h3><span class="eqn">${(S.custom||[]).length?(S.custom||[]).length+' added':''}</span></summary><div style="margin-top:10px">
     <div class="row"><input type="text" id="cn" placeholder="Name" aria-label="Exercise name">
       <select id="cp" aria-label="Type"><option value="hpull">Row</option><option value="vpull">Vertical pull</option><option value="hpush">Press</option><option value="vpush">Overhead press</option>
       <option value="shoulder">Shoulder health</option><option value="squat">Squat pattern</option><option value="hinge">Hip hinge</option><option value="glute">Glutes</option><option value="ham">Hamstrings</option>
       <option value="comp">Full-body compound</option><option value="cae">Core: anti-extension</option><option value="cro">Core: rotation</option><option value="cfl">Core: flexion</option></select>
       <button class="btn teal small" data-act="addcustom">Add</button></div>
-    ${(S.custom||[]).map(c=>`<div class="row"><span>${esc(c.n)}</span><button class="btn small" data-act="delcustom" data-id="${c.id}">Remove</button></div>`).join('')}</div>
-  <div class="card"><h3>App version</h3>
+    ${(S.custom||[]).map(c=>`<div class="row"><span>${esc(c.n)}</span><button class="btn small" data-act="delcustom" data-id="${c.id}">Remove</button></div>`).join('')}</div></details></div>
+  <div class="card"><details class="sd" data-k="ver"${U.sec&&U.sec.ver?' open':''}><summary><h3>App version</h3><span class="eqn"></span></summary><div style="margin-top:10px">
     <p class="note">${esc(($('#ver')||{}).textContent||'')}. If this doesn't match the newest update, tap below to reload from the web. Your workouts stay saved.</p>
-    <div class="row"><button class="btn teal" data-act="refreshapp">Get the latest version</button></div></div>
-  <div class="card"><h3>Your data</h3>
+    <div class="row"><button class="btn teal" data-act="refreshapp">Get the latest version</button></div></div></details></div>
+  <div class="card"><details class="sd" data-k="data"${U.sec&&U.sec.data?' open':''}><summary><h3>Your data</h3><span class="eqn"></span></summary><div style="margin-top:10px">
     <p class="note">Everything lives in this browser. Export a backup now and then, and use it to move to a new phone or computer.</p>
     <p class="note">${lastBackupText()}. Tap Back up now, then choose Save to Files and pick iCloud Drive.</p>
     <label class="row" style="align-items:center;gap:8px">Remind me to back up <select id="bkdays" aria-label="Backup reminder">${[[3,'every 3 days'],[7,'every week'],[14,'every 2 weeks'],[30,'every month'],[0,'never']].map(([v,l])=>`<option value="${v}" ${bkDays()===v?'selected':''}>${l}</option>`).join('')}</select></label>
     <div class="row"><button class="btn teal" data-act="export">Back up now</button>
       <label class="btn" for="imp">Import backup</label><input type="file" id="imp" accept="application/json" hidden>
-      <button class="btn ghost" data-act="reset">Erase everything</button></div></div>`;
+      <button class="btn ghost" data-act="reset">Erase everything</button></div></div></details></div>`;
 }
 
 let RT=null;
@@ -2126,7 +2133,8 @@ function syncSec(user){
     }
   });
 }
-document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.classList&&d.classList.contains('eqd'))U.eqOpen=d.open},true);
+document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.classList&&d.classList.contains('sd')&&d.dataset.k){U.sec=U.sec||{};U.sec[d.dataset.k]=d.open;syncSdAll()}},true);
+function syncSdAll(){const r=document.getElementById('sdall');if(!r)return;const any=[...document.querySelectorAll('details.sd')].some(d=>d.open);r.setAttribute('aria-expanded',any);const t=r.querySelector('.tri');if(t)t.classList.toggle('open',any);const l=r.querySelector('.t');if(l)l.textContent=any?'close everything':'open everything'}
 function setWarm(id,on){
   const w=getWorkout(U.wk,U.day); if(!w) return; const se=sess(w.id); se.warm=se.warm||{};
   if(on) se.warm[id]=1; else delete se.warm[id]; save();
@@ -2325,6 +2333,7 @@ document.addEventListener('click',ev=>{
       render(true);
     })
   }
+  else if(a==='sdall'){const ds=[...document.querySelectorAll('details.sd')];const any=ds.some(d=>d.open);U.sec=U.sec||{};ds.forEach(d=>{d.open=!any;U.sec[d.dataset.k]=!any});syncSdAll()}
   else if(a==='foldall'){const w=getWorkout(U.wk,U.day);const close=anyOpen(w);S.fold=S.fold||{};
     if(close){const f={};foldKeys(w).forEach(k=>f[k]=1);S.fold[w.id]=f}else delete S.fold[w.id];
     try{localStorage.setItem('swimlift.warmclosed',close?'1':'0');localStorage.setItem('swimlift.coreclosed',close?'1':'0');localStorage.setItem('swimlift.coolclosed',close?'1':'0')}catch(e){U.warmClosed=close;U.coreClosed=close}
