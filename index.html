@@ -141,6 +141,7 @@ th{color:var(--muted);font-weight:600}
 .badge.ok{background:var(--ok);color:#fff}
 .badge.hot{background:var(--buoy);color:#fff}
 .how{margin:8px 0 2px}
+.eqd summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none;-webkit-tap-highlight-color:transparent}.eqd summary::-webkit-details-marker{display:none}.eqd summary h3{margin:0;flex:1}.eqd summary::before{content:'';border-left:12px solid var(--link);border-top:8px solid transparent;border-bottom:8px solid transparent;transition:transform .15s}.eqd[open] summary::before{transform:rotate(90deg)}.eqd .eqn{color:var(--muted);font-size:15px}
 .how summary{cursor:pointer;font-weight:600;color:var(--link);padding:4px 0}
 .how ol{margin:6px 0 6px 20px;padding:0}
 .how li{margin-bottom:4px}
@@ -304,7 +305,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 23, 2026, 3:22 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 23, 2026, 3:36 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1996,8 +1997,8 @@ function renderSettings(){
       <option value="1" ${S.knee===1?'selected':''}>Comfortable: shallow squats to a bench are ok</option>
       <option value="2" ${S.knee===2?'selected':''}>Allow everything except jumping</option></select></div>
     <p class="note">Changes apply to workouts you build from now on. Use "Rebuild whole week" on the Workout tab to refresh the current week.</p></div>
-  <div class="card"><h3>Your equipment</h3><div class="grid2">
-    ${GEAR.map(g=>`<label class="chk"><input type="checkbox" data-gear="${g[0]}" ${S.gear[g[0]]?'checked':''}>${esc(g[1])}</label>`).join('')}</div></div>
+  <div class="card"><details class="eqd"${U.eqOpen?' open':''}><summary><h3>Your equipment</h3><span class="eqn">${GEAR.filter(g=>S.gear[g[0]]).length} of ${GEAR.length} checked</span></summary><div class="grid2" style="margin-top:10px">
+    ${GEAR.map(g=>`<label class="chk"><input type="checkbox" data-gear="${g[0]}" ${S.gear[g[0]]?'checked':''}>${esc(g[1])}</label>`).join('')}</div></details></div>
   <div class="card"><h3>Favorite exercises</h3>
     ${fav.length?fav.map(x=>`<div class="row"><span>♥ ${esc(x.n)}</span><button class="btn small" data-act="fav" data-id="${x.id}">Remove</button></div>`).join(''):'<p class="note">None yet. Tap ♡ Favorite on any exercise and it will show up a bit more often in new workouts.</p>'}</div>
   <div class="card"><h3>Hidden exercises</h3>
@@ -2125,6 +2126,7 @@ function syncSec(user){
     }
   });
 }
+document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.classList&&d.classList.contains('eqd'))U.eqOpen=d.open},true);
 function setWarm(id,on){
   const w=getWorkout(U.wk,U.day); if(!w) return; const se=sess(w.id); se.warm=se.warm||{};
   if(on) se.warm[id]=1; else delete se.warm[id]; save();
@@ -2573,7 +2575,7 @@ document.addEventListener('input',ev=>{
 document.addEventListener('change',ev=>{
   const t=ev.target;
   if(t.id==='exsel'){U.sel=t.value;render(true)}
-  else if(t.dataset.gear){S.gear[t.dataset.gear]=t.checked;save()}
+  else if(t.dataset.gear){S.gear[t.dataset.gear]=t.checked;save();const en=document.querySelector('.eqd .eqn');if(en)en.textContent=GEAR.filter(g=>S.gear[g[0]]).length+' of '+GEAR.length+' checked'}
   else if(t.id==='knee'){S.knee=+t.value;save()}
   else if(t.id==='sound'){S.sound=t.value;save();unlockAudio();chime([[1175,0,500,0.4],[1320,0.35,500,0.4]])}
   else if(t.id==='engine'){S.engine=t.value;save();trackStop();unlockAudio();chime([[1175,0,500,0.4],[1320,0.35,500,0.4]])}
