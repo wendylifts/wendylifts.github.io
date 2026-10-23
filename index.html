@@ -261,6 +261,7 @@ body:has(#rest){padding-bottom:96px}
 #tmr.ready .tnum{color:#C98A00}
 .setbtns{display:flex;gap:8px;align-items:center;margin:8px 0 2px}.setbtns .sfill,.ex-actions .sfill{flex:1}.btn.ibtn{width:44px;height:38px;padding:0;display:inline-flex;align-items:center;justify-content:center;border:2px solid #DC2626;color:#DC2626;background:transparent}.btn.ibtn.on{background:#DC2626;color:#fff}.btn.ibtn svg{pointer-events:none;width:22px;height:22px}.btn.ibtn[data-act=hide]{border-color:#2563EB;color:#2563EB}.ex-actions .btn.small{padding:7px 14px}
 .pen{width:30px;height:30px;font-size:15px}@media (prefers-color-scheme:dark){.btn.ibtn[data-act=hide]{border-color:#60A5FA;color:#60A5FA}.btn.ibtn{border-color:#F87171;color:#F87171}.btn.ibtn.on{background:#F87171;color:#2A0A0A}}
+.secbtn.secdone h3{color:var(--ok)}.secbtn.secdone h3::after{content:' ✓'}
 .secbtn{cursor:pointer;-webkit-tap-highlight-color:transparent;align-items:center;justify-content:flex-start}.secbtn h3{flex:1}.allrow{display:flex;align-items:center;gap:6px;margin:14px 0 0;padding:2px 0}.allrow b{font-family:var(--head);font-size:22px;flex:1}.allrow .t{color:var(--muted);font-size:15px}.secbtn .tri{margin-right:2px}.tri{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;flex:none;border:0;background:transparent;color:var(--link);padding:0;cursor:pointer;transition:transform .15s;-webkit-tap-highlight-color:transparent}.tri::before{content:"";border-left:13px solid currentColor;border-top:8px solid transparent;border-bottom:8px solid transparent;margin-left:3px}.tri.open{transform:rotate(90deg)}.ex-head .nm{align-items:center}.ex-head .nm .tri{margin-left:-8px}.exbody[hidden],#corebox[hidden]{display:none}.ex.folded.complete h3::after{content:" ✓";color:var(--ok);font-weight:800}.chev{color:var(--link);font-size:18px;margin-left:6px}.warm[hidden]{display:none}
 .pen{background:var(--soft);border:1.5px solid var(--line);color:var(--ink);border-radius:8px;width:34px;height:34px;font-size:17px;line-height:1;cursor:pointer;padding:0;vertical-align:middle;margin-left:4px}
 .setbtns .sbl{color:var(--muted);font-size:16px;margin-right:2px}.setbtns .btn.sbtn{width:50px;height:38px;padding:0 0 3px;font-size:28px;font-weight:700;line-height:1;display:inline-flex;align-items:center;justify-content:center}
@@ -303,7 +304,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 23, 2026, 2:56 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 23, 2026, 3:22 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1521,11 +1522,12 @@ function milestone(wid){
 const CN={vpull:'Your lats power the underwater pull. Start the pull with your elbows, not your hands.',hpull:'Rows build the mid-back that holds your stroke together. Squeeze your shoulder blades at the end.',vpush:'Keep your ribs down and your shoulders away from your ears. That protects your swimming shoulders.',hpush:'Pressing builds the finish of your stroke. Keep your shoulders away from your ears and your wrists stacked over your elbows.',shoulder:'Keep the weight light and the movement smooth. Shoulder health comes first.',tri:'Triceps finish every stroke. Straighten fully and keep your elbows still.',bi:'Elbows stay pinned and no swinging. Lower for a slow count of three.',squat:'Strong legs mean powerful push-offs. Stay in a pain-free range for your knees.',hinge:'Your hips, glutes and hamstrings drive your kick and your wall push-offs. Keep your back flat.',single:'One-leg strength steadies your kick. Go slow, because balance counts as work.',glute:'Glutes drive your kick. Squeeze at the top and keep your low back quiet.',ham:'Strong hamstrings protect your knees and power your kick. Control the lowering part.',comp:'Big full-body moves. Smooth beats fast, so slow down and own every rep.',carry:'Stand tall and walk steady. This builds the core that holds your body line in the water.',cardio:'Quick but controlled. You should be able to say a short sentence.'};
 ['cae','car','cfl','cro','cla','csw'].forEach(k=>CN[k]='Breathe out as you work and keep your low back comfortable. A tight core means a streamlined body in the water.');
 const PHN=['Focus on smooth, controlled reps and a steady tempo.','Take the full rest on the heavy sets. They need it.','Keep moving. The shorter rests are part of the plan.','Stop every set with about 3 reps left. Easy weeks make the hard weeks work.'];
-const warmOpen=()=>{try{return localStorage.getItem('swimlift.warmclosed')!=='1'}catch(e){return !U.warmClosed}};
+const secFold=k=>{try{const w=getWorkout(U.wk,U.day);return !!(w&&S.fold&&S.fold[w.id]&&S.fold[w.id][k])}catch(e){return false}};
+const warmOpen=()=>{if(secFold('_warm'))return false;try{return localStorage.getItem('swimlift.warmclosed')!=='1'}catch(e){return !U.warmClosed}};
 const coreOpen=()=>{try{return localStorage.getItem('swimlift.coreclosed')!=='1'}catch(e){return !U.coreClosed}};
 const foldKeys=w=>[...w.main.map((e,i)=>'main|'+i),...w.abs.map((e,i)=>'abs|'+i)];
 const anyOpen=w=>{const f=(S.fold&&S.fold[w.id])||{};return warmOpen()||coreOpen()||(!!U.hasCool&&coolOpen())||foldKeys(w).some(k=>!f[k])};
-const coolOpen=()=>{try{return localStorage.getItem('swimlift.coolclosed')!=='1'}catch(e){return !U.coolClosed}};
+const coolOpen=()=>{if(secFold('_cool'))return false;try{return localStorage.getItem('swimlift.coolclosed')!=='1'}catch(e){return !U.coolClosed}};
 const CAPPED=new Set(['db_bench','incline_db','db_decline','tri_bench']);const dbMax=()=>Math.max(5,+S.dbmax||25);
 const CNX=[
 [/push-up plus/i,'Press the floor away at the top to wake up the muscles that hold your shoulder blades in place.'],
@@ -1726,7 +1728,7 @@ function renderHome(){
     const dd=done?parse(ss.date||done):d; const moved=done&&iso(dd)!==iso(d);
     return `<a class="daycard ${started?'prog':''} ${done?'fin':''}" href="#/day/${U.wk}/${i}">
       <span class="dc-top"><span class="dow">${DOWL[dd.getDay()]}</span><span class="dt">${fmtShort(dd)}</span>
-        ${done?'<span class="badge dn">&#10003; Done</span>'+(moved?'<span class="dt planned">planned '+DOWL[d.getDay()].slice(0,3)+' '+fmtShort(d)+'</span>':''):started?'<span class="badge ok">In progress</span>':iso(d)===todayIso?'<span class="badge hot">Today</span>':''}</span>
+        ${done?'<span class="badge dn">&#10003; Done</span>':started?'<span class="badge ok">In progress</span>':iso(d)===todayIso?'<span class="badge hot">Today</span>':''}</span>
       <span class="dc-foc">${f.n}${x.extra?' <span class="chip">Extra</span>':''}</span><span class="dc-d">${esc(f.d)}</span>
       <span class="dc-meta"><span class="chip">About ${x.min} min</span><span class="chip">${x.main.length} strength moves</span><span class="chip">${FMTN[x.format]}</span><span class="chip">Abs included</span></span></a>`}).join('');
   const bk=backupDue()?`<div class="card backupnote" role="status"><h3>Time for your ${bkDays()===7?'weekly ':''}backup</h3><span class="note">Save a copy of your workouts to Files so you never lose your progress. Tap Back up now, then choose Save to Files and pick iCloud Drive.</span><div class="row"><button class="btn primary" data-act="export">Back up now</button><button class="btn" data-act="backupskip">${bkDays()===7?'Skip this week':'Skip for '+bkDays()+' days'}</button></div></div>`:'';
@@ -1807,20 +1809,20 @@ function renderDay(){
   return `
   <div class="dayhead"><a class="back" href="#/week/${U.wk}">← Week of ${fmtShort(mon)}</a></div>
   <div class="phbox"><b>${ph.n} week</b> ${esc(ph.d)}<span class="cnote"><b>Coach:</b> ${esc(PHN[PHASES.indexOf(ph)]||'')}</span><span class="cnote">${esc(encOf(w.id))}</span></div>
-  <div class="hero"><h2>${f.n}</h2><span class="note">${(()=>{const dn=done?parse(S.sessions[w.id].date||done):d;return DOWL[dn.getDay()]+', '+fmtShort(dn)+(done&&iso(dn)!==iso(d)?' (planned '+DOWL[d.getDay()]+', '+fmtShort(d)+')':'')})()}</span></div>
+  <div class="hero"><h2>${f.n}</h2><span class="note">${(()=>{const dn=done?parse(S.sessions[w.id].date||done):d;return DOWL[dn.getDay()]+', '+fmtShort(dn)})()}</span></div>
   <div class="meta"><span class="chip">About ${w.min} min</span><span class="chip">${FMTN[w.format]}</span><span class="chip">Abs included</span><span class="chip">No jumping</span><label class="datef">Date done <input type="date" id="wdate" value="${dateVal}"></label></div>
   <p class="note">${esc(f.d)} ${esc(fmtNote)}</p>
   ${w.format==='superset'?'<details class="how fmthelp"><summary>What are A1, A2, B1, B2?</summary><ol><li>A1 and A2 are a pair. Do one set of A1, then go straight into one set of A2 with no rest between.</li><li>Now rest for the time shown, then repeat A1, A2 until all the sets are done.</li><li>Then do the same with B1 and B2, and so on.</li></ol><p class="note">The two moves in a pair use different muscles, so one rests while the other works. The rest bar starts after each check, so you can skip it after A1 and only rest after A2.</p></details>':''}
   ${w.format==='circuit'?'<details class="how fmthelp"><summary>What are C1, C2, C3?</summary><ol><li>Do one set of C1, then one set of C2, and keep going in order to the last move.</li><li>That is one round. Rest 60 to 90 seconds.</li><li>Repeat for every round shown.</li></ol></details>':''}
   <p class="dprog" id="dprog" aria-live="polite"></p>
   <div class="allrow secbtn" data-act="foldall" role="button" tabindex="0" aria-expanded="${anyOpen(w)}"><span class="tri ${anyOpen(w)?'open':''}"></span><b>All</b><span class="t">${anyOpen(w)?'close everything':'open everything'}</span></div>
-  <div class="sec secbtn" data-act="warmtoggle" role="button" tabindex="0" aria-expanded="${warmOpen()}"><span class="tri ${warmOpen()?'open':''}"></span><h3>Warm-up</h3><span class="t">about 5 min</span></div>
+  <div class="sec secbtn" id="warmhd" data-act="warmtoggle" role="button" tabindex="0" aria-expanded="${warmOpen()}"><span class="tri ${warmOpen()?'open':''}"></span><h3>Warm-up</h3><span class="t">about 5 min</span></div>
   <div class="warm" id="warmbox" ${warmOpen()?'':'hidden'}><ul>${warm}</ul></div>
   <div class="sec"><h3>Strength</h3><span class="t">${w.main.length} moves</span></div>
   ${mainHtml}
   <div class="sec secbtn" data-act="coretoggle" role="button" tabindex="0" aria-expanded="${coreOpen()}"><span class="tri ${coreOpen()?'open':''}"></span><h3>Core</h3><span class="t">${w.abs.length} moves, every workout</span></div>
   <div id="corebox" ${coreOpen()?'':'hidden'}>${w.abs.map((e,i)=>exCard(w,e,i,'abs')).join('')}</div>
-  ${coolOn?`<div class="sec secbtn" data-act="cooltoggle" role="button" tabindex="0" aria-expanded="${coolOpen()}"><span class="tri ${coolOpen()?'open':''}"></span><h3>Cool-down</h3><span class="t">optional, about 2 min</span></div><div class="warm" id="coolbox" ${coolOpen()?'':'hidden'}><ul>${cool}</ul></div>`:''}
+  ${coolOn?`<div class="sec secbtn" id="coolhd" data-act="cooltoggle" role="button" tabindex="0" aria-expanded="${coolOpen()}"><span class="tri ${coolOpen()?'open':''}"></span><h3>Cool-down</h3><span class="t">optional, about 2 min</span></div><div class="warm" id="coolbox" ${coolOpen()?'':'hidden'}><ul>${cool}</ul></div>`:''}
   <div class="foot">
     ${done?'<p class="cnote" style="flex-basis:100%">'+esc((S.sessions[w.id]&&S.sessions[w.id].fin)||encFin(w.id))+'</p><span class="btn fin-badge" role="status">✓ Finished</span><button class="btn" data-act="editwo">Edit workout</button>':'<button class="btn fin-o" data-act="finish">Finish workout</button>'}
     <a class="btn" href="#/week/${U.wk}">Back to week</a>
@@ -2108,22 +2110,39 @@ function afterSet(btn){
   if(atEnd){ const f=document.querySelector('[data-act="finish"]'); if(f) f.scrollIntoView({behavior:'smooth',block:'center'}); return }
   if(target) setTimeout(()=>target.scrollIntoView({behavior:'smooth',block:'center'}),80);
 }
+function clearSecFold(k){const w=getWorkout(U.wk,U.day);if(w&&S.fold&&S.fold[w.id]&&S.fold[w.id][k]){delete S.fold[w.id][k];if(!Object.keys(S.fold[w.id]).length)delete S.fold[w.id];save()}}
+function syncSec(user){
+  [['warm','warmbox','warmhd','_warm','li[data-warm]'],['cool','coolbox','coolhd','_cool','li[data-cool]']].forEach(([n,bid,hid,key,sel])=>{
+    const hd=document.getElementById(hid),box=document.getElementById(bid); if(!hd||!box) return;
+    const lis=[...document.querySelectorAll(sel)], all=lis.length>0&&lis.every(l=>l.classList.contains('complete'));
+    const was=hd.classList.contains('secdone'); hd.classList.toggle('secdone',all);
+    if(user&&all&&!was&&S.autoFold!==false){
+      setTimeout(()=>{
+        const h=document.getElementById(hid),b=document.getElementById(bid); if(!h||!b||!h.classList.contains('secdone')||b.hidden) return;
+        const w=getWorkout(U.wk,U.day); if(!w) return; S.fold=S.fold||{}; const f=S.fold[w.id]=S.fold[w.id]||{}; f[key]=1; save();
+        b.hidden=true; h.setAttribute('aria-expanded','false'); const t=h.querySelector('.tri'); if(t) t.classList.remove('open');
+      },900);
+    }
+  });
+}
 function setWarm(id,on){
   const w=getWorkout(U.wk,U.day); if(!w) return; const se=sess(w.id); se.warm=se.warm||{};
   if(on) se.warm[id]=1; else delete se.warm[id]; save();
   const li=document.querySelector(`li[data-warm="${id}"]`);
   if(li){li.classList.toggle('complete',!!on); const b=li.querySelector('.wck'); if(b){b.classList.toggle('on',!!on); b.setAttribute('aria-pressed',String(!!on))}}
-  updateDone();
+  syncSec(true); updateDone();
 }
 function setCool(id,on){
   const w=getWorkout(U.wk,U.day); if(!w) return; const se=sess(w.id); se.cool=se.cool||{};
   if(on) se.cool[id]=1; else delete se.cool[id]; save();
   const li=document.querySelector(`li[data-cool="${id}"]`);
   if(li){li.classList.toggle('complete',!!on); const b=li.querySelector('.wck'); if(b){b.classList.toggle('on',!!on); b.setAttribute('aria-pressed',String(!!on))}}
+  syncSec(true);
 }
 function updateDone(user){
   if(U.tab!=='day'){const pl0=document.getElementById('dpill'); if(pl0){pl0.hidden=true;delete pl0.dataset.n;pl0.classList.remove('pop')}} // leaving a workout page: hide the counter
   const cards=[...document.querySelectorAll('article.ex[data-card]')]; if(!cards.length&&!document.querySelector('li[data-warm]')) return;
+  syncSec(false);
   let done=0;
   cards.forEach(c=>{if(c.classList.contains('skipped')){c.classList.remove('complete');return} const was=c.classList.contains('complete'); const needw=c.dataset.needw==='1'; const ins=[...c.querySelectorAll('input[data-set]')].filter(x=>needw||/\|l?r$/.test(x.dataset.set)); const ok=ins.length>0&&ins.every(x=>x.value.trim()!==''); c.classList.toggle('complete',ok); if(ok) done++; if(user&&ok&&!was){ haptic('success'); autoFoldCard(c,null,900) }});
   const warmLeft=[...document.querySelectorAll('li[data-warm]')].some(l=>!l.classList.contains('complete')); const anyLogged=cards.some(c=>c.classList.contains('complete')||[...c.querySelectorAll('input[data-set]')].some(x=>x.value.trim()!==''&&!x.classList.contains('pre')));
@@ -2309,9 +2328,9 @@ document.addEventListener('click',ev=>{
     try{localStorage.setItem('swimlift.warmclosed',close?'1':'0');localStorage.setItem('swimlift.coreclosed',close?'1':'0');localStorage.setItem('swimlift.coolclosed',close?'1':'0')}catch(e){U.warmClosed=close;U.coreClosed=close}
     save();render(true)}
   else if(a==='fold'){const w=getWorkout(U.wk,U.day);S.fold=S.fold||{};const f=S.fold[w.id]=S.fold[w.id]||{};const k=b.dataset.key;if(f[k])delete f[k];else f[k]=1;if(!Object.keys(f).length)delete S.fold[w.id];save();const art=b.closest('article.ex');const body=art&&art.querySelector('.exbody');const open=!f[k];if(body)body.hidden=!open;if(art)art.classList.toggle('folded',!open);b.classList.toggle('open',open);b.setAttribute('aria-expanded',open)}
-  else if(a==='cooltoggle'){const box=document.getElementById('coolbox');if(box){const open=box.hidden;box.hidden=!open;try{localStorage.setItem('swimlift.coolclosed',open?'0':'1')}catch(e){U.coolClosed=!open}b.setAttribute('aria-expanded',open);const c=b.querySelector('.tri');if(c)c.classList.toggle('open',open)}}
+  else if(a==='cooltoggle'){const box=document.getElementById('coolbox');if(box){const open=box.hidden;if(open)clearSecFold('_cool');box.hidden=!open;try{localStorage.setItem('swimlift.coolclosed',open?'0':'1')}catch(e){U.coolClosed=!open}b.setAttribute('aria-expanded',open);const c=b.querySelector('.tri');if(c)c.classList.toggle('open',open)}}
   else if(a==='coretoggle'){const box=document.getElementById('corebox');if(box){const open=box.hidden;box.hidden=!open;try{localStorage.setItem('swimlift.coreclosed',open?'0':'1')}catch(e){U.coreClosed=!open}b.setAttribute('aria-expanded',open);const c=b.querySelector('.tri');if(c)c.classList.toggle('open',open)}}
-  else if(a==='warmtoggle'){const box=document.getElementById('warmbox');if(box){const open=box.hidden;box.hidden=!open;try{localStorage.setItem('swimlift.warmclosed',open?'0':'1')}catch(e){U.warmClosed=!open}b.setAttribute('aria-expanded',open);const c=b.querySelector('.tri');if(c)c.classList.toggle('open',open)}}
+  else if(a==='warmtoggle'){const box=document.getElementById('warmbox');if(box){const open=box.hidden;if(open)clearSecFold('_warm');box.hidden=!open;try{localStorage.setItem('swimlift.warmclosed',open?'0':'1')}catch(e){U.warmClosed=!open}b.setAttribute('aria-expanded',open);const c=b.querySelector('.tri');if(c)c.classList.toggle('open',open)}}
   else if(a==='more'){const id=b.dataset.id;U.more[id]=!U.more[id];const mb=b.parentElement.querySelector('.morebox');if(mb)mb.hidden=!U.more[id];b.setAttribute('aria-expanded',!!U.more[id]);b.textContent=U.more[id]?'Less':'More'}
   else if(a==='fav'){
     S.fav=S.fav||[]; const id=b.dataset.id;
