@@ -132,6 +132,7 @@ th{color:var(--muted);font-weight:600}
 .daycard:hover{border-color:var(--lane);border-left-color:var(--buoy)}
 .dc-top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
 .daycard .dow{font-family:var(--head);font-size:28px;font-weight:700;line-height:1}
+.daycard .planned{font-size:13px;margin-left:auto}
 .daycard .dt{color:var(--muted);font-size:14px}
 .dc-foc{font-family:var(--head);font-size:22px;font-weight:700}
 .dc-d{color:var(--muted);font-size:14px}
@@ -302,7 +303,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 22, 2026, 5:00 AM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 23, 2026, 2:06 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1721,9 +1722,10 @@ function renderHome(){
   const cards=wkObj.workouts.map((x,i)=>{
     const d=dayDate(U.wk,i); const ss=S.sessions[x.id]; const done=ss&&ss.done; const f=FOCUS[x.focus];
     const started=!done&&ss&&(Object.keys(ss.warm||{}).length>0||Object.values(ss.sets||{}).some(a=>a.some(r=>r&&((r.r!==''&&r.r!=null)||(r.lr!==''&&r.lr!=null)))));
+    const dd=done?parse(ss.date||done):d; const moved=done&&iso(dd)!==iso(d);
     return `<a class="daycard ${started?'prog':''} ${done?'fin':''}" href="#/day/${U.wk}/${i}">
-      <span class="dc-top"><span class="dow">${DOWL[d.getDay()]}</span><span class="dt">${fmtShort(d)}</span>
-        ${done?'<span class="badge dn">&#10003; Done '+fmtShort(parse(S.sessions[x.id].date||done))+'</span>':started?'<span class="badge ok">In progress</span>':iso(d)===todayIso?'<span class="badge hot">Today</span>':''}</span>
+      <span class="dc-top"><span class="dow">${DOWL[dd.getDay()]}</span><span class="dt">${fmtShort(dd)}</span>
+        ${done?'<span class="badge dn">&#10003; Done</span>'+(moved?'<span class="dt planned">planned '+DOWL[d.getDay()].slice(0,3)+' '+fmtShort(d)+'</span>':''):started?'<span class="badge ok">In progress</span>':iso(d)===todayIso?'<span class="badge hot">Today</span>':''}</span>
       <span class="dc-foc">${f.n}${x.extra?' <span class="chip">Extra</span>':''}</span><span class="dc-d">${esc(f.d)}</span>
       <span class="dc-meta"><span class="chip">About ${x.min} min</span><span class="chip">${x.main.length} strength moves</span><span class="chip">${FMTN[x.format]}</span><span class="chip">Abs included</span></span></a>`}).join('');
   const bk=backupDue()?`<div class="card backupnote" role="status"><h3>Time for your ${bkDays()===7?'weekly ':''}backup</h3><span class="note">Save a copy of your workouts to Files so you never lose your progress. Tap Back up now, then choose Save to Files and pick iCloud Drive.</span><div class="row"><button class="btn primary" data-act="export">Back up now</button><button class="btn" data-act="backupskip">${bkDays()===7?'Skip this week':'Skip for '+bkDays()+' days'}</button></div></div>`:'';
@@ -1804,7 +1806,7 @@ function renderDay(){
   return `
   <div class="dayhead"><a class="back" href="#/week/${U.wk}">← Week of ${fmtShort(mon)}</a></div>
   <div class="phbox"><b>${ph.n} week</b> ${esc(ph.d)}<span class="cnote"><b>Coach:</b> ${esc(PHN[PHASES.indexOf(ph)]||'')}</span><span class="cnote">${esc(encOf(w.id))}</span></div>
-  <div class="hero"><h2>${f.n}</h2><span class="note">${DOWL[d.getDay()]}, ${fmtShort(d)}</span></div>
+  <div class="hero"><h2>${f.n}</h2><span class="note">${(()=>{const dn=done?parse(S.sessions[w.id].date||done):d;return DOWL[dn.getDay()]+', '+fmtShort(dn)+(done&&iso(dn)!==iso(d)?' (planned '+DOWL[d.getDay()]+', '+fmtShort(d)+')':'')})()}</span></div>
   <div class="meta"><span class="chip">About ${w.min} min</span><span class="chip">${FMTN[w.format]}</span><span class="chip">Abs included</span><span class="chip">No jumping</span><label class="datef">Date done <input type="date" id="wdate" value="${dateVal}"></label></div>
   <p class="note">${esc(f.d)} ${esc(fmtNote)}</p>
   ${w.format==='superset'?'<details class="how fmthelp"><summary>What are A1, A2, B1, B2?</summary><ol><li>A1 and A2 are a pair. Do one set of A1, then go straight into one set of A2 with no rest between.</li><li>Now rest for the time shown, then repeat A1, A2 until all the sets are done.</li><li>Then do the same with B1 and B2, and so on.</li></ol><p class="note">The two moves in a pair use different muscles, so one rests while the other works. The rest bar starts after each check, so you can skip it after A1 and only rest after A2.</p></details>':''}
