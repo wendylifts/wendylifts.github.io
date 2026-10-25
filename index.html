@@ -295,7 +295,9 @@ body:has(#rest){padding-bottom:96px}
 #hsheet td{font-size:16px}.swd{font-size:13px}
 .aim{font-size:18px}
 :root{--say:#6D28D9}@media (prefers-color-scheme:dark){:root{--say:#C4B5FD}}
-.cnote{display:block;color:var(--say);border-left:3px solid var(--say);padding-left:9px;font-weight:600;font-size:16px;margin:6px 0 2px}.cnote b,.phbox .cnote b{font-weight:800;display:inline;font-size:inherit}p.cnote{margin:10px 0 8px}.phbox .cnote{margin:8px 0 2px}
+.cnote{display:block;color:var(--say);border-left:3px solid var(--say);padding-left:9px;font-weight:600;font-size:16px;margin:6px 0 2px}.cnote b,.phbox .cnote b{font-weight:800;display:inline;font-size:inherit}p.cnote{margin:10px 0 8px}
+.hero h2{font-size:40px;line-height:1.1}.hero .note{font-size:20px}.wdesc{font-size:20px;line-height:1.4;color:var(--ink)}
+.phbox{font-size:20px;padding:12px 14px}.phbox b{font-family:var(--head);font-size:30px;line-height:1.1;font-weight:700;letter-spacing:.2px;margin-bottom:4px}.phbox .cnote{font-size:20px;line-height:1.35}.phbox .cnote{margin:8px 0 2px}
 .phnote,.sug,.coach,.wnote{color:var(--coach);font-weight:700}
 .phnote{font-size:17px}.coach{margin:4px 0 8px}
 .wnote{font-size:16px;margin:6px 0}
@@ -311,7 +313,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 23, 2026, 3:40 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 25, 2026, 10:00 AM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1818,7 +1820,7 @@ function renderDay(){
   <div class="phbox"><b>${ph.n} week</b> ${esc(ph.d)}<span class="cnote"><b>Coach:</b> ${esc(PHN[PHASES.indexOf(ph)]||'')}</span><span class="cnote">${esc(encOf(w.id))}</span></div>
   <div class="hero"><h2>${f.n}</h2><span class="note">${(()=>{const dn=done?parse(S.sessions[w.id].date||done):d;return DOWL[dn.getDay()]+', '+fmtShort(dn)})()}</span></div>
   <div class="meta"><span class="chip">About ${w.min} min</span><span class="chip">${FMTN[w.format]}</span><span class="chip">Abs included</span><span class="chip">No jumping</span><label class="datef">Date done <input type="date" id="wdate" value="${dateVal}"></label></div>
-  <p class="note">${esc(f.d)} ${esc(fmtNote)}</p>
+  <p class="note wdesc">${esc(f.d)} ${esc(fmtNote)}</p>
   ${w.format==='superset'?'<details class="how fmthelp"><summary>What are A1, A2, B1, B2?</summary><ol><li>A1 and A2 are a pair. Do one set of A1, then go straight into one set of A2 with no rest between.</li><li>Now rest for the time shown, then repeat A1, A2 until all the sets are done.</li><li>Then do the same with B1 and B2, and so on.</li></ol><p class="note">The two moves in a pair use different muscles, so one rests while the other works. The rest bar starts after each check, so you can skip it after A1 and only rest after A2.</p></details>':''}
   ${w.format==='circuit'?'<details class="how fmthelp"><summary>What are C1, C2, C3?</summary><ol><li>Do one set of C1, then one set of C2, and keep going in order to the last move.</li><li>That is one round. Rest 60 to 90 seconds.</li><li>Repeat for every round shown.</li></ol></details>':''}
   <p class="dprog" id="dprog" aria-live="polite"></p>
