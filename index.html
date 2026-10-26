@@ -237,7 +237,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 .ndel{position:absolute;top:6px;right:6px;width:36px;height:36px;border-radius:50%;border:1.5px solid #D97706;background:transparent;color:#92400E;display:flex;align-items:center;justify-content:center;padding:0}
 @media (prefers-color-scheme:dark){.ndel{color:#FBBF24;border-color:#B45309}}
 .xnote b{display:block;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#92400E}
-.xnote small{color:#92400E}
+.xnote small{color:#92400E}.xnote .nent{margin-top:4px}.xnote .nent+.nent{border-top:1px solid rgba(146,64,14,.25);padding-top:4px;opacity:.9}.xnote .nd{font-weight:700;color:#92400E}@media (prefers-color-scheme:dark){.xnote .nd{color:#FBBF24}}
 .nbox textarea{width:100%;box-sizing:border-box;font:inherit;border:1.5px solid var(--line);border-radius:10px;padding:8px;background:var(--surface);color:var(--ink);margin:4px 0 8px;resize:vertical}
 @media (prefers-color-scheme:dark){.xnote{background:#3A2C0B;color:#FDE9B0;border-left-color:#F59E0B}.xnote b,.xnote small{color:#FBBF24}}
 .addx{display:flex;flex-direction:column;gap:8px;margin:16px 0;padding:12px;border:1.5px dashed var(--line);border-radius:12px}
@@ -315,7 +315,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 25, 2026, 1:03 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 25, 2026, 9:46 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -488,10 +488,10 @@ slider_curl|Slider hamstring curl|ham|sliders,mat|3|8-12|60|0|b|Lift your hips, 
 ball_curl|Stability-ball hamstring curl|ham|ball|3|8-12|60|0|b|Hips stay high the whole time.
 trx_curl|TRX hamstring curl|ham|trx|3|8-12|60|0|b|Heels in the straps, hips up, curl in.
 calf|Single-leg calf raise on the step|calf|step|3|12-15|45|0|l u|Pause at the top and lower slowly. Strong ankles make a strong kick.
-flutter|Ankle-weight flutter kicks|calf|ankle,mat|3|t40|45|0|-|Lie face down. Small fast kicks from the hips.
+flutter|Ankle-weight flutter kicks|csw|ankle,mat|2|t40|30|0|-|Lie face up with your low back pressed down. Small fast kicks from the hips.
 cable_sq_press|Cable squat to overhead press|comp|cable|3|8-12|75|1|l f=legs,push,full|Squat to a comfortable depth, then press as you stand.
 goblet_press|Goblet squat to overhead press|comp|kb/db|3|8-10|75|1|l f=push,full,legs|Shallow squat, drive up and press the weight overhead.
-thruster|Dumbbell thruster from the bench|comp|db,bench|3|8-12|75|1|l f=push,full,legs|Sit to stand with weights at your shoulders, press at the top.
+thruster|Dumbbell thruster|comp|db|3|8-12|75|1|l f=push,full,legs|Squat with weights at your shoulders, then stand and press overhead in one motion.
 rdl_row|Romanian deadlift to row|comp|db|3|8-12|75|0|l f=pull,legs,full|Hinge, row both dumbbells, lower, then stand.
 wall_curl|Wall sit with biceps curls|squat bi|db|3|10-12|60|1|l r|Back flat on the wall, thighs near parallel or higher. Curl while you hold the sit.
 hammer_press|Hammer curl to overhead press|bi vpush|db|3|8-12|60|0|l|Curl with thumbs up, then rotate and press overhead in one smooth move.
@@ -841,10 +841,10 @@ slider_curl|Lie on your back with your heels on the sliders and lift your hips.;
 ball_curl|Lie on your back with your heels on the ball and lift your hips.;Roll the ball away until your legs are almost straight.;Curl it back in with your heels, keeping your hips high.
 trx_curl|Lie on your back with your heels in the TRX straps and lift your hips.;Extend your legs, then curl your heels toward you.;Keep your hips high the whole time.
 calf|Stand on the step with the ball of one foot on the edge, holding the rack for balance.;Rise up on your toes as high as you can, pause, then lower slowly below the step.;Finish all reps, then switch legs.
-flutter|Lie face down on the mat with ankle weights on.;Lift your legs slightly and kick in small fast flutters.;Keep your core tight and your neck relaxed.
+flutter|Lie face up on the mat with ankle weights on and your hands under your hips or by your sides.;Press your low back into the floor and lift both legs a few inches off the ground.;Kick your legs up and down in small, fast, alternating flutters.;Keep your core tight and your neck relaxed. If your low back lifts off the floor, raise your legs a little higher.
 cable_sq_press|Set the pulleys low and hold the handles at your shoulders, facing away from the machine.;Sit back into a comfortable squat, then stand and press the handles overhead.;Lower them back to your shoulders and repeat.
 goblet_press|Hold a kettlebell or dumbbell at your chest.;Squat to a shallow depth, then stand up and press it overhead.;Lower it back to your chest and repeat.
-thruster|Sit on the bench holding dumbbells at your shoulders.;Stand up and press the weights overhead in one motion.;Lower the weights and sit back down slowly.
+thruster|Stand with your feet shoulder-width apart, holding a dumbbell in each hand at your shoulders.;Squat down to a pain-free depth, keeping your chest tall.;Drive through your heels to stand and press the weights overhead in one smooth motion.;Lower the weights back to your shoulders and go into the next squat.
 rdl_row|Hold dumbbells in front of your thighs and hinge your hips back.;Row both dumbbells to your ribs.;Lower them, then stand up by driving your hips forward.
 wall_curl|Stand with your back against a wall and slide down until your thighs are near parallel to the floor. Stay in a pain-free range.;Hold a dumbbell in each hand and curl them up while you keep the wall sit.;Lower slowly. Stand up to rest if your knees complain.
 hammer_press|Stand tall holding dumbbells at your sides with your palms facing in.;Curl up with your thumbs toward the ceiling, then rotate your palms forward and press overhead.;Lower back to your sides under control.
@@ -1390,6 +1390,7 @@ function swapEntry(w,idx,blockName,exId){
     const rng=mulberry(hash(w.id+idx+Date.now())); x=same[Math.floor(rng()*same.length)];
   }
   const n=mk(x); n.slot=e.slot; if(e.fin) n.fin=1; n.grp=e.grp; n.lab=e.lab;
+  if(x.id!==(e.orig&&e.orig.id)) n.orig=e.orig||JSON.parse(JSON.stringify(e));
   if(blockName!=='abs') applyPhase(n,x,w.phase,idx);
   if(w.format==='circuit'&&n.grp==='C') n.sets=e.sets;
   list[idx]=n; w.min=estimate(w); save(); return true;
@@ -1501,17 +1502,27 @@ function coachNote(ex){
   if(ex.pat.includes('shoulder')) return 'Coach: go by the clock here. Light weight, slow and controlled, and keep your shoulder blades steady.';
   return 'Coach: go by the clock here. Steady, controlled work for the full time.';
 }
+function noteList(n){
+  if(!n||!n.t||!n.t.trim()) return '';
+  const all=[{t:n.t,d:n.d}].concat((n.h||[]).slice().reverse());
+  return all.map(x=>`<div class="nent">${x.d?'<span class="nd">'+esc(x.d)+'</span> ':''}${esc(x.t)}</div>`).join('');
+}
 function noteHtml(id){
   const n=(S.notes||{})[id]; const has=n&&n.t&&n.t.trim();
-  return `<div class="xnote" data-nshow="${id}" ${has?'':'hidden'}><button class="ndel" data-act="notedel" data-id="${id}" aria-label="Delete note" title="Delete note"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 10v7M14 10v7"/></svg></button><b>Your note</b><span data-ntxt>${has?esc(n.t):''}</span><small>${has&&n.d?' ('+esc(n.d)+')':''}</small></div>
+  return `<div class="xnote" data-nshow="${id}" ${has?'':'hidden'}><button class="ndel" data-act="notedel" data-id="${id}" aria-label="Delete note" title="Delete note"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 10v7M14 10v7"/></svg></button><b>Your notes</b><div data-nlist>${noteList(n)}</div></div>
     <div class="nbox" data-nbox="${id}" hidden><textarea data-note="${id}" rows="3" maxlength="500" placeholder="Jot a note, like which band or seat setting. It will show up next time this exercise comes up.">${has?esc(n.t):''}</textarea>
     <div class="ex-actions"><button class="btn small primary" data-act="notesave" data-id="${id}">Save note</button><button class="btn small" data-act="notecancel" data-id="${id}">Cancel</button></div></div>`;
 }
 function saveNote(id,txt){
   S.notes=S.notes||{};
-  if(txt.trim()) S.notes[id]={t:txt.trim(),d:fmtShort(new Date())}; else delete S.notes[id];
+  const old=S.notes[id], nt=txt.trim(), today=fmtShort(new Date());
+  if(nt){
+    const h=(old&&old.h?old.h.slice():[]);
+    if(old&&old.t&&old.t.trim()&&old.t.trim()!==nt&&old.d!==today) h.push({t:old.t,d:old.d});
+    S.notes[id]={t:nt,d:today}; if(h.length) S.notes[id].h=h;
+  } else delete S.notes[id];
   save(); const has=!!txt.trim();
-  document.querySelectorAll(`[data-nshow="${id}"]`).forEach(el=>{ el.hidden=!has; const sp=el.querySelector('[data-ntxt]'); if(sp) sp.textContent=has?S.notes[id].t:''; const sm=el.querySelector('small'); if(sm) sm.textContent=has?' ('+S.notes[id].d+')':'' });
+  document.querySelectorAll(`[data-nshow="${id}"]`).forEach(el=>{ el.hidden=!has; const nl=el.querySelector('[data-nlist]'); if(nl) nl.innerHTML=has?noteList(S.notes[id]):'' });
   document.querySelectorAll(`[data-act="note"][data-id="${id}"]`).forEach(bt=>bt.textContent=has?'✎ Note':'+ Note');
 }
 const ENCG=["You showed up. That is the hardest part.", "Strong swimmers are built on days like today.", "Every rep is a deposit in your future self’s account.", "Steady beats perfect. Just keep going.", "You are stronger than you were a month ago.", "Listen to your body, move with purpose, and be proud of every set.", "Small, consistent work wins.", "Today counts, even on a slow day.", "Your lane is waiting, and you are getting ready for it.", "Slow is smooth and smooth is strong.", "You do not have to be fast today. You just have to be here.", "Think of this as pool time you can feel in your stroke.", "One good set at a time.", "Your shoulders, hips and core will thank you in the water.", "Strength now means easier laps later.", "You are building a body that moves well for a long time.", "Some days are for pushing. Some are for showing up. Both count.", "Breathe, brace, and lift with a smile.", "Your future self just gave you a high five.", "Make each rep look like the one you are proudest of.", "Consistency is your superpower.", "The best workout is the one you actually do.", "You are doing something good for yourself today.", "Quality beats quantity. Take your time.", "Today’s effort is tomorrow’s strength.", "Feeling stiff? Warm-ups work miracles. Start easy.", "Be patient with yourself. Progress adds up quietly.", "Strong legs, strong core, strong stroke.", "You have got this. One move at a time.", "Treat the weights like a training partner and listen to them.", "Nobody gets stronger by thinking about it. You are doing it.", "Move well first, then move heavier.", "A little tired is normal. Pain is not, so adjust if you need to.", "You earn every swim yard in this room.", "Keep your breath steady and your focus on the next rep.", "The work you do here shows up in every wall push-off.", "This is you taking care of your body.", "Show the weights who is in charge today.", "Looking after your joints is part of getting stronger.", "Easy does it. Strong comes from patient practice.", "Another workout toward a stronger season.", "Trust the plan and trust yourself.", "You are building habits, not just muscle.", "Smile when it gets hard. That is where the growth is.", "Your effort today matters more than the numbers.", "Take a sip of water and settle in. You have time.", "It is okay to go lighter today. Moving still counts.", "Your swimming will feel the difference.", "Proud of you for making time for this.", "Start where you are and finish a little stronger."];
@@ -1776,6 +1787,7 @@ function sheetHtml(w){
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-t">
     <h3 id="sh-t">Swap ${esc(cur.n)}</h3>
     <p class="note">Same muscles first. Tap one to replace it.</p>
+    ${e.orig&&exById(e.orig.id)?`<button class="opt" data-act="revert"><b>↩ Back to ${esc(exById(e.orig.id).n)}</b><span>Your original exercise for this spot.</span></button>`:''}
     ${same.length?same.map(opt).join(''):'<p class="note">Nothing else with your gear works the same muscles.</p>'}
     ${related.length?`<h4>Also works well here</h4>${related.map(opt).join('')}`:''}
     <button class="btn" data-act="closesheet">Cancel</button></div>`;
@@ -2225,7 +2237,7 @@ document.addEventListener('click',ev=>{
   }
   else if(a==='note'){const id=b.dataset.id; const art=b.closest('article.ex'); const box=art&&art.querySelector(`[data-nbox="${id}"]`); if(box){box.hidden=!box.hidden; if(!box.hidden){const ta=box.querySelector('textarea'); ta.focus(); try{ta.setSelectionRange(ta.value.length,ta.value.length)}catch(e){} setTimeout(()=>{try{box.scrollIntoView({block:'center',behavior:'smooth'})}catch(e){}},60)}}}
   else if(a==='notedel'){
-    const id=b.dataset.id; if(!confirm('Delete this note?')) return;
+    const id=b.dataset.id; if(!confirm('Delete this note and its earlier dates?')) return;
     saveNote(id,''); document.querySelectorAll(`textarea[data-note="${id}"]`).forEach(t=>t.value=''); document.querySelectorAll(`[data-nbox="${id}"]`).forEach(x=>x.hidden=true); toast('Note deleted');
   }
   else if(a==='notesave'||a==='notecancel'){
@@ -2326,9 +2338,14 @@ document.addEventListener('click',ev=>{
   }
   else if(a==='timer'){runTimer(b)}
   else if(a==='hist'){openHist(b.dataset.id)}
+  else if(a==='revert'){
+    const w=getWorkout(U.wk,U.day); const sw=U.swap; U.swap=null;
+    if(sw){ const list=sw.b==='abs'?w.abs:w.main; const e=list[sw.i]; if(e&&e.orig){ list[sw.i]=JSON.parse(JSON.stringify(e.orig)); w.min=estimate(w); save(); toast('Back to the original') } }
+    render(true);
+  }
   else if(a==='pick'){
     const w=getWorkout(U.wk,U.day); const sw=U.swap; U.swap=null;
-    if(sw&&swapEntry(w,sw.i,sw.b,b.dataset.id)) toast('Swapped');
+    if(sw&&swapEntry(w,sw.i,sw.b,b.dataset.id)) toast('Swapped. Tap Swap again to go back to the original.');
     render(true);
   }
   else if(a==='hide'){
