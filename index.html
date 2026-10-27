@@ -229,6 +229,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 .wck.on{background:var(--ok);border-color:var(--ok);color:#fff}
 .warm .wh{align-items:center}
 .warm li.complete .wh b{color:var(--ok)}
+.warm li.complete .wh{cursor:pointer}.warm li.wfold>:not(.wh){display:none}.warm li.wfold{padding:8px 0}
 .ex.complete{border-color:var(--ok);box-shadow:inset 5px 0 0 var(--ok)}
 .ex.current{scroll-margin-top:12px;border-color:#F59E0B;border-width:2px;box-shadow:inset 6px 0 0 #F59E0B,0 0 0 3px rgba(245,158,11,.25)}
 .ex.current:not(.started) h3::before{content:"UP NEXT ";font-size:.6em;letter-spacing:.06em;color:#B45309;background:#FEF3C7;border-radius:6px;padding:2px 6px;margin-right:6px;vertical-align:middle}
@@ -315,7 +316,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 27, 2026, 4:48 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 27, 2026, 4:50 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1823,11 +1824,12 @@ function renderDay(){
   const wkObj=S.weeks[U.wk]; const w=wkObj&&wkObj.workouts[U.day];
   if(!w) return '<p class="empty">That workout isn\'t available.</p><a class="btn" href="#/">Back to this week</a>';
   const ph=PHASES[wkObj.ph]; const f=FOCUS[w.focus]; const d=dayDate(U.wk,U.day); const mon=parse(U.wk);
+  const wfold=k=>!!(S.fold&&S.fold[w.id]&&S.fold[w.id][k]);
   const warm=w.warm.filter(x=>exById(x.id)).map(x=>{const ex=exById(x.id); const wsecs=ex.pat.includes('wcard')?60:x.secs;
     const steps=HOWTO[x.id]||['Move slowly and smoothly.','Stop if anything pinches.'];
     const yt='https://www.youtube.com/results?search_query='+encodeURIComponent(ex.n+' exercise form');
     const wd=!!((S.sessions[w.id]||{}).warm||{})[x.id];
-    return `<li class="${wd?'complete':''}" data-warm="${x.id}"><div class="wh"><button class="wck ${wd?'on':''}" data-act="warmdone" data-id="${x.id}" aria-pressed="${wd}" aria-label="Mark ${esc(ex.n)} done">✓</button><b>${esc(ex.n)}</b><span>${fmtSecs(wsecs)}</span></div><p class="note">${esc(ex.cue)}</p>
+    return `<li class="${wd?'complete':''}${wd&&wfold('w_'+x.id)?' wfold':''}" data-warm="${x.id}"><div class="wh" data-act="wfold" data-key="w_${x.id}"><button class="wck ${wd?'on':''}" data-act="warmdone" data-id="${x.id}" aria-pressed="${wd}" aria-label="Mark ${esc(ex.n)} done">✓</button><b>${esc(ex.n)}</b><span>${fmtSecs(wsecs)}</span></div><p class="note">${esc(ex.cue)}</p>
       <details class="how"><summary>How to</summary><ol>${steps.map(t=>`<li>${esc(t)}</li>`).join('')}</ol><a href="${yt}" target="_blank" rel="noopener">Find a demo video</a></details>
       <div class="ex-actions"><button class="btn small teal" data-act="timer" data-secs="${wsecs}" data-warm="${x.id}">Start ${fmtSecs(wsecs)} timer</button><button class="btn small" data-act="wswap" data-kind="warm" data-id="${x.id}">Swap</button></div></li>`}).join('');
   const coolOn=iso(d)>=COOL_START; U.hasCool=coolOn;
@@ -1835,7 +1837,7 @@ function renderDay(){
     const steps=HOWTO[id]||['Move slowly and smoothly.','Stop if anything pinches.'];
     const yt='https://www.youtube.com/results?search_query='+encodeURIComponent(ex.n+' stretch');
     const cd=!!((S.sessions[w.id]||{}).cool||{})[id];
-    return `<li class="${cd?'complete':''}" data-cool="${id}"><div class="wh"><button class="wck ${cd?'on':''}" data-act="cooldone" data-id="${id}" aria-pressed="${cd}" aria-label="Mark ${esc(ex.n)} done">✓</button><b>${esc(ex.n)}</b><span>${ex.secs} sec</span></div><p class="note">${esc(ex.cue)}</p>
+    return `<li class="${cd?'complete':''}${cd&&wfold('c_'+id)?' wfold':''}" data-cool="${id}"><div class="wh" data-act="wfold" data-key="c_${id}"><button class="wck ${cd?'on':''}" data-act="cooldone" data-id="${id}" aria-pressed="${cd}" aria-label="Mark ${esc(ex.n)} done">✓</button><b>${esc(ex.n)}</b><span>${ex.secs} sec</span></div><p class="note">${esc(ex.cue)}</p>
       <details class="how"><summary>How to</summary><ol>${steps.map(t=>`<li>${esc(t)}</li>`).join('')}</ol><a href="${yt}" target="_blank" rel="noopener">Find a demo video</a></details>
       <div class="ex-actions"><button class="btn small teal" data-act="timer" data-secs="${ex.secs}" data-cool="${id}">Start ${ex.secs} sec timer</button><button class="btn small" data-act="wswap" data-kind="cool" data-orig="${orig}" data-id="${id}">Swap</button></div></li>`}).join('');
   const finIdx=w.main.findIndex(e=>e.fin);
@@ -2171,19 +2173,30 @@ function syncSec(user){
 }
 document.addEventListener('toggle',e=>{const d=e.target;if(d&&d.classList&&d.classList.contains('sd')&&d.dataset.k){U.sec=U.sec||{};U.sec[d.dataset.k]=d.open;syncSdAll()}},true);
 function syncSdAll(){const r=document.getElementById('sdall');if(!r)return;const any=[...document.querySelectorAll('details.sd')].some(d=>d.open);r.setAttribute('aria-expanded',any);const t=r.querySelector('.tri');if(t)t.classList.toggle('open',any);const l=r.querySelector('.t');if(l)l.textContent=any?'close everything':'open everything'}
+function wFold(li,key,on){
+  const w=getWorkout(U.wk,U.day); if(!w||!li) return; S.fold=S.fold||{}; const f=S.fold[w.id]=S.fold[w.id]||{};
+  if(on) f[key]=1; else { delete f[key]; if(!Object.keys(f).length) delete S.fold[w.id] }
+  save(); li.classList.toggle('wfold',!!on);
+}
+function wAutoFold(sel,key,on){
+  const li=document.querySelector(sel); if(!li) return;
+  if(!on){ wFold(li,key,false); return }
+  if(S.autoFold===false) return;
+  setTimeout(()=>{ const l=document.querySelector(sel); if(l&&l.classList.contains('complete')&&!l.classList.contains('wfold')) wFold(l,key,true) },900);
+}
 function setWarm(id,on){
   const w=getWorkout(U.wk,U.day); if(!w) return; const se=sess(w.id); se.warm=se.warm||{};
   if(on) se.warm[id]=1; else delete se.warm[id]; save();
   const li=document.querySelector(`li[data-warm="${id}"]`);
   if(li){li.classList.toggle('complete',!!on); const b=li.querySelector('.wck'); if(b){b.classList.toggle('on',!!on); b.setAttribute('aria-pressed',String(!!on))}}
-  syncSec(true); updateDone();
+  wAutoFold(`li[data-warm="${id}"]`,'w_'+id,!!on); syncSec(true); updateDone();
 }
 function setCool(id,on){
   const w=getWorkout(U.wk,U.day); if(!w) return; const se=sess(w.id); se.cool=se.cool||{};
   if(on) se.cool[id]=1; else delete se.cool[id]; save();
   const li=document.querySelector(`li[data-cool="${id}"]`);
   if(li){li.classList.toggle('complete',!!on); const b=li.querySelector('.wck'); if(b){b.classList.toggle('on',!!on); b.setAttribute('aria-pressed',String(!!on))}}
-  syncSec(true);
+  wAutoFold(`li[data-cool="${id}"]`,'c_'+id,!!on); syncSec(true);
 }
 function updateDone(user){
   if(U.tab!=='day'){const pl0=document.getElementById('dpill'); if(pl0){pl0.hidden=true;delete pl0.dataset.n;pl0.classList.remove('pop')}} // leaving a workout page: hide the counter
@@ -2375,6 +2388,7 @@ document.addEventListener('click',ev=>{
     })
   }
   else if(a==='sdall'){const ds=[...document.querySelectorAll('details.sd')];const any=ds.some(d=>d.open);U.sec=U.sec||{};ds.forEach(d=>{d.open=!any;U.sec[d.dataset.k]=!any});syncSdAll()}
+  else if(a==='wfold'){const li=b.closest('li'); if(li&&li.classList.contains('complete')) wFold(li,b.dataset.key,!li.classList.contains('wfold'))}
   else if(a==='foldall'){const w=getWorkout(U.wk,U.day);const close=anyOpen(w);S.fold=S.fold||{};
     if(close){const f={};foldKeys(w).forEach(k=>f[k]=1);S.fold[w.id]=f}else delete S.fold[w.id];
     try{localStorage.setItem('swimlift.warmclosed',close?'1':'0');localStorage.setItem('swimlift.coreclosed',close?'1':'0');localStorage.setItem('swimlift.coolclosed',close?'1':'0')}catch(e){U.warmClosed=close;U.coreClosed=close}
