@@ -315,7 +315,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 25, 2026, 9:46 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 27, 2026, 3:13 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1435,13 +1435,31 @@ function lastBefore(exId,wid,timed){
     const r=s.rows[0]; const tm=r.t===undefined?nat:!!r.t; return tm===!!timed});
   return all.length?all[all.length-1]:null;
 }
-function suggest(ex,e,prev){
+const PHF=[0.92,0.95,0.90,0.85]; // how much of your estimated max to use: Build, Strength, Volume, Recover
+function phaseOf(wid){const w=S.weeks[String(wid).split('#')[0]];return w&&typeof w.ph==='number'?w.ph:null}
+function phaseSuggest(ex,e,prev,wid,inc,top){
+  const phi=phaseOf(wid), pphi=prev.wid?phaseOf(prev.wid):null;
+  if(phi==null||pphi==null||phi===pphi||!PHASES[phi]||!PHASES[pphi]) return null;
+  const fr=flat(prev.rows).filter(r=>(+r.w||0)>0&&(+r.r||0)>0); if(!fr.length) return null;
+  const e1=Math.max(...fr.map(r=>(+r.w)*(1+(+r.r)/30))); // estimated one-rep max from your best set
+  const tr=Math.round((e.lo+e.hi)/2);
+  let nw=e1/(1+tr/30)*PHF[phi];
+  nw=Math.max(inc,Math.round(nw/inc)*inc);
+  if(CAPPED.has(ex.id)) nw=Math.min(nw,Math.max(dbMax(),top));
+  if(phi===3) nw=Math.max(inc,Math.min(nw,Math.round(top*0.85/inc)*inc)); // a recover week goes lighter, never heavier
+  const same=Math.abs(nw-top)<inc; if(same) nw=top;
+  const up=nw>top;
+  const why=phi===3?'Recover week: go lighter and leave about 3 reps in the tank.':phi===2?'Volume week: lighter weight, more reps.':phi===1?'Strength week: heavier weight, fewer reps.':'Build week: moderate weight, steady reps.';
+  return {text:why+' Last time (a '+PHASES[pphi].n+' week) you did '+top+' '+wu(ex)+'. '+(same?'Stay at '+nw+' '+wu(ex)+' and aim for '+e.lo+' to '+e.hi+' reps.':'Try '+nw+' '+wu(ex)+(up?'.':' for '+e.lo+' to '+e.hi+' reps.')),w:nw,r:e.lo};
+}
+function suggest(ex,e,prev,wid){
   if(!prev) return null;
   const fr=flat(prev.rows); const ws=fr.map(r=>+r.w||0), rs=fr.map(r=>+r.r||0);
   const top=Math.max(...ws);
   const inc=isCable(ex)?1:ex.eq.includes('bb')?5:ex.pat.some(p=>['squat','hinge','glute','comp','single'].includes(p))?5:2.5;
   if(e.secs){const t=Math.max(...rs);return {text:'Beat '+t+' sec: aim for '+(t+5)+' sec.',w:top||'',r:t+5}}
   const hitTop=rs.length>=Math.min(e.sets,prev.rows.length)&&rs.every(r=>r>=e.hi);
+  if(top>0&&wid){const ps=phaseSuggest(ex,e,prev,wid,inc,top); if(ps) return ps}
   if(top>0){
     if(CAPPED.has(ex.id)&&top>=dbMax()&&hitTop){const nr=Math.min(25,Math.max(...rs)+1);return {text:'You are at your '+top+' lb limit for this move, so keep the weight and add a rep: aim for '+nr+'. For heavier work, try the barbell bench press.',w:top,r:nr}}
     if(hitTop){const nw=CAPPED.has(ex.id)?Math.min(top+inc,Math.max(dbMax(),top)):top+inc;return {text:'You hit the top of the range. Try '+nw+' '+wu(ex)+'.',w:nw,r:e.lo}}
@@ -1591,7 +1609,7 @@ const cnFor=ex=>{if(ex.pat.some(p=>['vpull','hpull','vpush','hpush','shoulder','
 function exCard(w,e,i,block){
   const ex=exById(e.id); if(!ex) return '';
   const wid=w.id; const timed=!!e.secs;
-  const prev=lastBefore(e.id,wid,timed); let sg=suggest(ex,e,prev);
+  const prev=lastBefore(e.id,wid,timed); let sg=suggest(ex,e,prev,wid);
   if(sg&&prev&&ex.k>=1){const ks=kneeState(ex.id); if(ks&&(ks.hold||ks.rest)){const tw=Math.max(...flat(prev.rows).map(r=>+r.w||0)); sg={...sg,w:tw||sg.w,text:'Your knee flagged this move. Stay at '+(tw||'the same')+(tw?' '+wu(ex):' effort')+' and keep it pain-free.'}}}
   const tgt=targetReps(e,sg);
   const s=S.sessions[wid]; const saved=(s&&s.sets[e.id])||[];
@@ -2638,7 +2656,7 @@ document.addEventListener('change',ev=>{
 
 /* ---------- Boot ---------- */
 route();
-window.SL={S:()=>S,lib,genWeek,ensureWeek,estimate,exById,available,regenDay,FOCUS,altOptions,HOWTO,MUSC,route,U,setTarget:v=>{S.target=v},setKnee:v=>{S.knee=v},reset:()=>{S=DEFAULTS()},getWeeks:()=>S.weeks,jacc,sigIds};
+window.SL={suggest,S:()=>S,lib,genWeek,ensureWeek,estimate,exById,available,regenDay,FOCUS,altOptions,HOWTO,MUSC,route,U,setTarget:v=>{S.target=v},setKnee:v=>{S.knee=v},reset:()=>{S=DEFAULTS()},getWeeks:()=>S.weeks,jacc,sigIds};
 })();
 </script>
 </body>
