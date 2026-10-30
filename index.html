@@ -316,7 +316,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 29, 2026, 7:47 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 29, 2026, 8:10 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -2592,7 +2592,7 @@ function runTimer(btn){
     paint(left,total);
     if(left<=10&&left>0&&!TM.dinged&&total>10){TM.dinged=true;if(tmLive())ding(1175,500,0.35)}
     if(left<=0){TM.done=true;clearInterval(TM.t);num.textContent='Done';fg.style.strokeDashoffset=String(C2);el.classList.remove('low');el.classList.add('fin');sub.textContent='Nice work';pb.textContent='Again';{if(!tmLive()) haptic('success'); else {tmCancel(); beep()}}
-      { const tmDone=TM; setTimeout(()=>{ if(TM===tmDone&&TM.done&&document.getElementById('tmr')===el) closeTimer() },1800) } // finished: close on its own
+      { const tmDone=TM; setTimeout(()=>{ if(TM===tmDone&&TM.done&&document.getElementById('tmr')===el) closeTimer() },2500) } // finished: show Done for a moment, then close on its own
       if(btn.dataset.warm) setWarm(btn.dataset.warm,true);
       else if(btn.dataset.cool) setCool(btn.dataset.cool,true);
       else { const tm=TM; let did=false;
