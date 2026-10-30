@@ -316,7 +316,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 29, 2026, 8:10 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 29, 2026, 8:12 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -2198,6 +2198,17 @@ function setCool(id,on){
   if(li){li.classList.toggle('complete',!!on); const b=li.querySelector('.wck'); if(b){b.classList.toggle('on',!!on); b.setAttribute('aria-pressed',String(!!on))}}
   wAutoFold(`li[data-cool="${id}"]`,'c_'+id,!!on); syncSec(true);
 }
+function openCurrent(cur){ // when the active exercise changes to one that was folded, open it
+  try{
+    const w=getWorkout(U.wk,U.day); if(!w||!cur){ if(!cur) U.lastCur=null; return }
+    const key=w.id+'|'+cur.dataset.card; if(U.lastCur===key) return; U.lastCur=key;
+    if(!cur.classList.contains('folded')||cur.classList.contains('complete')||cur.classList.contains('skipped')) return;
+    const k=cur.dataset.card, f=S.fold&&S.fold[w.id];
+    if(f&&f[k]){ delete f[k]; if(!Object.keys(f).length) delete S.fold[w.id]; save() }
+    const body=cur.querySelector('.exbody'); if(body) body.hidden=false; cur.classList.remove('folded');
+    const t=cur.querySelector('.tri'); if(t){ t.classList.add('open'); t.setAttribute('aria-expanded','true') }
+  }catch(err){}
+}
 function groupCur(cur){ // in a superset or circuit the active card is whichever move has the next set to do (A1, A2, A1, A2...)
   try{
     if(!cur||!/^main\|/.test(cur.dataset.card||'')) return cur;
@@ -2217,7 +2228,7 @@ function updateDone(user){
   let done=0;
   cards.forEach(c=>{if(c.classList.contains('skipped')){c.classList.remove('complete');return} const was=c.classList.contains('complete'); const needw=c.dataset.needw==='1'; const ins=[...c.querySelectorAll('input[data-set]')].filter(x=>needw||/\|l?r$/.test(x.dataset.set)); const ok=ins.length>0&&ins.every(x=>x.value.trim()!==''); c.classList.toggle('complete',ok); if(ok) done++; if(user&&ok&&!was){ haptic('success'); autoFoldCard(c,null,900) }});
   const warmLeft=[...document.querySelectorAll('li[data-warm]')].some(l=>!l.classList.contains('complete')); const anyLogged=cards.some(c=>c.classList.contains('complete')||[...c.querySelectorAll('input[data-set]')].some(x=>x.value.trim()!==''&&!x.classList.contains('pre')));
-  let cur=(warmLeft&&!anyLogged)?null:cards.find(c=>!c.classList.contains('complete')&&!c.classList.contains('skipped')); cur=groupCur(cur); cards.forEach(c=>c.classList.toggle('current',c===cur)); cards.forEach(c=>c.classList.toggle('started',c===cur&&[...c.querySelectorAll('input[data-set]')].some(x=>x.value.trim()!==''&&!x.classList.contains('pre'))));
+  let cur=(warmLeft&&!anyLogged)?null:cards.find(c=>!c.classList.contains('complete')&&!c.classList.contains('skipped')); cur=groupCur(cur); openCurrent(cur); cards.forEach(c=>c.classList.toggle('current',c===cur)); cards.forEach(c=>c.classList.toggle('started',c===cur&&[...c.querySelectorAll('input[data-set]')].some(x=>x.value.trim()!==''&&!x.classList.contains('pre'))));
   const total=cards.filter(c=>!c.classList.contains('skipped')).length; // whole exercises only (strength + abs); warm-ups and stretches don't count
   const p=document.getElementById('dprog');
   if(p) p.textContent=total?(done===total?'All done. Tap Finish workout below.':'Short on time? Tap Finish workout and keep what you logged.'):'';
