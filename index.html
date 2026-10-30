@@ -316,7 +316,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 29, 2026, 8:12 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 29, 2026, 8:13 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1660,7 +1660,7 @@ function exCard(w,e,i,block){
     <p class="aim">${aim} <button class="pen" data-act="adjust" data-b="${block}" data-i="${i}" aria-label="Change the rep range or switch to seconds">✎</button></p>${phn0}
     ${timed&&!cn?`<p class="coach">${esc(coachNote(ex))}</p>`:''}
     ${adjustPanel(w,e,ex,block,i)}
-    <p class="last">${prev?`Last time${prev.date?' ('+esc(fmtShort(parse(prev.date)))+')':''}: <b>${fmtRows(prev.rows)}</b>. <span class="sug">${esc(sg.text)}</span>`:(showW?'<span class="sug">No history yet. Pick a weight that leaves 2 reps in the tank.</span>':'<span class="sug">'+(timed?'No history yet. Go for the time shown and stop early if your form slips.':'No history yet. Stop each set with about 2 reps left in the tank.')+'</span>')}${exSessions(e.id).length?`<button class="hist" data-act="hist" data-id="${e.id}" aria-label="See all history for ${esc(ex.n)}" title="History">🕘</button>`:''}</p>
+    <p class="last">${prev?`Last time${prev.date?' ('+esc(fmtShort(parse(prev.date)))+')':''}: <b>${fmtRows(prev.rows)}</b>. <span class="sug">${esc(sg.text)}</span>`:(showW?'<span class="sug">'+(timed?'No history yet. Pick a weight you could hold steady for about 10 seconds longer than the time shown.':'No history yet. Pick a weight that leaves 2 reps in the tank.')+'</span>':'<span class="sug">'+(timed?'No history yet. Go for the time shown and stop early if your form slips.':'No history yet. Stop each set with about 2 reps left in the tank.')+'</span>')}${exSessions(e.id).length?`<button class="hist" data-act="hist" data-id="${e.id}" aria-label="See all history for ${esc(ex.n)}" title="History">🕘</button>`:''}</p>
     ${noteHtml(e.id)}
     <div class="sets ${showW?'':'nw'}">${showW?'<span></span><span class="hd">Weight ('+wu(ex)+')</span>':'<span></span>'}<span class="hd">${timed?'Seconds':'Reps'}</span><span></span>${rows}</div>
     <div class="setbtns"><span class="sbl">Sets</span><button class="btn small sbtn" data-act="addset" data-b="${block}" data-i="${i}" aria-label="Add a set">+</button>${e.sets>1?`<button class="btn small sbtn" data-act="rmset" data-b="${block}" data-i="${i}" aria-label="Remove a set">−</button>`:''}</div>
