@@ -316,7 +316,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Oct 27, 2026, 5:01 PM CT</footer>
+<footer class="ver" id="ver">Last updated Oct 29, 2026, 7:47 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -2198,6 +2198,18 @@ function setCool(id,on){
   if(li){li.classList.toggle('complete',!!on); const b=li.querySelector('.wck'); if(b){b.classList.toggle('on',!!on); b.setAttribute('aria-pressed',String(!!on))}}
   wAutoFold(`li[data-cool="${id}"]`,'c_'+id,!!on); syncSec(true);
 }
+function groupCur(cur){ // in a superset or circuit the active card is whichever move has the next set to do (A1, A2, A1, A2...)
+  try{
+    if(!cur||!/^main\|/.test(cur.dataset.card||'')) return cur;
+    const w=getWorkout(U.wk,U.day), e=w&&w.main[+cur.dataset.card.split('|')[1]]; if(!e||!e.grp) return cur;
+    const idxs=w.main.map((x,ix)=>x.grp===e.grp?ix:-1).filter(ix=>ix>=0);
+    for(let n=0;n<12;n++) for(const ix of idxs){
+      const c=document.querySelector(`article.ex[data-card="main|${ix}"]`); if(!c||c.classList.contains('skipped')) continue;
+      if([...c.querySelectorAll(`button.ck[data-set^="main|${ix}|${n}|"]`)].some(x=>!x.classList.contains('on'))) return c;
+    }
+  }catch(err){}
+  return cur;
+}
 function updateDone(user){
   if(U.tab!=='day'){const pl0=document.getElementById('dpill'); if(pl0){pl0.hidden=true;delete pl0.dataset.n;pl0.classList.remove('pop')}} // leaving a workout page: hide the counter
   const cards=[...document.querySelectorAll('article.ex[data-card]')]; if(!cards.length&&!document.querySelector('li[data-warm]')) return;
@@ -2205,7 +2217,7 @@ function updateDone(user){
   let done=0;
   cards.forEach(c=>{if(c.classList.contains('skipped')){c.classList.remove('complete');return} const was=c.classList.contains('complete'); const needw=c.dataset.needw==='1'; const ins=[...c.querySelectorAll('input[data-set]')].filter(x=>needw||/\|l?r$/.test(x.dataset.set)); const ok=ins.length>0&&ins.every(x=>x.value.trim()!==''); c.classList.toggle('complete',ok); if(ok) done++; if(user&&ok&&!was){ haptic('success'); autoFoldCard(c,null,900) }});
   const warmLeft=[...document.querySelectorAll('li[data-warm]')].some(l=>!l.classList.contains('complete')); const anyLogged=cards.some(c=>c.classList.contains('complete')||[...c.querySelectorAll('input[data-set]')].some(x=>x.value.trim()!==''&&!x.classList.contains('pre')));
-  const cur=(warmLeft&&!anyLogged)?null:cards.find(c=>!c.classList.contains('complete')&&!c.classList.contains('skipped')); cards.forEach(c=>c.classList.toggle('current',c===cur)); cards.forEach(c=>c.classList.toggle('started',c===cur&&[...c.querySelectorAll('input[data-set]')].some(x=>x.value.trim()!==''&&!x.classList.contains('pre'))));
+  let cur=(warmLeft&&!anyLogged)?null:cards.find(c=>!c.classList.contains('complete')&&!c.classList.contains('skipped')); cur=groupCur(cur); cards.forEach(c=>c.classList.toggle('current',c===cur)); cards.forEach(c=>c.classList.toggle('started',c===cur&&[...c.querySelectorAll('input[data-set]')].some(x=>x.value.trim()!==''&&!x.classList.contains('pre'))));
   const total=cards.filter(c=>!c.classList.contains('skipped')).length; // whole exercises only (strength + abs); warm-ups and stretches don't count
   const p=document.getElementById('dprog');
   if(p) p.textContent=total?(done===total?'All done. Tap Finish workout below.':'Short on time? Tap Finish workout and keep what you logged.'):'';
