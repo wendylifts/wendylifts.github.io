@@ -233,6 +233,9 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 .ex.complete{border-color:var(--ok);box-shadow:inset 5px 0 0 var(--ok)}
 .ex.current{scroll-margin-top:12px;border-color:#F59E0B;border-width:2px;box-shadow:inset 6px 0 0 #F59E0B,0 0 0 3px rgba(245,158,11,.25)}
 .ex.current:not(.started) h3::before{content:"UP NEXT ";font-size:.6em;letter-spacing:.06em;color:#B45309;background:#FEF3C7;border-radius:6px;padding:2px 6px;margin-right:6px;vertical-align:middle}
+.ex.core.current{border-color:#EC4899;box-shadow:inset 6px 0 0 #EC4899,0 0 0 3px rgba(236,72,153,.25)}
+.ex.core.current:not(.started) h3::before{color:#BE185D;background:#FCE7F3}
+@media (prefers-color-scheme:dark){.ex.core.current{border-color:#F472B6;box-shadow:inset 6px 0 0 #F472B6,0 0 0 3px rgba(244,114,182,.28)}.ex.core.current:not(.started) h3::before{color:#FBCFE8;background:#500724}}
 .xnote{background:#FEF3C7;color:#5B3A06;border-left:4px solid #F59E0B;border-radius:8px;padding:8px 10px;margin:8px 0;font-size:15px}
 .xnote{position:relative;padding-right:46px}
 .ndel{position:absolute;top:6px;right:6px;width:36px;height:36px;border-radius:50%;border:1.5px solid #D97706;background:transparent;color:#92400E;display:flex;align-items:center;justify-content:center;padding:0}
@@ -316,7 +319,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Nov 1, 2026, 11:30 AM CT</footer>
+<footer class="ver" id="ver">Last updated Nov 1, 2026, 12:16 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1649,7 +1652,7 @@ function exCard(w,e,i,block){
   const aim=aim0+(!timed&&ALTN[e.id]?' One rep means both sides: a right and a left.':'');
   const skipped=!!(s&&s.skip&&s.skip[e.id]);
   const folded=!!(S.fold&&S.fold[wid]&&S.fold[wid][block+'|'+i]);
-  return `<article class="ex${skipped?' skipped':''}${folded?' folded':''}" data-card="${block}|${i}" data-needw="${ex.l?1:0}">
+  return `<article class="ex${block==='abs'?' core':''}${skipped?' skipped':''}${folded?' folded':''}" data-card="${block}|${i}" data-needw="${ex.l?1:0}">
     <div class="ex-head"><div class="nm"><button class="tri ${folded?'':'open'}" data-act="fold" data-key="${block}|${i}" aria-expanded="${!folded}" aria-label="Show or hide this exercise"></button>${grp}<h3>${esc(ex.n)}</h3></div>
       <div class="presc">${presc(e)}<small>rest ${e.grp&&w.format==='circuit'?'after the round':e.rest+' sec'}</small></div></div>
     <div class="exbody" ${folded?'hidden':''}>
