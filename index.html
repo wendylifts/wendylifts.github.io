@@ -90,6 +90,7 @@ h3{font-size:21px}
 .last b{color:var(--ink)}
 .sets{display:grid;grid-template-columns:auto 1fr 1fr 44px;gap:6px 8px;align-items:center;max-width:420px}
 .sets.nw{grid-template-columns:auto 1fr 44px;max-width:300px}
+.sets.cb{grid-template-columns:auto 1fr 76px 1fr 44px;max-width:460px}
 .sets .sl{color:var(--muted);font-size:14px}
 .sets input{width:100%;padding:8px 10px;border:1.5px solid var(--line);border-radius:8px;background:var(--bg);text-align:center;min-width:0}
 .sets .hd{font-size:12px;color:var(--muted);text-align:center}
@@ -319,7 +320,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Nov 1, 2026, 12:16 PM CT</footer>
+<footer class="ver" id="ver">Last updated Nov 1, 2026, 10:28 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1448,35 +1449,41 @@ function phaseSuggest(ex,e,prev,wid,inc,top){
   const e1=Math.max(...fr.map(r=>(+r.w)*(1+(+r.r)/30))); // estimated one-rep max from your best set
   const tr=Math.round((e.lo+e.hi)/2);
   let nw=e1/(1+tr/30)*PHF[phi];
-  nw=Math.max(inc,Math.round(nw/inc)*inc);
+  nw=Math.max(inc,Math.round(nw/inc)*inc); if(isCable(ex)) nw=snapCab(nw);
   if(CAPPED.has(ex.id)) nw=Math.min(nw,Math.max(dbMax(),top));
-  if(phi===3) nw=Math.max(inc,Math.min(nw,Math.round(top*0.85/inc)*inc)); // a recover week goes lighter, never heavier
+  if(phi===3){ nw=Math.max(inc,Math.min(nw,Math.round(top*0.85/inc)*inc)); if(isCable(ex)) nw=snapCab(nw) } // a recover week goes lighter, never heavier
   const same=Math.abs(nw-top)<inc; if(same) nw=top;
   const up=nw>top;
   const why=phi===3?'Recover week: go lighter and leave about 3 reps in the tank.':phi===2?'Volume week: lighter weight, more reps.':phi===1?'Strength week: heavier weight, fewer reps.':'Build week: moderate weight, steady reps.';
-  return {text:why+' Last time (a '+PHASES[pphi].n+' week) you did '+top+' '+wu(ex)+'. '+(same?'Stay at '+nw+' '+wu(ex)+' and aim for '+e.lo+' to '+e.hi+' reps.':'Try '+nw+' '+wu(ex)+(up?'.':' for '+e.lo+' to '+e.hi+' reps.')),w:nw,r:e.lo};
+  return {text:why+' Last time (a '+PHASES[pphi].n+' week) you did '+wt(ex,top)+'. '+(same?'Stay at '+wt(ex,nw)+' and aim for '+e.lo+' to '+e.hi+' reps.':'Try '+wt(ex,nw)+(up?'.':' for '+e.lo+' to '+e.hi+' reps.')),w:nw,r:e.lo};
 }
 function suggest(ex,e,prev,wid){
   if(!prev) return null;
   const fr=flat(prev.rows); const ws=fr.map(r=>+r.w||0), rs=fr.map(r=>+r.r||0);
   const top=Math.max(...ws);
-  const inc=isCable(ex)?1:ex.eq.includes('bb')?5:ex.pat.some(p=>['squat','hinge','glute','comp','single'].includes(p))?5:2.5;
+  const inc=isCable(ex)?(cabStep()>0?cabStep()/cabLb():1):ex.eq.includes('bb')?5:ex.pat.some(p=>['squat','hinge','glute','comp','single'].includes(p))?5:2.5;
   if(e.secs){const t=Math.max(...rs);return {text:'Beat '+t+' sec: aim for '+(t+5)+' sec.',w:top||'',r:t+5}}
   const hitTop=rs.length>=Math.min(e.sets,prev.rows.length)&&rs.every(r=>r>=e.hi);
   if(top>0&&wid){const ps=phaseSuggest(ex,e,prev,wid,inc,top); if(ps) return ps}
   if(top>0){
     if(CAPPED.has(ex.id)&&top>=dbMax()&&hitTop){const nr=Math.min(25,Math.max(...rs)+1);return {text:'You are at your '+top+' lb limit for this move, so keep the weight and add a rep: aim for '+nr+'. For heavier work, try the barbell bench press.',w:top,r:nr}}
-    if(hitTop){const nw=CAPPED.has(ex.id)?Math.min(top+inc,Math.max(dbMax(),top)):top+inc;return {text:'You hit the top of the range. Try '+nw+' '+wu(ex)+'.',w:nw,r:e.lo}}
-    return {text:'Stay at '+top+' '+wu(ex)+' and add a rep or two.',w:top,r:Math.min(e.hi,Math.max(...rs)+1)};
+    if(hitTop){const nw=CAPPED.has(ex.id)?Math.min(top+inc,Math.max(dbMax(),top)):isCable(ex)?snapCab(top+inc):top+inc;return {text:'You hit the top of the range. Try '+wt(ex,nw)+'.',w:nw,r:e.lo}}
+    return {text:'Stay at '+wt(ex,top)+' and add a rep or two.',w:top,r:Math.min(e.hi,Math.max(...rs)+1)};
   }
   const best=Math.max(...rs); return {text:'Beat '+best+' reps.',w:'',r:best+1};
 }
 const hasL=r=>r&&r.lr!==undefined&&r.lr!==''&&r.lr!==null;
-const flat=rows=>rows.flatMap(r=>hasL(r)?[r,{w:r.lw,r:r.lr,t:r.t}]:[r]);
-const one=(w,r)=>((w!==''&&w!=null)?w+'×':'')+(r||'?');
+const effp=(w,x)=>{const a=+w||0,b=+x||0;return b>0?a+b/cabLb():w}; // a cable weight is plates plus pounds added on the pin extender
+const flat=rows=>rows.flatMap(r=>{const a=(+r.x>0)?{...r,w:effp(r.w,r.x)}:r;return hasL(r)?[a,{w:effp(r.lw,r.lx),r:r.lr,t:r.t}]:[a]});
+const one=(w,r,x)=>((w!==''&&w!=null)?w+(+x>0?'+'+x:'')+'×':'')+(r||'?');
 const isCable=ex=>!!ex&&ex.eq.includes('cable');
 const wu=ex=>isCable(ex)?'plates':'lb';
-const fmtRows=rows=>rows.map(r=>hasL(r)?one(r.w,r.r)+' R, '+one(r.lw,r.lr)+' L':one(r.w,r.r)).join(', ');
+const cabLb=()=>Math.max(1,+S.cabLb||10);
+const cabStep=()=>(S.cabAdd===undefined||S.cabAdd==='')?2.5:Math.max(0,+S.cabAdd||0);
+function snapCab(v){const L=cabLb(),st=cabStep();if(!(st>0))return Math.round(v);let p=Math.floor(v+1e-9),x=Math.round((v-p)*L/st)*st;if(x>=L-1e-9){p++;x=0}return p+x/L}
+function cabTxt(v){const L=cabLb();let p=Math.floor(v+1e-9),x=Math.round((v-p)*L*100)/100;if(x>=L-0.01){p++;x=0}return p+(p===1?' plate':' plates')+(x>0?' + '+x+' lb':'')}
+const wt=(ex,v)=>isCable(ex)?cabTxt(+v||0):v+' lb';
+const fmtRows=rows=>rows.map(r=>hasL(r)?one(r.w,r.r,r.x)+' R, '+one(r.lw,r.lr,r.lx)+' L':one(r.w,r.r,r.x)).join(', ');
 
 /* ---------- UI state ---------- */
 const U={more:{},tab:'workout',wk:iso(mondayOf(new Date())),day:0,sel:null,metric:'top',swap:null,edit:null,cal:0};
@@ -1614,24 +1621,30 @@ function exCard(w,e,i,block){
   const ex=exById(e.id); if(!ex) return '';
   const wid=w.id; const timed=!!e.secs;
   const prev=lastBefore(e.id,wid,timed); let sg=suggest(ex,e,prev,wid);
-  if(sg&&prev&&ex.k>=1){const ks=kneeState(ex.id); if(ks&&(ks.hold||ks.rest)){const tw=Math.max(...flat(prev.rows).map(r=>+r.w||0)); sg={...sg,w:tw||sg.w,text:'Your knee flagged this move. Stay at '+(tw||'the same')+(tw?' '+wu(ex):' effort')+' and keep it pain-free.'}}}
+  if(sg&&prev&&ex.k>=1){const ks=kneeState(ex.id); if(ks&&(ks.hold||ks.rest)){const tw=Math.max(...flat(prev.rows).map(r=>+r.w||0)); sg={...sg,w:tw||sg.w,text:'Your knee flagged this move. Stay at '+(tw?wt(ex,tw):'the same effort')+' and keep it pain-free.'}}}
   const tgt=targetReps(e,sg);
   const s=S.sessions[wid]; const saved=(s&&s.sets[e.id])||[];
-  const showW=!!ex.l;
+  const showW=!!ex.l; const cab=showW&&isCable(ex)&&cabStep()>0;
   const unit=timed?'seconds':'reps';
   let rows='';
   for(let n=0;n<e.sets;n++){
     const r=saved[n]||{};
     const side=(sd)=>{
-      const kw=sd==='L'?'lw':'w', kr=sd==='L'?'lr':'r', lab=sd?`Set ${n+1} ${sd}`:`Set ${n+1}`, al=sd?` ${sd==='L'?'left':'right'} side`:'';
+      const kw=sd==='L'?'lw':'w', kx=sd==='L'?'lx':'x', kr=sd==='L'?'lr':'r', lab=sd?`Set ${n+1} ${sd}`:`Set ${n+1}`, al=sd?` ${sd==='L'?'left':'right'} side`:'';
       let wv=r[kw], pre=false;
       if(showW&&(wv===undefined||wv===''||wv===null)){
         wv='';
         if(prev&&prev.rows.length){const pr=prev.rows[n]||prev.rows[prev.rows.length-1]; const pv=sd==='L'?(hasL(pr)?pr.lw:pr.w):pr.w; if(pv!==''&&pv!=null){wv=pv;pre=true}}
       }
+      let xv=r[kx], xpre=false;
+      if(cab&&(xv===undefined||xv===''||xv===null)){
+        xv='';
+        if(prev&&prev.rows.length&&pre){const pr=prev.rows[n]||prev.rows[prev.rows.length-1]; const px=sd==='L'?(hasL(pr)?pr.lx:pr.x):pr.x; if(px!==''&&px!=null&&+px>0){xv=px;xpre=true}}
+      }
       const on=r[kr]!==undefined&&r[kr]!==''&&r[kr]!==null;
       return `<span class="sl">${lab}</span>`+
         (showW?`<input inputmode="decimal" aria-label="Set ${n+1}${al} weight in ${isCable(ex)?'plates':'pounds'}" data-set="${block}|${i}|${n}|${kw}" class="${pre?'pre':''}" value="${wv??''}" placeholder="${isCable(ex)?'plates':'lb'}">`:'')+
+        (cab?`<input inputmode="decimal" aria-label="Set ${n+1}${al} extra pounds on the pin extender" data-set="${block}|${i}|${n}|${kx}" class="${xpre?'pre':''}" value="${xv??''}" placeholder="+ lb">`:'')+
         `<input inputmode="numeric" aria-label="Set ${n+1}${al} ${unit}" data-set="${block}|${i}|${n}|${kr}" data-target="${tgt}" value="${r[kr]??''}" placeholder="${tgt}">`+
         `<button class="ck ${on?'on':''}" data-act="setdone" data-set="${block}|${i}|${n}|${kr}" aria-pressed="${on}" aria-label="Log set ${n+1}${al} as shown">✓</button>`;
     };
@@ -1658,14 +1671,14 @@ function exCard(w,e,i,block){
     <div class="exbody" ${folded?'hidden':''}>
     <div class="tags">${musc?`<span>Works: ${esc(musc)}</span>`:''}${tags.map(t=>`<span>${esc(t)}</span>`).join('')}${ex.k>0?'<span>Stop at pain-free depth</span>':''}</div>
     <p class="cue">${esc(ex.cue)}</p>
-    <details class="how"><summary>How to</summary><ol>${steps.map(t=>`<li>${esc(t)}</li>`).join('')}</ol>${isCable(ex)&&showW?'<p class="plnote"><b>Cable weights:</b> log the number of plates on the stack. One plate is about 7 lb.</p>':''}
+    <details class="how"><summary>How to</summary><ol>${steps.map(t=>`<li>${esc(t)}</li>`).join('')}</ol>${isCable(ex)&&showW?'<p class="plnote"><b>Cable weights:</b> log the plate number on the stack, then any pounds you added on the pin extender in the + lb box. One plate is about '+cabLb()+' lb (change this in Settings).</p>':''}
       <a href="${yt}" target="_blank" rel="noopener">Find a demo video</a></details>
     <p class="aim">${aim} <button class="pen" data-act="adjust" data-b="${block}" data-i="${i}" aria-label="Change the rep range or switch to seconds">✎</button></p>${phn0}
     ${timed&&!cn?`<p class="coach">${esc(coachNote(ex))}</p>`:''}
     ${adjustPanel(w,e,ex,block,i)}
     <p class="last">${prev?`Last time${prev.date?' ('+esc(fmtShort(parse(prev.date)))+')':''}: <b>${fmtRows(prev.rows)}</b>. <span class="sug">${esc(sg.text)}</span>`:(showW?'<span class="sug">'+(timed?'No history yet. Pick a weight you could hold steady for about 10 seconds longer than the time shown.':'No history yet. Pick a weight that leaves 2 reps in the tank.')+'</span>':'<span class="sug">'+(timed?'No history yet. Go for the time shown and stop early if your form slips.':'No history yet. Stop each set with about 2 reps left in the tank.')+'</span>')}${exSessions(e.id).length?`<button class="hist" data-act="hist" data-id="${e.id}" aria-label="See all history for ${esc(ex.n)}" title="History">🕘</button>`:''}</p>
     ${noteHtml(e.id)}
-    <div class="sets ${showW?'':'nw'}">${showW?'<span></span><span class="hd">Weight ('+wu(ex)+')</span>':'<span></span>'}<span class="hd">${timed?'Seconds':'Reps'}</span><span></span>${rows}</div>
+    <div class="sets ${showW?'':'nw'}${cab?' cb':''}">${showW?'<span></span><span class="hd">Weight ('+wu(ex)+')</span>'+(cab?'<span class="hd">+ lb</span>':''):'<span></span>'}<span class="hd">${timed?'Seconds':'Reps'}</span><span></span>${rows}</div>
     <div class="setbtns"><span class="sbl">Sets</span><button class="btn small sbtn" data-act="addset" data-b="${block}" data-i="${i}" aria-label="Add a set">+</button>${e.sets>1?`<button class="btn small sbtn" data-act="rmset" data-b="${block}" data-i="${i}" aria-label="Remove a set">−</button>`:''}</div>
     ${kneeHtml(ex,wid)}${toeOn()?toeHtml(ex,wid):''}
     <div class="ex-actions">
@@ -2039,6 +2052,8 @@ function renderSettings(){
     <div class="row"><label for="swgoal">Yearly swim goal (miles)</label><input id="swgoal" type="number" min="0" max="5000" step="10" inputmode="numeric" value="${S.swimGoal===undefined?500:S.swimGoal}" style="width:90px"></div>
     <p class="note" style="margin:0 0 6px">Starting in 2027, Progress shows whether you are ahead of or behind the pace for this goal. Set 0 to hide it.</p>
     <div class="row"><label for="dbmax">Heaviest dumbbell for lying presses (lb)</label><input id="dbmax" type="number" min="5" max="100" step="2.5" value="${dbMax()}" style="width:90px"></div>
+    <div class="row"><label for="cablb">Cable stack: pounds per plate</label><input id="cablb" type="number" min="1" max="50" step="0.5" value="${cabLb()}" style="width:90px"></div>
+    <div class="row"><label for="cabadd">Smallest pin add-on plate (lb, 0 turns the + lb box off)</label><input id="cabadd" type="number" min="0" max="25" step="0.25" value="${cabStep()}" style="width:90px"></div>
     <div class="row"><label for="tgt">Target length (minutes)</label><input id="tgt" type="number" min="25" max="90" step="5" value="${S.target}" style="width:90px"></div>
     <div class="row"><label for="knee">Knee comfort</label>
       <select id="knee"><option value="0" ${S.knee===0?'selected':''}>Strict: hip-dominant and cable moves only</option>
@@ -2229,7 +2244,7 @@ function updateDone(user){
   const cards=[...document.querySelectorAll('article.ex[data-card]')]; if(!cards.length&&!document.querySelector('li[data-warm]')) return;
   syncSec(false);
   let done=0;
-  cards.forEach(c=>{if(c.classList.contains('skipped')){c.classList.remove('complete');return} const was=c.classList.contains('complete'); const needw=c.dataset.needw==='1'; const ins=[...c.querySelectorAll('input[data-set]')].filter(x=>needw||/\|l?r$/.test(x.dataset.set)); const ok=ins.length>0&&ins.every(x=>x.value.trim()!==''); c.classList.toggle('complete',ok); if(ok) done++; if(user&&ok&&!was){ haptic('success'); autoFoldCard(c,null,900) }});
+  cards.forEach(c=>{if(c.classList.contains('skipped')){c.classList.remove('complete');return} const was=c.classList.contains('complete'); const needw=c.dataset.needw==='1'; const ins=[...c.querySelectorAll('input[data-set]')].filter(x=>!/\|l?x$/.test(x.dataset.set)&&(needw||/\|l?r$/.test(x.dataset.set))); const ok=ins.length>0&&ins.every(x=>x.value.trim()!==''); c.classList.toggle('complete',ok); if(ok) done++; if(user&&ok&&!was){ haptic('success'); autoFoldCard(c,null,900) }});
   const warmLeft=[...document.querySelectorAll('li[data-warm]')].some(l=>!l.classList.contains('complete')); const anyLogged=cards.some(c=>c.classList.contains('complete')||[...c.querySelectorAll('input[data-set]')].some(x=>x.value.trim()!==''&&!x.classList.contains('pre')));
   let cur=(warmLeft&&!anyLogged)?null:cards.find(c=>!c.classList.contains('complete')&&!c.classList.contains('skipped')); cur=groupCur(cur); openCurrent(cur); cards.forEach(c=>c.classList.toggle('current',c===cur)); cards.forEach(c=>c.classList.toggle('started',c===cur&&[...c.querySelectorAll('input[data-set]')].some(x=>x.value.trim()!==''&&!x.classList.contains('pre'))));
   const total=cards.filter(c=>!c.classList.contains('skipped')).length; // whole exercises only (strength + abs); warm-ups and stretches don't count
@@ -2629,7 +2644,7 @@ function storeSet(t){
   const arr=s.sets[e.id]||(s.sets[e.id]=[]); const row=arr[+n]||(arr[+n]={w:'',r:''});
   row[k]=t.value.replace(',','.'); row.t=e.secs?1:0;
   if(k==='r'||k==='lr'){ // typing reps also records the weight shown in that row, even if it was prefilled
-    const wk=k==='r'?'w':'lw'; const wi=document.querySelector(`input[data-set="${block}|${i}|${n}|${wk}"]`); if(wi) row[wk]=wi.value.replace(',','.');
+    const wk=k==='r'?'w':'lw', xk=k==='r'?'x':'lx'; const wi=document.querySelector(`input[data-set="${block}|${i}|${n}|${wk}"]`); if(wi) row[wk]=wi.value.replace(',','.'); const xi=document.querySelector(`input[data-set="${block}|${i}|${n}|${xk}"]`); if(xi) row[xk]=xi.value.replace(',','.');
   }
   for(let j=0;j<arr.length;j++) if(!arr[j]) arr[j]={w:'',r:''};
 }
@@ -2639,8 +2654,9 @@ document.addEventListener('input',ev=>{
 
   if(t.dataset&&t.dataset.set){
     t.classList.remove('pre'); delete t.dataset.auto; storeSet(t);
-    if(/\|l?w$/.test(t.dataset.set)){ // copy this weight into the empty boxes that follow, so you only type it once
-      const card=t.closest('article.ex'); const ws=card?[...card.querySelectorAll('input[data-set]')].filter(x=>/\|l?w$/.test(x.dataset.set)):[];
+    if(/\|l?[wx]$/.test(t.dataset.set)){ // copy this weight into the empty boxes that follow, so you only type it once
+      const kind=t.dataset.set.slice(-1), kre=new RegExp('\\|l?'+kind+'$');
+      const card=t.closest('article.ex'); const ws=card?[...card.querySelectorAll('input[data-set]')].filter(x=>kre.test(x.dataset.set)):[];
       const me=ws.indexOf(t);
       for(let q=me+1;q<ws.length;q++){ const x=ws[q];
         if(x.value.trim()!==''&&!x.dataset.auto&&!x.classList.contains('pre')) break; // stop at a box you typed yourself or already logged; boxes prefilled from last time follow along
@@ -2682,6 +2698,8 @@ document.addEventListener('change',ev=>{
   }
   else if(t.id==='swgoal'){S.swimGoal=Math.max(0,Math.min(5000,Math.round(+t.value||0)));save()}
   else if(t.id==='dbmax'){S.dbmax=Math.min(100,Math.max(5,+t.value||25));save()}
+  else if(t.id==='cablb'){S.cabLb=Math.min(50,Math.max(1,+t.value||10));save()}
+  else if(t.id==='cabadd'){S.cabAdd=Math.min(25,Math.max(0,+t.value||0));save()}
   else if(t.id==='tgt'){S.target=Math.min(90,Math.max(25,+t.value||45));save()}
   else if(t.dataset.day!==undefined){
     const vals=[...document.querySelectorAll('[data-day]')].map(s=>+s.value);
