@@ -322,7 +322,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Nov 3, 2026, 7:55 PM CT</footer>
+<footer class="ver" id="ver">Last updated Nov 3, 2026, 8:04 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1678,7 +1678,6 @@ function exCard(w,e,i,block){
     <details class="how"><summary>How to</summary><ol>${steps.map(t=>`<li>${esc(t)}</li>`).join('')}</ol>${isCable(ex)&&showW?'<p class="plnote"><b>Cable weights:</b> log the plate number on the stack, then any pounds you added on the pin extender in the + lb box. One plate is about '+cabLb()+' lb (change this in Settings).</p>':''}
       <a href="${yt}" target="_blank" rel="noopener">Find a demo video</a></details>
     <p class="aim">${aim} <button class="pen" data-act="adjust" data-b="${block}" data-i="${i}" aria-label="Change the rep range or switch to seconds">✎</button></p>${phn0}
-    ${timed&&!cn?`<p class="coach">${esc(coachNote(ex))}</p>`:''}
     ${adjustPanel(w,e,ex,block,i)}
     <p class="last">${prev?`Last time${prev.date?' ('+esc(fmtShort(parse(prev.date)))+')':''}: <b>${fmtRows(prev.rows)}</b>. <span class="sug">${esc(sg.text)}</span>`:(showW?'<span class="sug">'+(timed?'No history yet. Pick a weight you could hold steady for about 10 seconds longer than the time shown.':'No history yet. Pick a weight that leaves 2 reps in the tank.')+'</span>':'<span class="sug">'+(timed?'No history yet. Go for the time shown and stop early if your form slips.':'No history yet. Stop each set with about 2 reps left in the tank.')+'</span>')}${exSessions(e.id).length?`<button class="hist" data-act="hist" data-id="${e.id}" aria-label="See all history for ${esc(ex.n)}" title="History">🕘</button>`:''}</p>
     ${noteHtml(e.id)}
@@ -1692,7 +1691,7 @@ function exCard(w,e,i,block){
       <button class="btn small" data-act="note" data-id="${e.id}">${(S.notes&&S.notes[e.id]&&S.notes[e.id].t)?'✎ Note':'+ Note'}</button>
       <button class="btn small ${skipped?'teal':''}" data-act="skip" data-id="${e.id}">${skipped?'Undo skip':'Skip'}</button>
       <span class="sfill"></span><button class="btn small ibtn ${(S.fav||[]).includes(e.id)?'on':''}" data-act="fav" data-id="${e.id}" aria-pressed="${(S.fav||[]).includes(e.id)}" aria-label="${(S.fav||[]).includes(e.id)?'Remove from favorites':'Favorite this move'}">${(S.fav||[]).includes(e.id)?'<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 5 6.4 5c2 0 3.6 1.1 4.6 2.7h2C14 6.1 15.600 5 17.600 5 21 5 23.100 8.400 21.600 11.800 19.500 16.400 12 21 12 21z" fill="currentColor" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>':'<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 5 6.4 5c2 0 3.6 1.1 4.6 2.7h2C14 6.1 15.600 5 17.600 5 21 5 23.100 8.400 21.600 11.800 19.500 16.400 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>'}</button><button class="btn small ibtn" data-act="hide" data-b="${block}" data-i="${i}" aria-label="Never show this move"><svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2.4"/><line x1="5.6" y1="5.6" x2="18.4" y2="18.4" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></button>
-    </div>${cn}</div></article>`;
+    </div>${cn||(timed?'<p class="cnote"><b>Coach:</b> '+esc(coachNote(ex).replace(/^Coach:\s*/i,''))+'</p>':'')}</div></article>`;
 }
 
 function weekBalance(wk){
