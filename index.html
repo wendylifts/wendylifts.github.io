@@ -150,7 +150,7 @@ th{color:var(--muted);font-weight:600}
 .how summary{cursor:pointer;font-weight:600;color:var(--link);padding:4px 0}
 .how ol{margin:6px 0 6px 20px;padding:0}
 .how .cue{font-weight:600;margin:6px 0 4px}
-article.ex{scroll-margin-top:80px}
+article.ex{scroll-margin-top:60px}
 .how li{margin-bottom:4px}
 .how a{color:var(--link);font-weight:600}
 .sets input.pre{color:var(--muted)}
@@ -238,7 +238,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 .warm li.complete .wh b{color:var(--ok)}
 .warm li.complete .wh{cursor:pointer}.warm li.wfold>:not(.wh){display:none}.warm li.wfold{padding:8px 0}
 .ex.complete{border-color:var(--ok);box-shadow:inset 5px 0 0 var(--ok)}
-.ex.current{scroll-margin-top:80px;border-color:#F59E0B;border-width:2px;box-shadow:inset 6px 0 0 #F59E0B,0 0 0 3px rgba(245,158,11,.25)}
+.ex.current{scroll-margin-top:60px;border-color:#F59E0B;border-width:2px;box-shadow:inset 6px 0 0 #F59E0B,0 0 0 3px rgba(245,158,11,.25)}
 .ex.current:not(.started) h3::before{content:"UP NEXT ";font-size:.6em;letter-spacing:.06em;color:#B45309;background:#FEF3C7;border-radius:6px;padding:2px 6px;margin-right:6px;vertical-align:middle}
 .ex.core.current{border-color:#EC4899;box-shadow:inset 6px 0 0 #EC4899,0 0 0 3px rgba(236,72,153,.25)}
 .ex.core.current:not(.started) h3::before{color:#BE185D;background:#FCE7F3}
@@ -326,7 +326,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Nov 4, 2026, 8:09 PM CT</footer>
+<footer class="ver" id="ver">Last updated Nov 4, 2026, 8:12 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -2132,7 +2132,7 @@ function startRest(secs,label){
 function isGroupedBtn(b){ const d=b.dataset.set.split('|'); if(d[0]!=='main') return false; const w=getWorkout(U.wk,U.day); const e=w&&w.main[+d[1]]; return !!(e&&e.grp) }
 function showSet(t,from){ // scroll to the next set; show the whole card (title first) when it is a new exercise
   const c=t.closest&&t.closest('article.ex'); const f=from&&from.dataset?from.dataset.card:null;
-  if(c&&c.dataset.card!==f){ c.scrollIntoView({behavior:'smooth',block:'start'}); [900,1600].forEach(ms=>setTimeout(()=>{ if(!c.isConnected) return; const dy=c.getBoundingClientRect().top-80; if(Math.abs(dy)>14) window.scrollBy({top:dy,behavior:'smooth'}) },ms)) } else t.scrollIntoView({behavior:'smooth',block:'center'}) }
+  if(c&&c.dataset.card!==f){ c.scrollIntoView({behavior:'smooth',block:'start'}); [900,1600].forEach(ms=>setTimeout(()=>{ if(!c.isConnected) return; const dy=c.getBoundingClientRect().top-60; if(Math.abs(dy)>14) window.scrollBy({top:dy,behavior:'smooth'}) },ms)) } else t.scrollIntoView({behavior:'smooth',block:'center'}) }
 function focusSet(b,from){ // put the cursor in the next weight box (if empty) or reps box
   const d=b.dataset.set.split('|'); const kw=d[3]==='lr'?'lw':'w';
   const wi=document.querySelector(`input[data-set="${d[0]}|${d[1]}|${d[2]}|${kw}"]`), ri=document.querySelector(`input[data-set="${b.dataset.set}"]`);
