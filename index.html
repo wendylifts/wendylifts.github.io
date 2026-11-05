@@ -322,7 +322,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Nov 3, 2026, 8:04 PM CT</footer>
+<footer class="ver" id="ver">Last updated Nov 4, 2026, 6:09 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -813,7 +813,7 @@ cable_er|Set a pulley at elbow height and stand sideways, holding the handle wit
 band_er|Tie the band to the rack at elbow height and stand sideways.;Keep your elbow at your side, bent 90 degrees, and rotate your forearm outward.;Return slowly. Finish all reps, then switch sides.
 cord_free|Anchor the cords high on your rack or a door anchor and stand facing it, holding a handle in each hand.;Reach one arm long, then catch the water with a high elbow and pull the handle down to your thigh.;Return slowly and repeat with the other arm. One rep is a right and a left.
 cord_fly|Anchor the cords high and stand facing them, holding a handle in each hand with your arms in front of you.;Press your arms out to a wide Y, then pull both arms down and back toward your hips together.;Return slowly. Keep your ribs down and your hips steady.
-cord_back|Anchor the cords high behind you or overhead and stand holding a handle in each hand, with your arms overhead.;Turn your palms out with your pinkies leading and pull one arm down to your hip.;Return and alternate arms. One rep is a right and a left.
+cord_back|Anchor the cords high behind you or overhead. Stand facing away from the anchor, holding a handle in each hand, with your arms overhead.;Turn your palms out with your pinkies leading and pull one arm down to your hip.;Return and alternate arms. One rep is a right and a left.
 cord_breast|Anchor the cords at chest height and stand facing away, holding a handle in each hand with your hands together in front of you.;Press your arms forward, then sweep them wide.;Scoop them in under your chest and return. Keep your elbows high.
 cord_catch|Anchor a cord at chest height and stand facing it, holding the handle with your arm reaching forward.;Bend your elbow to catch the water, keeping your elbow high and your forearm pointing down.;Pull your hand back to your ribs, then return slowly. Finish all reps, then switch arms.
 rear_fly|Set the bench to a low incline and lie face down with a light dumbbell in each hand.;Raise your arms out to the sides with soft elbows until they're level with your back.;Lower slowly and keep your neck relaxed.
@@ -1658,7 +1658,8 @@ function exCard(w,e,i,block){
   if(ATT[ex.id]){ const w0=ATT[ex.id].toLowerCase().split(' ')[0]; if(!tags.some(t=>t.toLowerCase().indexOf(w0)===0)) tags.splice(tags.length-(ex.u?1:0),0,'Use: '+ATT[ex.id]) }
   const grp=e.lab?`<span class="grp">${e.lab}</span>`:'';
   const steps=HOWTO[e.id]||['Use controlled reps in a pain-free range.','Stop a set if your form breaks down.'];
-  const yt='https://www.youtube.com/results?search_query='+encodeURIComponent(ex.n+' exercise form');
+  const VQ={cord_back:'swim stretch cord backstroke pull exercise'};
+  const yt='https://www.youtube.com/results?search_query='+encodeURIComponent(VQ[ex.id]||ex.n+' exercise form');
   const musc=muscOf(ex);
   const ALTN={lm_russian:1,cord_free:1,cord_back:1,dead_bug_db:1,incl_curl:1,atlas:1,plank_drag:1,plank_shift:1,plank_pu:1,ball_deadbug:1,dead_bug:1,bird_dog:1,roller_ll:1,rev_plank_knee:1}; // alternating moves: a rep is both sides
   const aim0=timed?`Aim for ${tgt} seconds${ex.u?' each side':''} per set.`:`Aim for ${tgt} reps per set${ex.u?' on each side':''}. Your range is ${e.lo}–${e.hi}.`;
