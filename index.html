@@ -98,6 +98,7 @@ h3{font-size:21px}
 .ex-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}.btn.morebtn{border:2px solid #2563EB;color:#2563EB;background:transparent;font-weight:700}@media (prefers-color-scheme:dark){.btn.morebtn{border-color:#60A5FA;color:#60A5FA}}
 .morebox{display:flex;gap:8px;flex-wrap:wrap;width:100%}.morebox[hidden]{display:none}.plnote{margin:6px 0 6px;font-weight:600;color:var(--cab)}
 .last .sug{display:block;margin-top:6px}
+.phnote.top{border-left:3px solid var(--coach);padding-left:9px;font-weight:600;color:var(--coach);font-size:16px;margin:10px 0 4px}
 .plnote.top{border-left:3px solid var(--cab);padding-left:9px;font-size:16px;margin:10px 0 4px}
 .foot{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
 .card{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:14px}
@@ -323,7 +324,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Nov 4, 2026, 7:46 PM CT</footer>
+<footer class="ver" id="ver">Last updated Nov 4, 2026, 7:51 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1445,6 +1446,7 @@ function lastBefore(exId,wid,timed){
 }
 const PHF=[0.92,0.95,0.90,0.85]; // how much of your estimated max to use: Build, Strength, Volume, Recover
 function phaseOf(wid){const w=S.weeks[String(wid).split('#')[0]];return w&&typeof w.ph==='number'?w.ph:null}
+const WHY=['Build week: moderate weight, steady reps.','Strength week: heavier weight, fewer reps.','Volume week: lighter weight, more reps.','Recover week: go lighter and leave about 3 reps in the tank.'];
 function phaseSuggest(ex,e,prev,wid,inc,top){
   const phi=phaseOf(wid), pphi=prev.wid?phaseOf(prev.wid):null;
   if(phi==null||pphi==null||phi===pphi||!PHASES[phi]||!PHASES[pphi]) return null;
@@ -1457,8 +1459,7 @@ function phaseSuggest(ex,e,prev,wid,inc,top){
   if(phi===3){ nw=Math.max(inc,Math.min(nw,Math.round(top*0.85/inc)*inc)); if(isCable(ex)) nw=snapCab(nw) } // a recover week goes lighter, never heavier
   const same=Math.abs(nw-top)<inc; if(same) nw=top;
   const up=nw>top;
-  const why=phi===3?'Recover week: go lighter and leave about 3 reps in the tank.':phi===2?'Volume week: lighter weight, more reps.':phi===1?'Strength week: heavier weight, fewer reps.':'Build week: moderate weight, steady reps.';
-  return {text:why+' Last time (a '+PHASES[pphi].n+' week) you did '+wt(ex,top)+'. '+(same?'Stay at '+wt(ex,nw)+' and aim for '+e.lo+' to '+e.hi+' reps.':'Try '+wt(ex,nw)+(up?'.':' for '+e.lo+' to '+e.hi+' reps.')),w:nw,r:e.lo};
+  return {text:'Last time (a '+PHASES[pphi].n+' week) you did '+wt(ex,top)+'. '+(same?'Stay at '+wt(ex,nw)+' and aim for '+e.lo+' to '+e.hi+' reps.':'Try '+wt(ex,nw)+(up?'.':' for '+e.lo+' to '+e.hi+' reps.')),w:nw,r:e.lo};
 }
 function suggest(ex,e,prev,wid){
   if(!prev) return null;
@@ -1875,6 +1876,7 @@ function renderDay(){
   return `
   <div class="dayhead"><a class="back" href="#/week/${U.wk}">← Week of ${fmtShort(mon)}</a></div>
   <div class="phbox"><b>${ph.n} week</b> ${esc(ph.d)}<span class="cnote"><b>Coach:</b> ${esc(PHN[PHASES.indexOf(ph)]||'')}</span><span class="cnote">${esc(encOf(w.id))}</span></div>
+  ${WHY[phaseOf(w.id)]?`<p class="phnote top">${esc(WHY[phaseOf(w.id)])}</p>`:''}
   ${[...w.main,...w.abs].some(e=>{const x=exById(e.id);return x&&isCable(x)&&x.l})?'<p class="plnote top"><b>Cable weights:</b> log the plate number on the stack. If you use the pin extender, check the box on that move and add the pounds in the + lb box. One plate is about '+cabLb()+' lb (change this in Settings).</p>':''}
   <div class="hero"><h2>${f.n}</h2><span class="note">${(()=>{const dn=done?parse(S.sessions[w.id].date||done):d;return DOWL[dn.getDay()]+', '+fmtShort(dn)})()}</span></div>
   <div class="meta"><span class="chip">About ${w.min} min</span><span class="chip">${FMTN[w.format]}</span><span class="chip">Abs included</span><span class="chip">No jumping</span><label class="datef">Date done <input type="date" id="wdate" value="${dateVal}"></label></div>
