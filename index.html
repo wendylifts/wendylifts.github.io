@@ -99,6 +99,7 @@ h3{font-size:21px}
 .morebox{display:flex;gap:8px;flex-wrap:wrap;width:100%}.morebox[hidden]{display:none}.plnote{margin:6px 0 6px;font-weight:600;color:var(--cab)}
 .last .sug{display:block;margin-top:6px}
 .phnote.top{border-left:3px solid var(--coach);padding-left:9px;font-weight:600;color:var(--coach);font-size:16px;margin:10px 0 4px}
+.plnote.top summary{cursor:pointer;color:var(--cab)}
 .plnote.top{border-left:3px solid var(--cab);padding-left:9px;font-size:16px;margin:10px 0 4px}
 .foot{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
 .card{background:var(--surface);border:1.5px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:14px}
@@ -326,7 +327,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Nov 4, 2026, 8:36 PM CT</footer>
+<footer class="ver" id="ver">Last updated Nov 4, 2026, 8:47 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1877,8 +1878,7 @@ function renderDay(){
   return `
   <div class="dayhead"><a class="back" href="#/week/${U.wk}">← Week of ${fmtShort(mon)}</a></div>
   <div class="phbox"><b>${ph.n} week</b> ${esc(ph.d)}<span class="cnote"><b>Coach:</b> ${esc(PHN[PHASES.indexOf(ph)]||'')}</span><span class="cnote">${esc(encOf(w.id))}</span></div>
-  ${WHY[phaseOf(w.id)]?`<p class="phnote top">${esc(WHY[phaseOf(w.id)])}</p>`:''}
-  ${[...w.main,...w.abs].some(e=>{const x=exById(e.id);return x&&isCable(x)&&x.l})?'<p class="plnote top"><b>Cable weights:</b> log the plate number on the stack. If you use the pin extender, check the box on that move and add the pounds in the + lb box. One plate is about '+cabLb()+' lb (change this in Settings).</p>':''}
+  ${[...w.main,...w.abs].some(e=>{const x=exById(e.id);return x&&isCable(x)&&x.l})?'<details class="plnote top"><summary><b>Cable weights</b></summary>log the plate number on the stack. If you use the pin extender, check the box on that move and add the pounds in the + lb box. One plate is about '+cabLb()+' lb (change this in Settings).</details>':''}
   <div class="hero"><h2>${f.n}</h2><span class="note">${(()=>{const dn=done?parse(S.sessions[w.id].date||done):d;return DOWL[dn.getDay()]+', '+fmtShort(dn)})()}</span></div>
   <div class="meta"><span class="chip">About ${w.min} min</span><span class="chip">${FMTN[w.format]}</span><span class="chip">Abs included</span><span class="chip">No jumping</span><label class="datef">Date done <input type="date" id="wdate" value="${dateVal}"></label></div>
   <p class="note wdesc">${esc(f.d)} ${esc(fmtNote)}</p>
