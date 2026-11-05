@@ -149,6 +149,8 @@ th{color:var(--muted);font-weight:600}
 .sd summary{display:flex;align-items:center;gap:8px;cursor:pointer;list-style:none;-webkit-tap-highlight-color:transparent}.sd summary::-webkit-details-marker{display:none}.sd summary h3{margin:0;flex:1}.sd summary::before{content:'';border-left:12px solid var(--link);border-top:8px solid transparent;border-bottom:8px solid transparent;transition:transform .15s}.sd[open] summary::before{transform:rotate(90deg)}.sd .eqn{color:var(--muted);font-size:15px}
 .how summary{cursor:pointer;font-weight:600;color:var(--link);padding:4px 0}
 .how ol{margin:6px 0 6px 20px;padding:0}
+.how .cue{font-weight:600;margin:6px 0 4px}
+article.ex{scroll-margin-top:105px}
 .how li{margin-bottom:4px}
 .how a{color:var(--link);font-weight:600}
 .sets input.pre{color:var(--muted)}
@@ -236,7 +238,7 @@ a.btn{text-decoration:none;display:inline-block;color:inherit}
 .warm li.complete .wh b{color:var(--ok)}
 .warm li.complete .wh{cursor:pointer}.warm li.wfold>:not(.wh){display:none}.warm li.wfold{padding:8px 0}
 .ex.complete{border-color:var(--ok);box-shadow:inset 5px 0 0 var(--ok)}
-.ex.current{scroll-margin-top:12px;border-color:#F59E0B;border-width:2px;box-shadow:inset 6px 0 0 #F59E0B,0 0 0 3px rgba(245,158,11,.25)}
+.ex.current{scroll-margin-top:105px;border-color:#F59E0B;border-width:2px;box-shadow:inset 6px 0 0 #F59E0B,0 0 0 3px rgba(245,158,11,.25)}
 .ex.current:not(.started) h3::before{content:"UP NEXT ";font-size:.6em;letter-spacing:.06em;color:#B45309;background:#FEF3C7;border-radius:6px;padding:2px 6px;margin-right:6px;vertical-align:middle}
 .ex.core.current{border-color:#EC4899;box-shadow:inset 6px 0 0 #EC4899,0 0 0 3px rgba(236,72,153,.25)}
 .ex.core.current:not(.started) h3::before{color:#BE185D;background:#FCE7F3}
@@ -324,7 +326,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Nov 4, 2026, 7:51 PM CT</footer>
+<footer class="ver" id="ver">Last updated Nov 4, 2026, 8:01 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1677,8 +1679,7 @@ function exCard(w,e,i,block){
       <div class="presc">${presc(e)}<small>rest ${e.grp&&w.format==='circuit'?'after the round':e.rest+' sec'}</small></div></div>
     <div class="exbody" ${folded?'hidden':''}>
     <div class="tags">${musc?`<span>Works: ${esc(musc)}</span>`:''}${tags.map(t=>`<span>${esc(t)}</span>`).join('')}${ex.k>0?'<span>Stop at pain-free depth</span>':''}</div>
-    <p class="cue">${esc(ex.cue)}</p>
-    <details class="how"><summary>How to</summary><ol>${steps.map(t=>`<li>${esc(t)}</li>`).join('')}</ol>
+    <details class="how"><summary>How to</summary><p class="cue">${esc(ex.cue)}</p><ol>${steps.map(t=>`<li>${esc(t)}</li>`).join('')}</ol>
       <a href="${yt}" target="_blank" rel="noopener">Find a demo video</a></details>
     <p class="aim">${aim} <button class="pen" data-act="adjust" data-b="${block}" data-i="${i}" aria-label="Change the rep range or switch to seconds">✎</button></p>${phn0}
     ${adjustPanel(w,e,ex,block,i)}
@@ -2129,11 +2130,14 @@ function startRest(secs,label){
   tick(); RT.t=setInterval(tick,250);
 }
 function isGroupedBtn(b){ const d=b.dataset.set.split('|'); if(d[0]!=='main') return false; const w=getWorkout(U.wk,U.day); const e=w&&w.main[+d[1]]; return !!(e&&e.grp) }
-function focusSet(b){ // put the cursor in the next weight box (if empty) or reps box
+function showSet(t,from){ // scroll to the next set; show the whole card (title first) when it is a new exercise
+  const c=t.closest&&t.closest('article.ex'); const f=from&&from.dataset?from.dataset.card:null;
+  if(c&&c.dataset.card!==f) c.scrollIntoView({behavior:'smooth',block:'start'}); else t.scrollIntoView({behavior:'smooth',block:'center'}) }
+function focusSet(b,from){ // put the cursor in the next weight box (if empty) or reps box
   const d=b.dataset.set.split('|'); const kw=d[3]==='lr'?'lw':'w';
   const wi=document.querySelector(`input[data-set="${d[0]}|${d[1]}|${d[2]}|${kw}"]`), ri=document.querySelector(`input[data-set="${b.dataset.set}"]`);
   const inp=(wi&&wi.value.trim()==='')?wi:ri; if(!inp) return;
-  try{ inp.focus({preventScroll:true}); inp.scrollIntoView({block:'center',behavior:'smooth'}) }catch(e){}
+  try{ inp.focus({preventScroll:true}); showSet(inp,from||U.fsCard); U.fsCard=inp.closest('article.ex') }catch(e){}
 }
 function autoFoldCard(art,after,delay){
   if(S.autoFold===false||!art||!art.isConnected) return;
@@ -2167,8 +2171,8 @@ function afterSet(btn){
       } }
     if(!target){ const f=document.querySelector('[data-act="finish"]'); if(f) f.scrollIntoView({behavior:'smooth',block:'center'}); return }
     if(rest&&S.autoRest!==false){ const lastE=w.main[idxs[idxs.length-1]]; setTimeout(()=>startRest((lastE&&lastE.rest)||e.rest||60),250) }
-    if(target.matches&&target.matches('button.ck')) focusSet(target); else target.scrollIntoView({behavior:'smooth',block:'center'});
-    if(art.classList.contains('complete')) autoFoldCard(art,()=>{ if(target.isConnected&&target.matches&&target.matches('button.ck')) focusSet(target); else if(target.isConnected) target.scrollIntoView({behavior:'smooth',block:'center'}) });
+    if(target.matches&&target.matches('button.ck')) focusSet(target,art); else showSet(target,art);
+    if(art.classList.contains('complete')) autoFoldCard(art,()=>{ if(target.isConnected&&target.matches&&target.matches('button.ck')) focusSet(target,art); else if(target.isConnected) showSet(target,art) });
     return;
   }
   let target=[...art.querySelectorAll('button.ck')].find(x=>!x.classList.contains('on'));
@@ -2180,7 +2184,7 @@ function afterSet(btn){
   const goNext=()=>{ const cur=document.querySelector('article.ex.current'); if(atEnd||!cur){ const f=document.querySelector('[data-act="finish"]'); if(f) f.scrollIntoView({behavior:'smooth',block:'center'}); return } cur.scrollIntoView({behavior:'smooth',block:'start'}) };
   if(willFold){ autoFoldCard(art,goNext); return }
   if(atEnd){ const f=document.querySelector('[data-act="finish"]'); if(f) f.scrollIntoView({behavior:'smooth',block:'center'}); return }
-  if(target) setTimeout(()=>target.scrollIntoView({behavior:'smooth',block:'center'}),80);
+  if(target) setTimeout(()=>showSet(target,art),80);
 }
 function clearSecFold(k){const w=getWorkout(U.wk,U.day);if(w&&S.fold&&S.fold[w.id]&&S.fold[w.id][k]){delete S.fold[w.id][k];if(!Object.keys(S.fold[w.id]).length)delete S.fold[w.id];save()}}
 function syncSec(user){
