@@ -326,7 +326,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Nov 4, 2026, 8:01 PM CT</footer>
+<footer class="ver" id="ver">Last updated Nov 4, 2026, 8:04 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -2132,7 +2132,7 @@ function startRest(secs,label){
 function isGroupedBtn(b){ const d=b.dataset.set.split('|'); if(d[0]!=='main') return false; const w=getWorkout(U.wk,U.day); const e=w&&w.main[+d[1]]; return !!(e&&e.grp) }
 function showSet(t,from){ // scroll to the next set; show the whole card (title first) when it is a new exercise
   const c=t.closest&&t.closest('article.ex'); const f=from&&from.dataset?from.dataset.card:null;
-  if(c&&c.dataset.card!==f) c.scrollIntoView({behavior:'smooth',block:'start'}); else t.scrollIntoView({behavior:'smooth',block:'center'}) }
+  if(c&&c.dataset.card!==f){ c.scrollIntoView({behavior:'smooth',block:'start'}); [900,1600].forEach(ms=>setTimeout(()=>{ if(!c.isConnected) return; const dy=c.getBoundingClientRect().top-105; if(Math.abs(dy)>14) window.scrollBy({top:dy,behavior:'smooth'}) },ms)) } else t.scrollIntoView({behavior:'smooth',block:'center'}) }
 function focusSet(b,from){ // put the cursor in the next weight box (if empty) or reps box
   const d=b.dataset.set.split('|'); const kw=d[3]==='lr'?'lw':'w';
   const wi=document.querySelector(`input[data-set="${d[0]}|${d[1]}|${d[2]}|${kw}"]`), ri=document.querySelector(`input[data-set="${b.dataset.set}"]`);
