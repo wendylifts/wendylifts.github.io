@@ -327,7 +327,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Nov 7, 2026, 4:08 PM CT</footer>
+<footer class="ver" id="ver">Last updated Nov 7, 2026, 4:49 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1469,7 +1469,9 @@ function suggest(ex,e,prev,wid){
   const fr=flat(prev.rows); const ws=fr.map(r=>+r.w||0), rs=fr.map(r=>+r.r||0);
   const top=Math.max(...ws);
   const inc=isCable(ex)?(cabStep()>0?cabStep()/cabLb():1):ex.eq.includes('bb')?5:ex.pat.some(p=>['squat','hinge','glute','comp','single'].includes(p))?5:2.5;
-  if(e.secs){const t=Math.max(...rs);return {text:'Beat '+t+' sec: aim for '+(t+5)+' sec.',w:top||'',r:t+5}}
+  if(e.secs){const t=Math.max(...rs);
+    if(wid&&phaseOf(wid)===3){const t2=Math.min(t,Math.max(10,Math.round(t*0.9/5)*5));return {text:'Recover week: no need to beat '+t+' sec. Aim for about '+t2+' sec and stop early if your form slips.',w:top||'',r:t2}}
+    return {text:'Beat '+t+' sec: aim for '+(t+5)+' sec.',w:top||'',r:t+5}}
   const hitTop=rs.length>=Math.min(e.sets,prev.rows.length)&&rs.every(r=>r>=e.hi);
   if(top>0&&wid){const ps=phaseSuggest(ex,e,prev,wid,inc,top); if(ps) return ps}
   if(top>0){
