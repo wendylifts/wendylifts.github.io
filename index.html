@@ -327,7 +327,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Nov 11, 2026, 3:44 PM CT</footer>
+<footer class="ver" id="ver">Last updated Nov 12, 2026, 8:52 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -1501,7 +1501,18 @@ const U={more:{},tab:'workout',wk:iso(mondayOf(new Date())),day:0,sel:null,metri
 function sortedDays(){return [...S.days].sort((a,b)=>((a+6)%7)-((b+6)%7))}
 function dayDate(wk,di){
   if(di>=4){const w=S.weeks[wk]&&S.weeks[wk].workouts[di]; if(w&&w.date) return parse(w.date)}
-  return addDays(parse(wk),(sortedDays()[di]+6)%7)}
+  const base=i=>addDays(parse(wk),(sortedDays()[i]+6)%7);
+  const wkO=S.weeks[wk];
+  if(!wkO||wk!==iso(mondayOf(new Date()))) return base(di);
+  // this week: a workout whose day has passed without being done rolls forward to today, and the ones after it move along too
+  const today=parse(iso(new Date())); let last=null;
+  for(let i=0;i<Math.min(4,wkO.workouts.length);i++){
+    const ss=S.sessions[wkO.workouts[i].id]; const done=ss&&ss.done; let d;
+    if(done){ d=parse(ss.date||ss.done); if(i===di) return base(di) }
+    else { d=base(i); if(d<today) d=today; if(last&&d<=last) d=addDays(last,1); if(i===di) return d }
+    if(!last||d>last) last=d;
+  }
+  return base(di)}
 
 /* ---------- Render ---------- */
 const $=s=>document.querySelector(s);
