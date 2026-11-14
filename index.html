@@ -328,7 +328,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Nov 14, 2026, 9:31 AM CT</footer>
+<footer class="ver" id="ver">Last updated Nov 14, 2026, 9:41 AM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite" onclick="this.classList.remove('show')"></div>
 
@@ -1596,7 +1596,16 @@ function milestone(wid){
   return '';
 }
 const CN={vpull:'Your lats power the underwater pull. Start the pull with your elbows, not your hands.',hpull:'Rows build the mid-back that holds your stroke together. Squeeze your shoulder blades at the end.',vpush:'Keep your ribs down and your shoulders away from your ears. That protects your swimming shoulders.',hpush:'Pressing builds the finish of your stroke. Keep your shoulders away from your ears and your wrists stacked over your elbows.',shoulder:'Keep the weight light and the movement smooth. Shoulder health comes first.',tri:'Triceps finish every stroke. Straighten fully and keep your elbows still.',bi:'Elbows stay pinned and no swinging. Lower for a slow count of three.',squat:'Strong legs mean powerful push-offs. Stay in a pain-free range for your knees.',hinge:'Your hips, glutes and hamstrings drive your kick and your wall push-offs. Keep your back flat.',single:'One-leg strength steadies your kick. Go slow, because balance counts as work.',glute:'Glutes drive your kick. Squeeze at the top and keep your low back quiet.',ham:'Strong hamstrings protect your knees and power your kick. Control the lowering part.',comp:'Big full-body moves. Smooth beats fast, so slow down and own every rep.',carry:'Stand tall and walk steady. This builds the core that holds your body line in the water.',cardio:'Quick but controlled. You should be able to say a short sentence.'};
-['cae','car','cfl','cro','cla','csw'].forEach(k=>CN[k]='Breathe out as you work and keep your low back comfortable. A tight core means a streamlined body in the water.');
+const CORE_CN='Breathe out as you work and keep your low back comfortable. A tight core means a streamlined body in the water.';
+const CNP={ // several coach notes per kind of core move, so they are not all the same; each move keeps the same one
+ cae:[CORE_CN,'Brace like someone is about to tap your stomach. Keep your ribs down and do not let your low back arch.','Squeeze your glutes and make one straight line from head to heels. A steady body is a fast body in the water.','Move slowly and keep your low back flat. If it starts to arch, shorten the movement.','Breathe steadily. Do not hold your breath while you hold the position.','Think long: reach through your heels and the crown of your head.'],
+ car:[CORE_CN,'Do not let the cable twist you. Your hips and shoulders stay square.','Resist the pull. Press out slowly, return slowly, and do not lean.','Stand or kneel tall with your ribs over your hips and let your abs do the holding.','Keep your hips still while your arms move. A steady middle keeps your stroke straight.'],
+ cfl:[CORE_CN,'Curl your ribs toward your hips, not your chin to your chest. Move slowly and pause at the top.','Breathe out as you curl up and do not pull on your neck.','Control the way down. Lowering builds as much core as lifting.','Keep your low back comfortable and stop the rep if it starts to hurt.'],
+ cro:[CORE_CN,'Turn through your ribcage, not just your arms, and let your eyes follow the movement.','Keep your hips quiet and rotate from the middle of your back. Rotation power drives your stroke.','Smooth and controlled. No fast swinging, and stop if your low back complains.','Breathe out as you rotate and keep your chest tall.'],
+ cla:[CORE_CN,'Keep your body in one straight line. No leaning forward or back.','Stack your shoulders over your elbow and lift your hips, breathing steadily.','Squeeze your side abs and do not let your hips sag toward the floor.','Move slowly and stay tall. Strong sides keep your body line steady on every breath.'],
+ csw:[CORE_CN,'Small, steady kicks from your hips and abs, not your knees. Keep your low back pressed down.','Keep your face and shoulders relaxed while your core works, just like swimming.','Legs long, kicks fast but small. Stop if your low back lifts.','Find a breathing rhythm that matches your kicks and keep your neck long.']};
+Object.keys(CNP).forEach(k=>CN[k]=CNP[k][0]);
+const cnPick=(ex,pool)=>pool[[...ex.id].reduce((a,c)=>(a*31+c.charCodeAt(0))>>>0,7)%pool.length];
 const PHN=['Focus on smooth, controlled reps and a steady tempo.','Take the full rest on the heavy sets. They need it.','Keep moving. The shorter rests are part of the plan.','Stop every set with about 3 reps left. Easy weeks make the hard weeks work.'];
 const secFold=k=>{try{const w=getWorkout(U.wk,U.day);return !!(w&&S.fold&&S.fold[w.id]&&S.fold[w.id][k])}catch(e){return false}};
 const warmOpen=()=>{if(secFold('_warm'))return false;try{return localStorage.getItem('swimlift.warmclosed')!=='1'}catch(e){return !U.warmClosed}};
@@ -1639,7 +1648,7 @@ const CNX=[
 [/21s/i,'Seven reps in the bottom half, seven in the top, then seven full. Keep the weight light.'],
 [/curl/i,'Elbows stay pinned and no swinging. Lower for a slow count of three.']
 ];
-const cnFor=ex=>{if(ex.pat.some(p=>['vpull','hpull','vpush','hpush','shoulder','tri','bi'].includes(p))){const m=CNX.find(r=>r[0].test(ex.n));if(m)return m[1]}const p=ex.pat.find(p=>CN[p]);return p?CN[p]:''};
+const cnFor=ex=>{if(ex.pat.some(p=>['vpull','hpull','vpush','hpush','shoulder','tri','bi'].includes(p))){const m=CNX.find(r=>r[0].test(ex.n));if(m)return m[1]}const p=ex.pat.find(p=>CN[p]);return p?(CNP[p]?cnPick(ex,CNP[p]):CN[p]):''};
 function exCard(w,e,i,block){
   const ex=exById(e.id); if(!ex) return '';
   const wid=w.id; const timed=!!e.secs;
