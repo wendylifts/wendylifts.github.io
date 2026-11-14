@@ -328,7 +328,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Nov 14, 2026, 9:41 AM CT</footer>
+<footer class="ver" id="ver">Last updated Nov 14, 2026, 1:42 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite" onclick="this.classList.remove('show')"></div>
 
@@ -2707,6 +2707,10 @@ document.addEventListener('input',ev=>{
         if(x.value.trim()!==''&&!x.dataset.auto&&!x.classList.contains('pre')) break; // stop at a box you typed yourself or already logged; boxes prefilled from last time follow along
         x.value=t.value; if(t.value.trim()===''){x.classList.remove('pre');delete x.dataset.auto} else {x.classList.add('pre');x.dataset.auto='1'}
         storeSet(x) }
+    }
+    if(/\|l?r$/.test(t.dataset.set)&&t.value.trim()!==''){ // a rep count you type becomes the goal for the empty rep boxes after it, so tapping the check logs that number
+      const card=t.closest('article.ex'), rs=card?[...card.querySelectorAll('input[data-set]')].filter(x=>/\|l?r$/.test(x.dataset.set)):[];
+      for(let q=rs.indexOf(t)+1;q<rs.length;q++){ const x=rs[q]; if(x.value.trim()!=='') break; x.placeholder=t.value; x.dataset.target=t.value }
     }
     if(/\|l?r$/.test(t.dataset.set)){
       const ck=document.querySelector(`[data-act="setdone"][data-set="${t.dataset.set}"]`);
