@@ -328,7 +328,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Nov 14, 2026, 1:42 PM CT</footer>
+<footer class="ver" id="ver">Last updated Nov 14, 2026, 1:49 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite" onclick="this.classList.remove('show')"></div>
 
@@ -2693,6 +2693,9 @@ function storeSet(t){
   }
   for(let j=0;j<arr.length;j++) if(!arr[j]) arr[j]={w:'',r:''};
 }
+document.addEventListener('focusin',ev=>{ // tapping a weight or rep box selects what is in it, so the next number you type replaces it
+  const t=ev.target; if(t&&t.dataset&&t.dataset.set&&t.tagName==='INPUT'){ const sel=()=>{try{t.select();t.setSelectionRange(0,String(t.value).length)}catch(e){}}; sel(); setTimeout(sel,30) }
+});
 document.addEventListener('input',ev=>{
   const t=ev.target;
   if(t.dataset&&t.dataset.note) return; // notes save with the Save button
