@@ -125,6 +125,7 @@ th{color:var(--muted);font-weight:600}
 .empty{color:var(--muted);padding:12px 0}
 .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--deep);color:#fff;padding:10px 16px;border-radius:10px;font-weight:600;opacity:0;pointer-events:none;transition:opacity .2s}
 .toast.show{opacity:1}
+.toast.big{font-size:26px;line-height:1.3;padding:20px 24px;border-radius:18px;width:min(92vw,520px);text-align:center;bottom:110px;pointer-events:auto;border:2px solid var(--buoy,#FF7A59)}
 
 .phbox{background:var(--soft);border-left:4px solid var(--lane);border-radius:10px;padding:10px 12px;margin:0 0 12px;font-size:17px;line-height:1.35}.phbox b{display:block;font-size:18px}
 .phnote{font-size:16px;font-weight:700;margin:6px 0 2px}
@@ -327,9 +328,9 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Nov 12, 2026, 8:56 PM CT</footer>
+<footer class="ver" id="ver">Last updated Nov 14, 2026, 9:31 AM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="toast" id="toast" role="status" aria-live="polite" onclick="this.classList.remove('show')"></div>
 
 <script>
 (() => {
@@ -1517,7 +1518,7 @@ function dayDate(wk,di){
 /* ---------- Render ---------- */
 const $=s=>document.querySelector(s);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function toast(m,ms){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('show'),ms||1800)}
+function toast(m,ms,big){const t=$('#toast');t.textContent=m;t.classList.toggle('big',!!big);t.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(()=>t.classList.remove('show'),ms||1800)}
 
 function renderNav(){
   const items=[['workout','Workout','#/'],['progress','Progress','#/progress'],['settings','Gear & settings','#/settings']];
@@ -1915,7 +1916,7 @@ function renderDay(){
   <div id="corebox" ${coreOpen()?'':'hidden'}>${w.abs.map((e,i)=>exCard(w,e,i,'abs')).join('')}</div>
   ${coolOn?`<div class="sec secbtn" id="coolhd" data-act="cooltoggle" role="button" tabindex="0" aria-expanded="${coolOpen()}"><span class="tri ${coolOpen()?'open':''}"></span><h3>Cool-down</h3><span class="t">optional, about 2 min</span></div><div class="warm" id="coolbox" ${coolOpen()?'':'hidden'}><ul>${cool}</ul></div>`:''}
   <div class="foot">
-    ${done?'<p class="cnote" style="flex-basis:100%">'+esc((S.sessions[w.id]&&S.sessions[w.id].fin)||encFin(w.id))+'</p><span class="btn fin-badge" role="status">✓ Finished</span><button class="btn" data-act="editwo">Edit workout</button>':'<button class="btn fin-o" data-act="finish">Finish workout</button>'}
+    ${done?'<p class="cnote" style="flex-basis:100%;font-size:26px;line-height:1.3;font-weight:600">'+esc((S.sessions[w.id]&&S.sessions[w.id].fin)||encFin(w.id))+'</p><span class="btn fin-badge" role="status">✓ Finished</span><button class="btn" data-act="editwo">Edit workout</button>':'<button class="btn fin-o" data-act="finish">Finish workout</button>'}
     <a class="btn" href="#/week/${U.wk}">Back to week</a>
     <button class="btn amber-o" data-act="regen-day">New version of this day</button>
     ${w.extra&&U.day===wkObj.workouts.length-1?'<button class="btn ghost" data-act="rmextra">Remove this extra workout</button>':''}
@@ -2388,7 +2389,7 @@ document.addEventListener('click',ev=>{
     }
   }
   else if(a==='cooldone'){const nowOn=!b.classList.contains('on'); haptic(nowOn?'done':'tick'); setCool(b.dataset.id,nowOn)}
-  else if(a==='finish'){const w=getWorkout(U.wk,U.day);const s=sess(w.id);if(!s.dateEdited)s.date=iso(new Date());s.done=s.date;save();render(true);(s.fin=encFin(w.id),save(),toast('Workout saved. '+s.fin,4800))}
+  else if(a==='finish'){const w=getWorkout(U.wk,U.day);const s=sess(w.id);if(!s.dateEdited)s.date=iso(new Date());s.done=s.date;save();render(true);(s.fin=encFin(w.id),save(),toast('Workout saved. '+s.fin,12000,true))}
   else if(a==='regen-day'){askSure('Build a new version of this day?','This swaps the exercises for a new set.',()=>{regenDay(U.wk,U.day);render(true);toast('New version built')})}
   else if(a==='regen-week'){askSure('Rebuild the whole week?','This swaps every workout this week for new ones.',()=>{regenWeek(U.wk);render(true);toast('Week rebuilt')})}
   else if(a==='swap'){
