@@ -328,7 +328,7 @@ body:has(#rest){padding-bottom:96px}
   <div class="rope" aria-hidden="true"></div>
 </header>
 <main id="app"></main>
-<footer class="ver" id="ver">Last updated Nov 14, 2026, 1:49 PM CT</footer>
+<footer class="ver" id="ver">Last updated Nov 14, 2026, 2:04 PM CT</footer>
 <div id="dpill" hidden aria-hidden="true"></div>
 <div class="toast" id="toast" role="status" aria-live="polite" onclick="this.classList.remove('show')"></div>
 
@@ -2398,7 +2398,7 @@ document.addEventListener('click',ev=>{
     }
   }
   else if(a==='cooldone'){const nowOn=!b.classList.contains('on'); haptic(nowOn?'done':'tick'); setCool(b.dataset.id,nowOn)}
-  else if(a==='finish'){const w=getWorkout(U.wk,U.day);const s=sess(w.id);if(!s.dateEdited)s.date=iso(new Date());s.done=s.date;save();render(true);(s.fin=encFin(w.id),save(),toast('Workout saved. '+s.fin,12000,true))}
+  else if(a==='finish'){const w=getWorkout(U.wk,U.day);const s=sess(w.id);if(!s.dateEdited)s.date=iso(new Date());s.done=s.date;save();render(true);(s.fin=encFin(w.id),save(),render(true))}
   else if(a==='regen-day'){askSure('Build a new version of this day?','This swaps the exercises for a new set.',()=>{regenDay(U.wk,U.day);render(true);toast('New version built')})}
   else if(a==='regen-week'){askSure('Rebuild the whole week?','This swaps every workout this week for new ones.',()=>{regenWeek(U.wk);render(true);toast('Week rebuilt')})}
   else if(a==='swap'){
